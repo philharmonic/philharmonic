@@ -13,11 +13,13 @@ def list_files():
 
 def execute(command):
     resp = subprocess.call(command, shell=True)
+    if resp==0:
+        print("Executed command '%s' - sucess!" % (command))
     return resp
 
 def authenticate():
     command = ". ~/creds/openrc"
-    if execute(command)==0: print("success!")
+    #if execute(command)==0: print("success!")
 
 def instance_info(instance_name):
     command = "nova show " + instance_name
@@ -39,13 +41,15 @@ def unpause(instance):
     command = "nova unpause " + instance
     print(execute(command))
 
+def migrate(instance, machine):
+    pass
+
     
 def basic_test():
     #list_files()
     authenticate()
-    instance_info("test-image")
-    #resume("test-image")
-    pause("test-image")
+    instance_info("kermit-test")
+    #pause("kermit-test")
 
 if __name__ == '__main__':
     basic_test()
