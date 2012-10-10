@@ -21,5 +21,8 @@ class RemoteBenchmark(threading.Thread):
         pass
     
     def run(self):
+        print("will run command:")
+        print(self.command)
         resp = subprocess.call(self.command)
-        return resp
+        #TODO: parse response
+        self.q.put(resp)

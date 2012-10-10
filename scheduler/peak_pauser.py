@@ -18,7 +18,7 @@ class PeakPauser(object):
     def parse_prices(self, location):
         pass
     
-    def price_is_expensive(self, price):#TODO: implement is_expensive
+    def price_is_expensive(self):#TODO: implement is_expensive
         return False
     
     def commence_benchmark(self, command):
