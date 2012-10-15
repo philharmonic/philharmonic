@@ -10,11 +10,14 @@ from Queue import Queue, Empty
 import conf
 from benchmark import Benchmark
 from energy_price import EnergyPrice
+import philharmonic.openstack.console_api as openstack
 
 class PeakPauser(object):
     def __init__(self):
         self.paused=False
-        pass
+        openstack.dummy = conf.dummy
+        openstack.authenticate()
+        
 
     def parse_prices(self, location):
         self.energy_price = EnergyPrice(location)
@@ -37,19 +40,24 @@ class PeakPauser(object):
             return False
         
     def pause(self):
-        if not self.paused:#TODO: pause
+        if not self.paused:
+            if not conf.dummy:
+                openstack.pause(conf.instance)
             self.paused = True
             print("paused")
     
     def unpause(self):
-        if self.paused:#TODO: unpause
+        if self.paused:
+            if not conf.dummy:
+                openstack.unpause(conf.instance)
             print("unpaused")
             self.paused = False
         
     
     def run(self):
+        
         self.parse_prices(conf.historical_en_prices_file)
-        self.commence_benchmark(conf.command, conf.scripted)
+        self.commence_benchmark(conf.command, scripted = not conf.dummy)
         while True:
             if self.benchmark_done():
                 print("benchmark done")

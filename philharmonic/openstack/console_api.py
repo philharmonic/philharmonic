@@ -7,18 +7,25 @@ The Royal Philharmonic Orchestra Goes to the Bathroom
 '''
 import subprocess
 
+dummy = False
+
 def list_files():
     resp = subprocess.call("ls -hal", shell=True)
     print(resp)
 
 def execute(command):
-    resp = subprocess.call(command, shell=True)
-    if resp==0:
-        print("Executed command '%s' - sucess!" % (command))
-    return resp
+    if not dummy:
+        resp = subprocess.call(command, shell=True)
+        if resp==0:
+            print("Executed command '%s' - sucess!" % (command))
+        return resp
+    else:
+        print("Dummy execute command: '%s'" % (command))
+        return 0
 
 def authenticate():
     command = ". ~/creds/openrc"
+    print(execute(command))
     #if execute(command)==0: print("success!")
 
 def instance_info(instance_name):

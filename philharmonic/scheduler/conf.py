@@ -9,8 +9,8 @@ historical_en_prices_file = "../../io/energy_price_data-test.csv"
 # Benchmark
 #===========
 
-# if scripted == False, will do just a local dummy benchmark
-scripted = False
+# if dummy == True, will do just a local dummy benchmark, faking all the OpenStack commands
+dummy = False
 # for True ...
 
 # host on which the benchmark VM is deployed (for energy measurements)
