@@ -41,7 +41,7 @@ class EnergyPrice(object):
         self.parse(price_file)
         self._find_expensive_hours(m = percentage_to_pause)
         print("Expensive hours:")
-        #print(self.expensive_hours)
+        print(self.expensive_hours)
         self.fig_location = "/home/kermit/Downloads"
         
         
