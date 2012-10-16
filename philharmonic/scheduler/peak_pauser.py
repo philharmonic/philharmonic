@@ -64,7 +64,7 @@ class PeakPauser(object):
                 break
             if self.price_is_expensive():
                 self.pause()
-            elif self.paused:
+            else:
                 self.unpause()
             
             time.sleep(conf.sleep_interval)

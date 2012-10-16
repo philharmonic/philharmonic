@@ -27,6 +27,6 @@ class Benchmark(threading.Thread):
             #TODO: parse response
         else: # running something locally
             import time
-            time.sleep(120)
+            time.sleep(3)
             resp = 1
         self.q.put(resp)
