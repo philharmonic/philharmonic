@@ -19,8 +19,8 @@ class PeakPauser(object):
         openstack.authenticate()
         
 
-    def parse_prices(self, location):
-        self.energy_price = EnergyPrice(location)
+    def parse_prices(self, location, percentage_to_pause):
+        self.energy_price = EnergyPrice(location, percentage_to_pause)
     
     def price_is_expensive(self):
         return self.energy_price.is_expensive()
@@ -56,7 +56,7 @@ class PeakPauser(object):
     
     def run(self):
         
-        self.parse_prices(conf.historical_en_prices_file)
+        self.parse_prices(conf.historical_en_prices_file, conf.percentage_to_pause)
         self.commence_benchmark(conf.command, scripted = not conf.dummy)
         while True:
             if self.benchmark_done():

@@ -24,8 +24,11 @@ def execute(command):
         return 0
 
 def authenticate():
-    command = ". ~/creds/openrc"
-    print(execute(command))
+    # doesn't seem to work
+    #command = ". ~/creds/openrc"
+    #print(execute(command))
+    if not dummy:
+        subprocess.call("./io/authenticate.sh")
     #if execute(command)==0: print("success!")
 
 def instance_info(instance_name):
