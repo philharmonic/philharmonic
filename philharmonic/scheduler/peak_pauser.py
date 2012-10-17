@@ -50,16 +50,18 @@ class PeakPauser(object):
             if not conf.dummy:
                 openstack.pause(conf.instance)
             self.paused = True
-            print("paused")
+            log("paused")
     
     def unpause(self):
         if self.paused:
             if not conf.dummy:
                 openstack.unpause(conf.instance)
-            print("unpaused")
+            log("unpaused")
             self.paused = False
     
     def initialize(self):
+        logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+        log("\n-------------\nPHILHARMONIC\n-------------")
         self.unpause()  # in case the VM was paused before we started
         self.parse_prices(conf.historical_en_prices_file, conf.percentage_to_pause)
         self.start = datetime.now()
@@ -69,7 +71,7 @@ class PeakPauser(object):
     def finalize(self):
         self.end = datetime.now()
         log("#scheduler#end %s" % str(self.end))
-        self.duration = self.start - self.end
+        self.duration = self.end - self.start
         log("#scheduler#runtime %s" % str(self.duration))
         self.unpause()  # don't leave a VM hanging after the experiment's done
         
