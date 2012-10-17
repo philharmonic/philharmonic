@@ -71,6 +71,7 @@ class PeakPauser(object):
         log("#scheduler#end %s" % str(self.end))
         self.duration = self.start - self.end
         log("#scheduler#runtime %s" % str(self.duration))
+        self.unpause()  # don't leave a VM hanging after the experiment's done
         
     def run(self):
         self.initialize()
