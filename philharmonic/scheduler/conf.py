@@ -4,7 +4,8 @@ Created on Oct 9, 2012
 @author: kermit
 '''
 
-historical_en_prices_file = "./io/energy_price_data-quick_test.csv"
+#historical_en_prices_file = "./io/energy_price_data-quick_test.csv"
+historical_en_prices_file = "./io/energy_price_data-test.csv"
 
 # Benchmark
 #===========
@@ -24,7 +25,8 @@ instance = "kermit-test"
 command = "./io/benchmark.sh"
 
 # how many % of hours in a day should the VM be paused
-percentage_to_pause = 0.04 # *100%
+#percentage_to_pause = 0.04 # *100%
+percentage_to_pause = 0.15 # *100%
 
 # time to sleep between checking if the benchmark finished or needs to be paused
 sleep_interval = 1 # seconds
