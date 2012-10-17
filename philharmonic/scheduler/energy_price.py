@@ -17,7 +17,7 @@ class EnergyPrice(object):
         self.prices = hourly.parse_prices(price_file)
         #print(self.prices.head(30))
 
-    def _find_expensive_hours(self, m = 0.15): #TODO: split "train" and "test" sets
+    def _find_expensive_hours(self, m): #TODO: split "train" and "test" sets
         """ find the top m*100% most expensive hours
         @param m: the percentage of hours to exclude
         @return: list of expensive hours 
@@ -33,7 +33,7 @@ class EnergyPrice(object):
         expensive_prices = mean_prices[-exclude_num:]
         self.expensive_hours = set(expensive_prices.index)
         
-    def __init__(self, price_file, percentage_to_pause):
+    def __init__(self, price_file, percentage_to_pause = 0.15):
         '''
         Constructor
         '''
