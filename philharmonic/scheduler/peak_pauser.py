@@ -7,7 +7,8 @@ Created on Oct 9, 2012
 import time
 from Queue import Queue, Empty
 import logging
-from datetime import datetime, timedelta 
+from datetime import datetime
+import pickle
 
 import conf
 from benchmark import Benchmark
@@ -63,7 +64,7 @@ class PeakPauser(object):
         logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         log("\n-------------\nPHILHARMONIC\n-------------")
         self.unpause()  # in case the VM was paused before we started
-        self.parse_prices(conf.historical_en_prices_file, conf.percentage_to_pause)
+        self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
         self.start = datetime.now()
         log("#scheduler#start %s" % str(self.start))
         self.commence_benchmark(conf.command, scripted = not conf.dummy)  # go!!!
@@ -74,6 +75,9 @@ class PeakPauser(object):
         self.duration = self.end - self.start
         log("#scheduler#runtime %s" % str(self.duration))
         self.unpause()  # don't leave a VM hanging after the experiment's done
+        self.results = {"start":self.start, "end":self.end, "duration":self.duration}
+        with open(conf.results, "wb") as results_file:
+            pickle.dump(self.results, results_file)
         
     def run(self):
         self.initialize()
