@@ -6,15 +6,15 @@ Created on Oct 15, 2012
 from datetime import datetime
 import math
 
-import philharmonic.price_historian.hourly as hourly
+import philharmonic.energy_price.historian as historian
 
-class EnergyPrice(object):
+class EnergyPredictor(object):
     '''
     Represents the energy price
     '''
 
     def parse(self, price_file):
-        self.prices = hourly.parse_prices(price_file)
+        self.prices = historian.parse_prices(price_file)
         #print(self.prices.head(30))
 
     def _find_expensive_hours(self, m): #TODO: split "train" and "test" sets

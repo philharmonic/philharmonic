@@ -4,15 +4,15 @@ Created on Oct 15, 2012
 @author: kermit
 '''
 import unittest
-from philharmonic.scheduler.energy_price import EnergyPrice
+from philharmonic.scheduler.energy_predictor import EnergyPredictor
 
 
 class Test(unittest.TestCase):
 
 
     def setUp(self):
-        loc = "./io/energy_price_data-test.csv"
-        self.energy_price = EnergyPrice(loc)
+        loc = "./io/tests/energy_price_data-test.csv"
+        self.energy_price = EnergyPredictor(loc)
 
 
     def tearDown(self):
