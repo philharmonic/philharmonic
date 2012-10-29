@@ -7,7 +7,8 @@ Created on Oct 9, 2012
 # I/O
 #======
 
-historical_en_prices = "./io/energy_price_data-quick_test.csv"
+historical_en_prices = "./io/energy_price/train/3month.csv"
+#historical_en_prices = "./io/energy_price_data-quick_test.csv"
 #historical_en_prices = "./io/energy_price_data-single_day.csv"
 
 results = "./io/results.pickle"

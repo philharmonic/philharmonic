@@ -12,7 +12,7 @@ if __name__ == "__main__":
     scheduler = PeakPauser()
     # waiting for the start time
     if len(sys.argv)>1:
-        when = datetime.strptime(sys.argv[1], "%y-%m-%d %H:%M")
+        when = datetime.strptime(sys.argv[1], "%Y-%m-%d_%H:%M")
         #to_start = datetime.combine(datetime.now().date(), when.time())
         to_start = when
         print("will start at %s." % to_start)
