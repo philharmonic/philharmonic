@@ -13,8 +13,8 @@ class Test(unittest.TestCase):
 
 
     def setUp(self):
-        loc = "./io/tests/energy_price_data-test.csv"
-        self.energy_price = EnergyPredictor(loc)
+        self.loc = "./io/tests/energy_price_data-test.csv"
+        self.energy_price = EnergyPredictor(self.loc)
         en_data = pd.DataFrame.load("./io/tests/energy_consumption.pickle")
         self.active_power = en_data.xs("snowwhite").xs("active_power")
 
@@ -38,6 +38,9 @@ class Test(unittest.TestCase):
     def testEnergy(self):
         en = calculate_energy(self.active_power)
         self.assertEqual(en, 35627.631317890715)
+        
+        total_price = calculate_price(self.active_power, self.loc, self.active_power.index[0].to_pydatetime())
+        self.assertEqual(total_price, 0.00030026175949577949)
 
 
 if __name__ == "__main__":
