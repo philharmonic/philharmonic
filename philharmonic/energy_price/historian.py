@@ -44,7 +44,7 @@ def realign(prices_series, start_date):
     start_date = datetime.combine(start_date.date(), time(0,0)) # truncate time
     delta = start_date - prices_series.index[0][0]
     # unstack to turn it into a DataSeries first
-    return prices_series.unstack().shift(1, offset=delta).stack()
+    return prices_series.unstack().shift(1, freq=delta).stack()
     
 if __name__ == "__main__":
     path = "/home/kermit/Dropbox/dev/itd/skripte/ipy_notebook/data/DAData_19_20120505-20120904.csv"
