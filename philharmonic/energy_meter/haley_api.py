@@ -8,6 +8,7 @@ Created on Jun 15, 2012
 from pysnmp.v4.entity.rfc3413.oneliner import cmdgen
 from pyasn1.type.univ import ObjectIdentifier
 import pandas as pd
+import time
 
 from exception import *
 
@@ -38,6 +39,7 @@ class Wattmeter(object):
         self._build_machine_dic()
         
     def _query(self, prefix, identifier):
+        """ interact with the wattmeter through the SNMP library """
         # GET Command Generator
         url = "powerman.infosys.tuwien.ac.at"
         user = "kermit"
@@ -66,19 +68,40 @@ class Wattmeter(object):
             #(('SNMPv2-MIB', 'sysObjectID'), 0)
             ObjectIdentifier(code)
             )
-        if errorIndication:
-            print(errorIndication)
-        else:
+        if errorStatus or errorIndication:
+            print("error indication: " + str(errorIndication))
             if errorStatus:
                 print('%s at %s\n' % (
                     errorStatus.prettyPrint(),
                     errorIndex and varBinds[int(errorIndex)-1] or '?'
                     ))
-            else:
-                for name, val in varBinds:
-                    #print '%s = %s' % (name.prettyPrint(), val.prettyPrint())
-                    return val.prettyPrint()
+            raise SilentWattmeterError
+        else:
+            for name, val in varBinds:
+                #print '%s = %s' % (name.prettyPrint(), val.prettyPrint())
+                return val.prettyPrint()
     
+    def _resilient_query(self, prefix, identifier):
+        """ an error-resistant wrapper for _query """
+        attempts = 3
+        sucess = False
+        while sucess!=True:
+            try:
+                # do the actual query
+                response = self._query(prefix, identifier)
+                # and if an exception wasn't thrown we did it!
+                sucess = True
+            except SilentWattmeterError:
+                print("Wattmeter gave us an error. Giving it another try.")
+                # that was one unsuccessful attempt
+                attempts-=1
+                if attempts == 0:
+                    # OK, we won't try any more
+                    print('The wattmeter couldn\'t fulfill the request. Quitting')
+                    raise
+                # let the wattmeter cool down a bit :)
+                time.sleep(0.1)
+        return response
     
     def _build_machine_dic(self):
         self._machine_id = {}
@@ -89,7 +112,7 @@ class Wattmeter(object):
             
     def _abstract_query_on_machine(self,  prefix, machine):
         identifier = self._machine_id[machine]
-        return float(self._query(prefix, identifier))
+        return float(self._resilient_query(prefix, identifier))
         
     def measure_single(self, machine, metric):
         """

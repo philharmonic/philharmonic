@@ -12,7 +12,7 @@ import pickle
 
 import conf
 from benchmark import Benchmark
-from energy_price import EnergyPrice
+from energy_predictor import EnergyPredictor
 import philharmonic.openstack.console_api as openstack
 
 def log(message):
@@ -27,7 +27,7 @@ class PeakPauser(object):
         
 
     def parse_prices(self, location, percentage_to_pause):
-        self.energy_price = EnergyPrice(location, percentage_to_pause)
+        self.energy_price = EnergyPredictor(location, percentage_to_pause)
     
     def price_is_expensive(self):
         return self.energy_price.is_expensive()

@@ -5,3 +5,5 @@ Created on 12. 9. 2012.
 '''
 
 class UnknownMetricError(Exception): pass
+
+class SilentWattmeterError(Exception): pass
