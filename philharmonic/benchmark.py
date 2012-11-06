@@ -23,8 +23,7 @@ class BenchmarkWaiter(soap.SOAPPublisher):
     
     def soap_done(self, results = None):
         print("stopping nowwwww " + results)
-        resp = 1 #TODO: put into queue
-        # self.q.put(resp)
+        reactor.stop()
         return 0
     soap_done.useKeywords = 1
 
@@ -42,7 +41,7 @@ def dummy_benchmark():
     print("Got responseeee: " + p.done("SOME_RESULTS"))
 
 
-class Benchmark(threading.Thread):
+class Benchmark():
     '''
     A remote benchmark that's being executed on a different (virtual) server
     '''
@@ -52,7 +51,6 @@ class Benchmark(threading.Thread):
         '''
         Constructor
         '''
-        threading.Thread.__init__(self)
         self.command = command
         self.scripted = scripted
         pass
@@ -61,10 +59,11 @@ class Benchmark(threading.Thread):
         if self.scripted:
             subprocess.call(self.command)
         else: # running something locally
-            subprocess.call("ls")#"python philharmonic/scheduler/benchmark.py &")
+            pass #subprocess.call("ls")#"python philharmonic/scheduler/benchmark.py &")
         self.wait_til_finished()
         
     def wait_til_finished(self):
+        pass
         reactor.listenTCP(8088, server.Site(BenchmarkWaiter()))
         reactor.run()
         

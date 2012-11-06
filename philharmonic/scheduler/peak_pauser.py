@@ -10,17 +10,18 @@ import logging
 from datetime import datetime
 import pickle
 
-import conf
-from benchmark import Benchmark
+from philharmonic import conf
 from energy_predictor import EnergyPredictor
 import philharmonic.openstack.console_api as openstack
+from philharmonic.scheduler.ischeduler import IScheduler
 
 def log(message):
     print(message)
     logging.info(message)
 
-class PeakPauser(object):
+class PeakPauser(IScheduler):
     def __init__(self):
+        IScheduler.__init__(self)
         self.paused=False
         openstack.dummy = conf.dummy
         openstack.authenticate()
@@ -32,12 +33,12 @@ class PeakPauser(object):
     def price_is_expensive(self):
         return self.energy_price.is_expensive()
     
-    def commence_benchmark(self, command, scripted):
-        self.q = Queue()  # this is where we'll get the messages from
-        benchmark = Benchmark(command, scripted)
-        benchmark.q = self.q
-        benchmark.start()
-        print("started benchmark")
+#    def commence_benchmark(self, command, scripted):
+#        self.q = Queue()  # this is where we'll get the messages from
+#        self.benchmark = Benchmark(command, scripted)        
+#        self.benchmark.q = self.q
+#        self.benchmark.start()
+#        print("started benchmark")
     
     def benchmark_done(self):
         try:
@@ -67,7 +68,7 @@ class PeakPauser(object):
         self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
         self.start = datetime.now()
         log("#scheduler#start %s" % str(self.start))
-        self.commence_benchmark(conf.command, scripted = not conf.dummy)  # go!!!
+        #self.commence_benchmark(conf.command, scripted=not conf.dummy)  # go!!!
     
     def finalize(self):
         self.end = datetime.now()
@@ -78,6 +79,7 @@ class PeakPauser(object):
         self.results = {"start":self.start, "end":self.end, "duration":self.duration}
         with open(conf.results, "wb") as results_file:
             pickle.dump(self.results, results_file)
+        #self.benchmark.join()
         
     def run(self):
         self.initialize()
@@ -91,7 +93,3 @@ class PeakPauser(object):
                 self.unpause()
             time.sleep(conf.sleep_interval)
         self.finalize()
-
-if __name__=="__main__":
-    scheduler = PeakPauser()
-    scheduler.run()

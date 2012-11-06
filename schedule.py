@@ -7,6 +7,7 @@ from philharmonic.scheduler.peak_pauser import PeakPauser
 import sys
 from datetime import datetime
 import time
+from philharmonic import runner
 
 if __name__ == "__main__":
     scheduler = PeakPauser()
@@ -19,4 +20,5 @@ if __name__ == "__main__":
         while datetime.now()<to_start:
             time.sleep(1)
     # start
-    scheduler.run()
+    runner.run(scheduler)
+    #scheduler.run()
