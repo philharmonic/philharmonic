@@ -4,9 +4,9 @@ Created on Oct 16, 2012
 @author: kermit
 '''
 import unittest
-import types
 from philharmonic.scheduler.peak_pauser import PeakPauser
-import philharmonic.scheduler.conf as my_conf
+import philharmonic.conf as my_conf
+from philharmonic import runner
 
 def price_is_expensive(self): # our dummy version of the method
     if self.test_state:
@@ -25,7 +25,7 @@ class Test(unittest.TestCase):
         # we're changing the method dynamically, but could also have subclassed it
         PeakPauser.price_is_expensive = price_is_expensive
         scheduler.test_state = 1
-        scheduler.run()
+        runner.run(scheduler)
         self.assertEqual(scheduler.paused, False, "when price is cheap (state 0), we want to unpause")
 
 

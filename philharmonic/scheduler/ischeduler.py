@@ -8,7 +8,7 @@ import threading
 
 class IScheduler(threading.Thread):
     '''
-    Abstract scheduler
+    Scheduler interface
     '''
 
 

@@ -33,13 +33,6 @@ class PeakPauser(IScheduler):
     def price_is_expensive(self):
         return self.energy_price.is_expensive()
     
-#    def commence_benchmark(self, command, scripted):
-#        self.q = Queue()  # this is where we'll get the messages from
-#        self.benchmark = Benchmark(command, scripted)        
-#        self.benchmark.q = self.q
-#        self.benchmark.start()
-#        print("started benchmark")
-    
     def benchmark_done(self):
         try:
             self.results = self.q.get_nowait()
@@ -67,8 +60,8 @@ class PeakPauser(IScheduler):
         self.unpause()  # in case the VM was paused before we started
         self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
         self.start = datetime.now()
+        time.sleep(1) # give ourselves time to start the benchmark
         log("#scheduler#start %s" % str(self.start))
-        #self.commence_benchmark(conf.command, scripted=not conf.dummy)  # go!!!
     
     def finalize(self):
         self.end = datetime.now()
@@ -79,7 +72,6 @@ class PeakPauser(IScheduler):
         self.results = {"start":self.start, "end":self.end, "duration":self.duration}
         with open(conf.results, "wb") as results_file:
             pickle.dump(self.results, results_file)
-        #self.benchmark.join()
         
     def run(self):
         self.initialize()

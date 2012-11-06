@@ -3,9 +3,9 @@ Created on Jun 15, 2012
 
 @author: kermit
 '''
-
-#from pysnmp.entity.rfc3413.oneliner import cmdgen
-from pysnmp.v4.entity.rfc3413.oneliner import cmdgen
+# old import from Ubuntu 12.04:
+# from pysnmp.v4.entity.rfc3413.oneliner import cmdgen
+from pysnmp.entity.rfc3413.oneliner import cmdgen
 from pyasn1.type.univ import ObjectIdentifier
 import pandas as pd
 import time

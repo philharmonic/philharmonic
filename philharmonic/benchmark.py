@@ -5,6 +5,7 @@ Created on Oct 10, 2012
 '''
 import threading
 import subprocess
+import time
 
 
 from twisted.web import soap, server
@@ -31,14 +32,14 @@ class BenchmarkWaiter(soap.SOAPPublisher):
         return defer.succeed(2)
 
 def dummy_benchmark():
-    #import time
-    #time.sleep(3)
     import SOAPpy
     p = SOAPpy.SOAPProxy('http://localhost:8088/')
-    print p.add(a=1)
-    print p.add(a=1, b=3)
-    print p.echo([1, 2])
-    print("Got responseeee: " + p.done("SOME_RESULTS"))
+    print("I am doing a dummy benchmark! Yeiii :)")
+    time.sleep(3)
+    try:
+        p.done(results="Waiting for IKEA")
+    except AttributeError:
+        pass
 
 
 class Benchmark():
@@ -59,7 +60,8 @@ class Benchmark():
         if self.scripted:
             subprocess.call(self.command)
         else: # running something locally
-            pass #subprocess.call("ls")#"python philharmonic/scheduler/benchmark.py &")
+            subprocess.Popen(["python", "philharmonic/benchmark.py"])
+        print("started benchmark")
         self.wait_til_finished()
         
     def wait_til_finished(self):

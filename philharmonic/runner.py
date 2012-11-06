@@ -13,12 +13,13 @@ def run(scheduler):
     run experiment, controlled by the scheduler
     """
     # start scheduler
-    q = Queue() #TODO: push queue responsibility into IScheduler -> scheduler.quit()
+    q = Queue() # this is where we'll get the messages from
+    #TODO: push queue responsibility into IScheduler -> scheduler.quit()
     scheduler.q = q 
     scheduler.start()
     
     # start benchmark
-    benchmark = Benchmark(conf.command, scripted=not conf.dummy)
+    benchmark = Benchmark(conf.command, scripted=(not conf.dummy))
     benchmark.run()
     
     # stop scheduler
