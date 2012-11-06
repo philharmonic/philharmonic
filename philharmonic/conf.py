@@ -26,9 +26,13 @@ host = "snowwhite"
 # VM (instance) which executes the benchmark  
 instance = "kermit-test"
 
-# the command to execute as a benchmark (use ssh to execute something in a VM)
+# The command to execute as a benchmark (use ssh to execute something in a VM).
+# If command=="noscript" then just some local execution will be done
+#command="noscript" 
 #command = "/usr/bin/ssh 192.168.100.4 ls"
-command = "./io/benchmark.sh"
+#command = "./io/benchmark.sh"
+command = "./io/benchmark-local.sh"
+
 
 # how many % of hours in a day should the VM be paused
 #percentage_to_pause = 0.04 # *100%

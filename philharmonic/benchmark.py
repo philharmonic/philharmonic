@@ -7,10 +7,10 @@ import threading
 import subprocess
 import time
 
-
 from twisted.web import soap, server
 from twisted.internet import reactor, defer
 
+from scheduler.peak_pauser import log
 
 class BenchmarkWaiter(soap.SOAPPublisher):
     """Publish two methods, 'add' and 'echo'."""
@@ -22,8 +22,10 @@ class BenchmarkWaiter(soap.SOAPPublisher):
         return a + b
     soap_add.useKeywords = 1
     
-    def soap_done(self, results = None):
-        print("stopping nowwwww " + results)
+    def soap_done(self, results=None):
+        #dt1, dt2 = results
+        #print("stopping nowwwww " + results)
+        #log("#scheduler#berserk#runtime %s" % str(dt2-dt1))
         reactor.stop()
         return 0
     soap_done.useKeywords = 1
@@ -48,24 +50,21 @@ class Benchmark():
     '''
 
 
-    def __init__(self, command, scripted = True):
+    def __init__(self, command):
         '''
         Constructor
         '''
         self.command = command
-        self.scripted = scripted
-        pass
     
     def run(self):
-        if self.scripted:
-            subprocess.call(self.command)
-        else: # running something locally
+        if self.command == "noscript": # running something locally
             subprocess.Popen(["python", "philharmonic/benchmark.py"])
+        else:
+            subprocess.call(self.command)
         print("started benchmark")
         self.wait_til_finished()
         
     def wait_til_finished(self):
-        pass
         reactor.listenTCP(8088, server.Site(BenchmarkWaiter()))
         reactor.run()
         

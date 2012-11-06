@@ -19,7 +19,7 @@ def run(scheduler):
     scheduler.start()
     
     # start benchmark
-    benchmark = Benchmark(conf.command, scripted=(not conf.dummy))
+    benchmark = Benchmark(conf.command)
     benchmark.run()
     
     # stop scheduler
