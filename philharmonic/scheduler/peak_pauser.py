@@ -72,6 +72,7 @@ class PeakPauser(IScheduler):
         self.results = {"start":self.start, "end":self.end, "duration":self.duration}
         with open(conf.results, "wb") as results_file:
             pickle.dump(self.results, results_file)
+        log("------------------\n")
         
     def run(self):
         self.initialize()
