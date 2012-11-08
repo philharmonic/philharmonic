@@ -2,4 +2,5 @@ Philharmonic is a Python program offering a simple OpenStack controller that pau
 
 Ubuntu dependencies
 
-    sudo apt-get install python-numpy python-pandas python-pysnmp4
+    sudo apt-get install python-numpy python-pandas python-pysnmp4 python-soappy python-twisted python-twisted-web
+

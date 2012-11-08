@@ -60,7 +60,7 @@ class PeakPauser(IScheduler):
         self.unpause()  # in case the VM was paused before we started
         self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
         self.start = datetime.now()
-        time.sleep(1) # give ourselves time to start the benchmark
+        time.sleep(5) # give ourselves time to start the benchmark
         log("#scheduler#start %s" % str(self.start))
     
     def finalize(self):
