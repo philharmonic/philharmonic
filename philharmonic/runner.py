@@ -3,7 +3,7 @@ Created on 5. 11. 2012.
 
 @author: kermit
 '''
-from philharmonic.scheduler.peak_pauser import PeakPauser
+from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
 from Queue import Queue
 import conf
 from philharmonic.benchmark import Benchmark
@@ -26,6 +26,6 @@ def run(scheduler):
     q.put("quit")
     scheduler.join()
 
-if __name__=="__main__":
-    scheduler = PeakPauser()
-    run(scheduler)
+#if __name__=="__main__":
+#    scheduler = getattr(conf.scheduler)
+#    run(scheduler)

@@ -13,6 +13,15 @@ historical_en_prices = "./io/energy_price/train/3month.csv"
 
 results = "./io/results.pickle"
 
+# Scheduler
+#==========
+# these schedulers are available:
+# PeakPauser
+# NoScheduler
+
+#scheduler = "NoScheduler"
+scheduler= "PeakPauser"
+
 # Benchmark
 #===========
 

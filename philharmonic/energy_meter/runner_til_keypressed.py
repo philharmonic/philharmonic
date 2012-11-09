@@ -38,7 +38,7 @@ class RunnerTilKeypressed(object):
                 q.put('quit')
                 break
         print('you pressed ' + k)
-        thread.join()
+        thread.join(timeout=1)
         print("Background thread joined.")
         
 def run_once():

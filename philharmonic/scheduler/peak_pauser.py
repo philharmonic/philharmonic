@@ -86,3 +86,34 @@ class PeakPauser(IScheduler):
                 self.unpause()
             time.sleep(conf.sleep_interval)
         self.finalize()
+
+class NoScheduler(PeakPauser):
+    
+    def __init__(self):
+        # call IScheduler's constructor
+        super(PeakPauser, self).__init__()
+    def initialize(self):
+        logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+        log("\n-------------\nPHILHARMONIC\n-------------")
+        self.start = datetime.now()
+        time.sleep(5) # give ourselves time to start the benchmark
+        log("#scheduler#start %s" % str(self.start))
+        
+    def finalize(self):
+        self.end = datetime.now()
+        log("#scheduler#end %s" % str(self.end))
+        self.duration = self.end - self.start
+        log("#scheduler#runtime %s" % str(self.duration))
+        self.results = {"start":self.start, "end":self.end, "duration":self.duration}
+        with open(conf.results, "wb") as results_file:
+            pickle.dump(self.results, results_file)
+        log("------------------\n")
+        
+    def run(self):
+        self.initialize()
+        while True:
+            if self.benchmark_done():
+                print("benchmark done")
+                break
+            time.sleep(conf.sleep_interval)
+        self.finalize()
