@@ -14,7 +14,7 @@ setup(
     name = "philharmonic",
     version = "0.1",
     packages = find_packages(),
-    install_requires = ['pandas>=0.8.1',
+    install_requires = ['pandas>=0.8.0',
                         'numpy>=1.6.1'],
     zip_safe = True,
     
