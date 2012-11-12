@@ -10,8 +10,14 @@ from Queue import Empty
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import logging
 
 from haley_api import Wattmeter
+from philharmonic.energy_meter.exception import SilentWattmeterError
+
+def log(message):
+    print(message)
+    logging.info(message)
 
 class ContinuousEnergyMeter(threading.Thread):
     '''
@@ -52,6 +58,10 @@ class ContinuousEnergyMeter(threading.Thread):
         index = pd.MultiIndex.from_tuples(index_tuples, names=["machine", "metric"])
         self.data = pd.DataFrame({}, index = index)
         
+        logging.basicConfig(filename='io/energy_meter.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+        log("\n-------------\nENERGY_METER\n-------------")
+        log("#wattmeter#start")
+        
     def get_all_data(self):
         """
         @return: DataFrame containing measurements collected so far
@@ -67,13 +77,19 @@ class ContinuousEnergyMeter(threading.Thread):
 #        for machine, metric in self.index_tuples:
 #            new_values.append(self.energy_meter.measure_single(machine, metric))
 #        new_series = pd.Series(new_values, index = self.index)
-        new_series = self.energy_meter.measure_multiple(self.machines, self.metrics)
+        try:
+            new_series = self.energy_meter.measure_multiple(self.machines, self.metrics)
+        except SilentWattmeterError:
+            log("Wattmeter doesn't respond too long. Quitting.")
+            self._finalize()
+            raise
         current_time = datetime.now()
         self.data[current_time] = new_series
         
     def _finalize(self): 
         self.data.save(self.location)
-        
+        log("#wattmeter#end")
+        log("-------------\n")
                   
     def run(self):
         while True:

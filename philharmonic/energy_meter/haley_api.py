@@ -21,6 +21,7 @@ class Wattmeter(object):
         '''
         Constructor
         '''
+        self.max_recoveries = 5
         # use Mibble to log in to your SNMP device and read this code
         self._main_prefix = "1.3.6.1.4.1.534.6.6.6.1.2.2.1"
         create_prefix = lambda x : self._main_prefix + "." + str(x)
@@ -83,7 +84,7 @@ class Wattmeter(object):
     
     def _resilient_query(self, prefix, identifier):
         """ an error-resistant wrapper for _query """
-        attempts = 3
+        attempts = 0
         sucess = False
         while sucess!=True:
             try:
@@ -93,14 +94,14 @@ class Wattmeter(object):
                 sucess = True
             except SilentWattmeterError:
                 print("Wattmeter gave us an error. Giving it another try.")
-                # that was one unsuccessful attempt
-                attempts-=1
-                if attempts == 0:
+                # that was an unsuccessful attempt
+                attempts+=1
+                if attempts >= self.max_recoveries:
                     # OK, we won't try any more
                     print('The wattmeter couldn\'t fulfill the request. Quitting')
                     raise
                 # let the wattmeter cool down a bit :)
-                time.sleep(0.1)
+                time.sleep(attempts**2)
         return response
     
     def _build_machine_dic(self):

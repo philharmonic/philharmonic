@@ -10,7 +10,7 @@ from pandas import Series
 class Test(unittest.TestCase):
 
 
-    def testWattmeter(self):
+    def test_wattmeter(self):
         meter = Wattmeter()
         active_power = meter.measure_single("snowwhite", "active_power")
         self.assertEqual(type(active_power), float, "must be the same.")
@@ -20,5 +20,5 @@ class Test(unittest.TestCase):
         self.assertEqual(type(data), Series, "must get a data frame")
         
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testWattmeter']
+    #import sys;sys.argv = ['', 'Test.test_wattmeter']
     unittest.main()
