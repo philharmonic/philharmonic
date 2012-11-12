@@ -11,4 +11,4 @@ metrics = ["active_power", "apparent_power"]
 location = "io/energy_consumption.pickle"
 
 # how often to measure (seconds)
-interval = 1
+interval = 5
