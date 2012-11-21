@@ -13,7 +13,7 @@ def calculate_price(power, price_file, start_date):
     and calculate the price of the energy consumption stored in
     a time series of power values power (W)
     
-    @return: calculated price in dollars
+    @return: calculated price in $
     
     """
     prices = parse_prices(price_file)
