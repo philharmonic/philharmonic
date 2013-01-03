@@ -8,22 +8,23 @@ from historian import *
 
 _KWH_RATIO = 3.6e6
 
-def calculate_price(power, price_file, start_date):
-    """parse prices from a price_file ($/kWh), realign it to start_date
-    and calculate the price of the energy consumption stored in
-    a time series of power values power (W)
+def calculate_price(power, price_file, start_date=None):
+    """parse prices from a price_file ($/kWh), realign it to start_date 
+    (if it's provided) and calculate the price of the energy consumption 
+    stored in a time series of power values power (W)
     
     @return: calculated price in $
     
     """
     prices = parse_prices(price_file)
     # Now we say that our energy prices start on this date.
-    prices = realign(prices, start_date)
+    if start_date:
+        prices = realign(prices, start_date)
     prices = prices/_KWH_RATIO # convert into $/J
     
     times = list(power.index)
     our_prices_raw = [] # here we'll store prices during the experiment
-    for t in times: #TODO: add a changing h value (per hour) and charge per hour
+    for t in times: # TODO: add a changing h value (per hour) and charge per hour
         our_prices_raw.append(prices[t.date()][t.hour])
     experiment_prices = pd.Series(our_prices_raw, index = power.index)
     
@@ -35,6 +36,8 @@ def calculate_price(power, price_file, start_date):
     duration = (t_N - t_0)
     h = duration.total_seconds()/N
     
+    # TODO: use a library for this e.g. 
+    # http://docs.scipy.org/doc/scipy/reference/tutorial/integrate.html
     total_price = h * sum(power*experiment_prices)
     return total_price
 
