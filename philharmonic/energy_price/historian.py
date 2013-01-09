@@ -42,6 +42,7 @@ def parse_prices(where):
     """
     def reduce_hour(hour):
         return str(int(hour)-1)+':00'
+    where = os.path.expanduser(where)
     df = pd.read_csv(where, converters={'HOUR':reduce_hour}, 
         parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
     s = df['PRICE']
