@@ -9,7 +9,7 @@ import numpy as np
 import os
 import pandas as pd
 
-def parse_prices(where):
+def parse_prices_old(where):
     """
     @param where: path to price file location (format as downloadable from
     [here](https://www2.ameren.com/RetailEnergy/rtpDownload.aspx).
@@ -32,6 +32,19 @@ def parse_prices(where):
     index_tuples = [(el[0],el[1]-1) for el in prices]
     multi_index = pd.MultiIndex.from_tuples(index_tuples, names = ["days", "hours"])
     s = pd.Series(prices_only, index = multi_index)
+    return s
+
+def parse_prices(where):
+    """
+    @param where: path to price file location (format as downloadable from
+    [here](https://www2.ameren.com/RetailEnergy/rtpDownload.aspx).
+    @return a Pandas Series
+    """
+    def reduce_hour(hour):
+        return str(int(hour)-1)+':00'
+    df = pd.read_csv(where, converters={'HOUR':reduce_hour}, 
+        parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
+    s = df['PRICE']
     return s
 
 

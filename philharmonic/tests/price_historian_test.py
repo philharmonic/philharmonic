@@ -12,7 +12,8 @@ class Test(unittest.TestCase):
 
     def testParseHourly(self):
         prices = historian.parse_prices("./io/tests/energy_price_data-test.csv")
-        self.assertIs(type(prices), pd.Series, "must get a time series")
+        self.assertIsInstance(prices, pd.Series, "must get a series")
+        self.assertTrue(prices, pd.TimeSeries, "must get a TimeSeries")
         expected_start = datetime(2012,5,5)
         self.assertEqual(prices.index[0][0], expected_start, "expecting to start on this date")
         self.assertEqual(prices.index[1][0], expected_start, "expecting to continue on this date")

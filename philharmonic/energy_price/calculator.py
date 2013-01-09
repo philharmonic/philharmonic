@@ -37,7 +37,7 @@ def calculate_price(power, price_file, start_date=None):
     h = duration.total_seconds()/N
     
     # TODO: use a library for this e.g. 
-    # http://docs.scipy.org/doc/scipy/reference/tutorial/integrate.html
+    #   http://docs.scipy.org/doc/scipy/reference/tutorial/integrate.html
     total_price = h * sum(power*experiment_prices)
     return total_price
 
