@@ -45,7 +45,7 @@ def parse_prices(where):
     where = os.path.expanduser(where)
     df = pd.read_csv(where, converters={'HOUR':reduce_hour}, 
         parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
-    s = df['PRICE']
+    s = df['PRICE'].resample('H')
     return s
 
 
