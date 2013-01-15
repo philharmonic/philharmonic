@@ -41,7 +41,7 @@ def calculate_price_old(power, price_file, start_date=None, old_parser=False):
     total_price = h * sum(power*experiment_prices)
     return total_price
 
-def calculate_price(power, price_file, start_date=None, old_parser=False):
+def calculate_price(power, prices=None, price_file=None, start_date=None, old_parser=False):
     """parse prices from a price_file ($/kWh), realign it to start_date 
     (if it's provided) and calculate the price of the energy consumption 
     stored in a time series of power values power (W)
@@ -49,7 +49,8 @@ def calculate_price(power, price_file, start_date=None, old_parser=False):
     @return: calculated price in $
     
     """
-    prices = parse_prices(price_file)
+    if not prices:
+        prices = parse_prices(price_file)
     # Now we say that our energy prices start on this date.
     if start_date:
         prices = realign(prices, start_date)
