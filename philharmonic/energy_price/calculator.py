@@ -41,6 +41,34 @@ def calculate_price_old(power, price_file, start_date=None, old_parser=False):
     total_price = h * sum(power*experiment_prices)
     return total_price
 
+def _calculate_price(power, price, compare_with=None):
+    """calculate energy consumption price based on an hourly series
+    of prices ($/kWh) and an houlry series of power values (W)
+    
+    @return: calculated price in $
+    
+    """
+    #TODO: this function assumes houlry mean power aggregation and
+    #the ending price at 00:00
+
+    # # optional plotting
+    # t = pd.offsets.Day(3)
+    # start = P_here.index[0]
+    # power[:start+t].plot(color=s1)
+    # figure()
+    # price[:start + t].plot(color=s2)
+    # if not compare_with is None:
+    #     figure()
+    #     compare_with[:start + t].plot(color=s3)
+    
+    price = joul2kWh(price[-1])
+    #print(len(power))
+    #print(len(price))
+    #side_by_side(power, price)
+    hourly_cost = power * price
+    cost = hourly_cost.sum()
+    return cost
+
 def calculate_price(power, prices=None, price_file=None, start_date=None, old_parser=False):
     """parse prices from a price_file ($/kWh), realign it to start_date 
     (if it's provided) and calculate the price of the energy consumption 
