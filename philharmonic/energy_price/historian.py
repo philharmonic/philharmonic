@@ -41,10 +41,13 @@ def parse_prices(where):
     @return a Pandas Series
     """
     def reduce_hour(hour):
+        #print(str(int(hour)-1)+':00')
+        #return str(int(hour)-2)+':00'
         return str(int(hour)-1)+':00'
     where = os.path.expanduser(where)
     df = pd.read_csv(where, converters={'HOUR':reduce_hour}, 
         parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
+    df.index = df.index - pd.DateOffset(hours=1)
     s = df['PRICE'].resample('H')
     s.index.name = 'Time'
     s.name = 'Price'
@@ -65,4 +68,4 @@ def realign(prices_series, start_date):
 if __name__ == "__main__":
     path = "/home/kermit/Dropbox/dev/itd/skripte/ipy_notebook/data/DAData_19_20120505-20120904.csv"
     prices = parse_prices(path)
-    print(prices) 
+    print(prices.tail(30))
