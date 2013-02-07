@@ -20,6 +20,7 @@ def log(message):
     logging.info(message)
 
 class PeakPauser(IScheduler):
+    
     def __init__(self):
         IScheduler.__init__(self)
         self.paused=False
@@ -92,6 +93,7 @@ class NoScheduler(PeakPauser):
     def __init__(self):
         # call IScheduler's constructor
         super(PeakPauser, self).__init__()
+        
     def initialize(self):
         logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         log("\n-------------\nPHILHARMONIC\n-------------")

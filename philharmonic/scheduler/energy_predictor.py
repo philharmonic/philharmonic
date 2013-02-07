@@ -17,13 +17,13 @@ class EnergyPredictor(object):
         self.prices = historian.parse_prices(price_file)
         #print(self.prices.head(30))
 
-    def _find_expensive_hours(self, m): #TODO: split "train" and "test" sets
+    def _find_expensive_hours(self, m):
         """ find the top m*100% most expensive hours
         @param m: the percentage of hours to exclude
         @return: list of expensive hours 
         """ 
-        # group hours together
-        grouped_hours = self.prices.groupby(level="hours")
+        # group hours by hour
+        grouped_hours = self.prices.groupby(lambda t : t.hour)
         # how many of the 24 hours exactly
         exclude_num = int(math.ceil(m*24))
         print("We're gonna exclude %d hour(s)" % (exclude_num))
