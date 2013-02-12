@@ -14,6 +14,7 @@ def parse_prices_old(where):
     @param where: path to price file location (format as downloadable from
     [here](https://www2.ameren.com/RetailEnergy/rtpDownload.aspx).
     @return a Pandas Series
+    @deprecated: use parse_prices
     """
     # parse file
     with open(os.path.expanduser(where)) as input_file:
@@ -40,19 +41,30 @@ def parse_prices(where):
     [here](https://www2.ameren.com/RetailEnergy/rtpDownload.aspx).
     @return a Pandas Series
     """
-    def reduce_hour(hour):
+    def format_hour(hour):
         #print(str(int(hour)-1)+':00')
-        #return str(int(hour)-2)+':00'
         return str(int(hour)-1)+':00'
     where = os.path.expanduser(where)
-    df = pd.read_csv(where, converters={'HOUR':reduce_hour}, 
+    df = pd.read_csv(where, converters={'HOUR':format_hour}, 
         parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
-    df.index = df.index - pd.DateOffset(hours=1)
-    s = df['PRICE'].resample('H')
+    #df.index = df.index - pd.DateOffset(hours=1)
+    s = df['PRICE'].asfreq('H')
     s.index.name = 'Time'
     s.name = 'Price'
     return s
 
+
+def realign_old(prices_series, start_date):
+    """
+    A function that shifts prices to start on the target date
+    @param prices_series: a Pandas time series (MultiIndex, datetime on level 0)
+    @return: a time series starting at start_date
+    @deprecated: use realign
+    """
+    start_date = datetime.combine(start_date.date(), time(0,0)) # truncate time
+    delta = start_date - prices_series.index[0][0]
+    # unstack to turn it into a DataSeries first
+    return prices_series.unstack().shift(1, freq=delta).stack()
 
 def realign(prices_series, start_date):
     """
@@ -61,9 +73,9 @@ def realign(prices_series, start_date):
     @return: a time series starting at start_date
     """
     start_date = datetime.combine(start_date.date(), time(0,0)) # truncate time
-    delta = start_date - prices_series.index[0][0]
+    delta = start_date - prices_series.index[0]
     # unstack to turn it into a DataSeries first
-    return prices_series.unstack().shift(1, freq=delta).stack()
+    return prices_series.shift(1, freq=delta)
     
 if __name__ == "__main__":
     path = "/home/kermit/Dropbox/dev/itd/skripte/ipy_notebook/data/DAData_19_20120505-20120904.csv"
