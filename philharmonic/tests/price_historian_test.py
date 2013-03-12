@@ -7,9 +7,9 @@ import unittest
 from philharmonic.energy_price import historian
 import pandas as pd
 from datetime import datetime
+
 class Test(unittest.TestCase):
-
-
+    
     def testParseHourly(self):
         prices = historian.parse_prices("./io/tests/energy_price_data-test.csv")
         self.assertIsInstance(prices, pd.Series, "must get a series")

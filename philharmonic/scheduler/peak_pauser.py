@@ -61,7 +61,7 @@ class PeakPauser(IScheduler):
         self.unpause()  # in case the VM was paused before we started
         self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
         self.start = datetime.now()
-        time.sleep(5) # give ourselves time to start the benchmark
+        time.sleep(self._initial_sleep) # give ourselves time to start the benchmark
         log("#scheduler#start %s" % str(self.start))
     
     def finalize(self):
@@ -98,7 +98,7 @@ class NoScheduler(PeakPauser):
         logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         log("\n-------------\nPHILHARMONIC\n-------------")
         self.start = datetime.now()
-        time.sleep(5) # give ourselves time to start the benchmark
+        time.sleep(self._initial_sleep) # give ourselves time to start the benchmark
         log("#scheduler#start %s" % str(self.start))
         
     def finalize(self):

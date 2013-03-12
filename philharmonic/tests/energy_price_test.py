@@ -11,7 +11,6 @@ from philharmonic.energy_price.calculator import *
 
 class Test(unittest.TestCase):
 
-
     def setUp(self):
         self.loc = "./io/tests/energy_price_data-test.csv"
         self.energy_price = EnergyPredictor(self.loc)
@@ -20,7 +19,6 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         del self.energy_price
-
 
     def testEnergyPrice(self):
         from datetime import datetime
@@ -39,9 +37,9 @@ class Test(unittest.TestCase):
         en = calculate_energy(self.active_power)
         self.assertEqual(en, 35627.631317890715)
         
-        total_price = calculate_price(self.active_power, self.loc, self.active_power.index[0].to_pydatetime())
+        total_price = calculate_price(self.active_power, self.loc,
+                                      self.active_power.index[0].to_pydatetime())
         self.assertEqual(total_price, 0.00030026175949577949)
-
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testEnergyPrice']

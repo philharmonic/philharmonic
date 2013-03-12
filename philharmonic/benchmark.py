@@ -11,6 +11,7 @@ from twisted.web import soap, server
 from twisted.internet import reactor, defer
 
 from scheduler.peak_pauser import log
+import philharmonic.conf as conf
 
 class BenchmarkWaiter(soap.SOAPPublisher):
     """Publish two methods, 'add' and 'echo'."""
@@ -34,13 +35,16 @@ class BenchmarkWaiter(soap.SOAPPublisher):
         return defer.succeed(2)
 
 def dummy_benchmark():
-    import SOAPpy
-    p = SOAPpy.SOAPProxy('http://localhost:8088/')
+    try:
+        import SOAPpy
+        p = SOAPpy.SOAPProxy('http://localhost:8088/')
+    except:
+        pass
     print("I am doing a dummy benchmark! Yeiii :)")
-    time.sleep(3)
+    time.sleep(0.1)
     try:
         p.done(results="Waiting for IKEA")
-    except AttributeError:
+    except:
         pass
 
 
@@ -57,12 +61,15 @@ class Benchmark():
         self.command = command
     
     def run(self):
-        if self.command == "noscript": # running something locally
-            subprocess.Popen(["python", "philharmonic/benchmark.py"])
+        if conf.dummy:
+            dummy_benchmark()
         else:
-            subprocess.call(self.command)
-        print("started benchmark")
-        self.wait_til_finished()
+            if self.command == "noscript": # running something locally -> dummy + waiter
+                subprocess.Popen(["python", "philharmonic/benchmark.py"])
+            else:
+                subprocess.call(self.command)
+            print("started benchmark")
+            self.wait_til_finished()
         
     def wait_til_finished(self):
         reactor.listenTCP(8088, server.Site(BenchmarkWaiter()))

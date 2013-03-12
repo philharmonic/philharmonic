@@ -48,7 +48,7 @@ def _calculate_price(power, price, compare_with=None):
     @return: calculated price in $
     
     """
-    #TODO: this function assumes houlry mean power aggregation and
+    #TODO: this function assumes hourly mean power aggregation and
     #the ending price at 00:00
 
     # # optional plotting
@@ -61,7 +61,7 @@ def _calculate_price(power, price, compare_with=None):
     #     figure()
     #     compare_with[:start + t].plot(color=s3)
     
-    price = joul2kWh(price[-1])
+    price = joul2kwh(price[-1])
     #print(len(power))
     #print(len(price))
     #side_by_side(power, price)
@@ -69,25 +69,28 @@ def _calculate_price(power, price, compare_with=None):
     cost = hourly_cost.sum()
     return cost
 
-def calculate_price(power, prices=None, price_file=None, start_date=None, old_parser=False):
-    """parse prices from a price_file ($/kWh), realign it to start_date 
-    (if it's provided) and calculate the price of the energy consumption 
-    stored in a time series of power values power (W)
+def calculate_price(power, prices=None, start_date=None, old_parser=False):
+    """take or parse from a file a series of electricity prices ($/kWh),
+    realign it to start_date (if it's provided) and calculate the price of the
+    energy consumption stored in a time series of power values power (W)
+    
+    @param power: pandas.Series of price values over time or a path to the
+    file to be parsed. 
     
     @return: calculated price in $
     
     """
-    if not prices:
-        prices = parse_prices(price_file)
+    if type(prices)==str: # let me parse that for you
+        prices = parse_prices(prices)
     # Now we say that our energy prices start on this date.
     if start_date:
         prices = realign(prices, start_date)
-    prices = prices/_KWH_RATIO # convert into $/J
+    prices = per_kwh2per_joul(prices) # convert into $/J
     
     times = list(power.index)
     our_prices_raw = [] # here we'll store prices during the experiment
     for t in times: # TODO: add a changing h value (per hour) and charge per hour
-        our_prices_raw.append(prices[t.date()][t.hour])
+        our_prices_raw.append(prices.asof(t))
     experiment_prices = pd.Series(our_prices_raw, index = power.index)
     
     times = power.index
@@ -120,12 +123,22 @@ def calculate_energy(power):
     en = h*sum(power)
     return en
 
-def joul2kWh(jouls):
+def joul2kwh(jouls):
     """@return: equivalent kWh """
     kWh = jouls / _KWH_RATIO
     return kWh
     
-def kWh2joul(kWh):
+def kwh2joul(kWh):
     """@return: equivalent Jouls """
     jouls = kWh * _KWH_RATIO
     return jouls
+
+def per_kwh2per_joul(per_kwh):
+    """@return: equivalent per Joul"""
+    # this is the equiv. of doing:
+    return joul2kwh(per_kwh)
+
+def per_joul2per_kwh(per_joul):
+    """@return: equivalent per kWh"""
+    # this is the equiv. of doing:
+    return kwh2joul(per_joul)

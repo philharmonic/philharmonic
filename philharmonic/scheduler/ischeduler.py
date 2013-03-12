@@ -11,6 +11,7 @@ class IScheduler(threading.Thread):
     Scheduler interface
     '''
 
+    _initial_sleep = 5
 
     def __init__(self):
         '''
