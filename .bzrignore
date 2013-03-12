@@ -1,5 +1,7 @@
 *.egg-info
 build/
 *.log
-*.pickle
+io/*.pickle
+/*.pickle
+/philharmonic/*.pickle
 **/.DS_Store
