@@ -12,6 +12,9 @@ def _dummy_query(self, prefix, identifier):
     self.test_recovery_count += 1
     raise SilentWattmeterError
 
+def _dummy_sleep_time(self, attempts):
+        return 0.1
+
 class Test(unittest.TestCase):
 
 
@@ -21,6 +24,9 @@ class Test(unittest.TestCase):
         Wattmeter._query = _dummy_query
         self.meter.test_recovery_count = 0
         self.meter.max_recoveries = 2
+        self.meter._wait_time = 0.1
+        self.meter._retries_num = 2
+        Wattmeter._sleep_time = _dummy_sleep_time
 
     def tearDown(self):
         Wattmeter._query = self.old_query_method

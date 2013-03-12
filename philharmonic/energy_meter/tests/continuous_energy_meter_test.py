@@ -18,7 +18,7 @@ class Test(unittest.TestCase):
         q = Queue()
         cont_meter.q = q
         cont_meter.start()
-        time.sleep(0.2)
+        #time.sleep(0.)
         cont_meter.q.put("quit")
         cont_meter.join()
         data = cont_meter.get_all_data() 

@@ -16,6 +16,8 @@ class Wattmeter(object):
     '''
     Meassures energy consumption for the HALEY cluster
     '''
+    _wait_time = 1 # seconds
+    _retries_num = 5
 
     def __init__(self):
         '''
@@ -46,8 +48,6 @@ class Wattmeter(object):
         user = "kermit"
         pw = "kermit123"
         port = 161
-        wait_time = 1 # seconds
-        retries_num = 5
         code = prefix + "." + str(identifier)
         
         snmp = cmdgen.CommandGenerator()
@@ -62,7 +62,8 @@ class Wattmeter(object):
             cmdgen.UsmUserData(user, authKey=pw, privKey=pw),
             # TARGET
             #-------------
-            cmdgen.UdpTransportTarget((url, port), timeout=wait_time, retries=retries_num),
+            cmdgen.UdpTransportTarget((url, port), timeout=self._wait_time,
+                                      retries=self._retries_num),
             # Plain OID
             #(1,3,6,1,2,1,1,1,0),
             # ((mib-name, mib-symbol), instance-id)
@@ -81,6 +82,9 @@ class Wattmeter(object):
             for name, val in varBinds:
                 #print '%s = %s' % (name.prettyPrint(), val.prettyPrint())
                 return val.prettyPrint()
+            
+    def _sleep_time(self, attempts):
+        return attempts**2
     
     def _resilient_query(self, prefix, identifier):
         """ an error-resistant wrapper for _query """
@@ -101,7 +105,7 @@ class Wattmeter(object):
                     print('The wattmeter couldn\'t fulfill the request. Quitting')
                     raise
                 # let the wattmeter cool down a bit :)
-                time.sleep(attempts**2)
+                time.sleep(self._sleep_time(attempts))
         return response
     
     def _build_machine_dic(self):
