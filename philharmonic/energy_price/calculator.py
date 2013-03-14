@@ -5,6 +5,7 @@ Created on 25. 10. 2012.
 '''
 
 from historian import *
+from scipy import integrate
 
 _KWH_RATIO = 3.6e6
 
@@ -109,18 +110,24 @@ def calculate_price(power, prices=None, start_date=None, old_parser=False):
 def calculate_energy(power):
     """Calculates an integral of power over time
     using the rectangle method.
-    
+    @param power: pandas.Series of power samples (in Watts) 
     @return: calculated energy in Joules
     
     """
-    times = power.index
-    N = float(len(times) + 1)
-    t_0 = times[0]
-    # we don't really know when the last interval ended, so we'll make a guess
-    t_N = times[-1]+(times[-1]-times[-2])
-    duration = (t_N - t_0)
-    h = duration.total_seconds()/N
-    en = h*sum(power)
+    # manual rectangle rule
+#    times = power.index
+#    N = float(len(times) + 1)
+#    t_0 = times[0]
+#    # we don't really know when the last interval ended, so we'll make a guess
+#    t_N = times[-1]+(times[-1]-times[-2])
+#    duration = (t_N - t_0)
+#    h = duration.total_seconds()/N
+#    en = h*sum(power)
+    # we don't really know when the last interval ended (and at what value), so we'll make a guess
+    new_tick = power.index[-1]+(power.index[-1]-power.index[-2])
+    power = power.append(pd.Series({new_tick: power[-1]}))
+    # calculate the integral
+    en = integrate.trapz(power, power.index.astype(np.int64) / 10**9)
     return en
 
 def joul2kwh(jouls):
