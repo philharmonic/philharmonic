@@ -40,6 +40,10 @@ class Test(unittest.TestCase):
         tn = datetime(2012,9,7,23,0)
         #expected_end = datetime.strptime("2012-09-07", "%Y-%m-%d")
         self.assertEqual(prices.index[-1], tn, "expecting to end on this date")
+        
+    def testParseTemp(self):
+        temp = historian.parse_temp('./io/tests/novosibirsk.txt')
+        self.assertIsInstance(temp, pd.TimeSeries, 'expecting a time series')
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testParseHourly']

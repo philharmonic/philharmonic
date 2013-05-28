@@ -53,6 +53,18 @@ def parse_prices(where):
     s.name = 'Price'
     return s
 
+def parse_temp(where):
+    """
+    Parse a CSV with historical hourly temperatures available at
+    http://www.ncdc.noaa.gov/cdo-web/ into a pd.TimeSeries
+    """
+    weather = pd.read_csv(where,skiprows=2, header=None,
+                      index_col='Date_HrMn',
+                      parse_dates=[['Date', 'HrMn']],
+                      names=['USAF', 'NCDC', 'Date', 'HrMn', 'I',
+                             'Type', 'QCP', 'Temp', 'Q', 'extra'])
+    t = weather['Temp']
+    return t
 
 def realign_old(prices_series, start_date):
     """
