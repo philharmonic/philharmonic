@@ -64,6 +64,8 @@ def parse_temp(where):
                       names=['USAF', 'NCDC', 'Date', 'HrMn', 'I',
                              'Type', 'QCP', 'Temp', 'Q', 'extra'])
     t = weather['Temp']
+    t.index.name = 'Time'
+    t.name = 'Temperature'
     return t
 
 def realign_old(prices_series, start_date):

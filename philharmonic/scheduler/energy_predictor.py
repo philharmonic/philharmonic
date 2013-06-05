@@ -44,7 +44,6 @@ class EnergyPredictor(object):
         print(self.expensive_hours)
         self.fig_location = "/home/kermit/Downloads"
         
-        
     def is_expensive(self, time = None):
         ''' tells if price is expensive now or at time
         @return: bool

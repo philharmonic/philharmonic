@@ -3,7 +3,6 @@
 	<name>tu.philharmonic</name>
 	<comment></comment>
 	<projects>
-		<project>tu.energy_meter</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
