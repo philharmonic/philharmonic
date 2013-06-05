@@ -66,10 +66,11 @@ def calculate_price(power, prices, start_date=None):
     #TODO: replace this with resample() and pass integrate as a function
     # power.resample(prices.index.freq, how=calculate_energy, closed='both')*prices
     #---
-    times = list(power.index)
-    prices_list = [] # here we'll store prices during the experiment
-    for t in times: # TODO: add a changing h value (per hour) and charge per hour
-        prices_list.append(prices.asof(t))
+    #times = list(power.index)
+    #prices_list = [] # here we'll store prices during the experiment
+    #for t in times: # TODO: add a changing h value (per hour) and charge per hour
+    #    prices_list.append(prices.asof(t))
+    prices_list = prices.asof(power.index)
     experiment_prices = pd.Series(prices_list, index = power.index)
     
     # we don't really know when the last interval ended, so we'll make a guess
@@ -99,7 +100,7 @@ def calculate_energy(power, estimate=False):
     new_tick = power.index[-1]+(power.index[-1]-power.index[-2])
     power = power.append(pd.Series({new_tick: power[-1]}))
     # calculate the integral
-    en = integrate.trapz(power, power.index.astype(np.int64) / 10**9)
+    en = integrate.trapz(power.values, power.index.astype(np.int64) / 10**9)
     return en
 
 def joul2kwh(jouls):
