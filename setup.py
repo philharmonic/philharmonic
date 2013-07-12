@@ -15,7 +15,11 @@ setup(
     version = "0.1",
     packages = find_packages(),
     install_requires = ['pandas>=0.8.0',
-                        'numpy>=1.6.1'],
+                        'numpy>=1.6.1',
+                        'pysnmp>=4.2',
+#                        '"Twisted Web">=12.2',
+                        'SOAPpy>=0.12',],
+# sudo apt-get intsall python-twisted-web
     zip_safe = True,
     
     # metadata for upload to PyPI
