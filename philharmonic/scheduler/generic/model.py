@@ -30,79 +30,111 @@ class Server(Machine):
     def __init__(self, *args):
         super(Server, self).__init__(*args)
         self.cap = self.spec
-        self.alloc = set()
         
-    def migrate(self, vm, s):
-        try:
-            self.alloc.remove(vm)
-            s.alloc.add(vm)
-        except ValueError:
-            print('VM not here')
-            raise
 
-# constraint checking
-# C1
-def is_allocated(servers, vm):
-    for s in servers:
-        if vm in s.alloc:
-            return True
-    return False
-
-def all_allocated(servers, VMs):
-    for vm in VMs:
-        if not is_allocated(servers, vm):
-            return False
-    return True
-
-#C2
-def within_capacity(s):
-    for i in s.resource_types:
-        used = 0
-        for vm in s.alloc:
-            used += vm.res[i]
-        #print('%d vs %d' % (used, s.cap[i]))
-        if used > s.cap[i]:
-            return False
-    return True
-
-def all_within_capacity(servers):
-    for s in servers:
-        if not within_capacity(s):
-            return False
-    return True
 
 # Schedule
 # ==========
 
 class State():
     """the state of the cloud at a single moment"""
-    def __init__(self, servers=None, VMs=None):
+
+    @staticmethod
+    def random():
+        """create a random state"""
+        return State([Server(2,2), Server(4,4)], [VM(1,1), VM(1,1)])
+
+    def __init__(self, servers=[], VMs=[], auto_allocate=True):
         self.servers = servers
         self.VMs = VMs
-        
-    def __deepcopy__(self, memo):
-        new_state = State()
-        new_state.__dict__.update(self.__dict__)
-        new_state.servers = []
-        new_state.VMs = []
+        self.alloc = {} # servers -> allocated machines
         for s in self.servers:
-            new_server = copy.copy(s)
-            # we keep the original vm objects!
-            new_server.alloc = set()
-            for vm in s.alloc:
-                new_state.VMs.append(vm)
-                new_server.alloc.add(vm)
-            new_state.servers.append(new_server)
-        return new_state
-             
+            self.alloc[s] = set()
+        if auto_allocate:
+            self.auto_allocate()
     
     def __repr__(self):
-        return '%s , %s' % (self.servers.__repr__(), self.VMs.__repr__())
+        rep = ''
+        for s in self.servers:
+            s_rep = '%s -> %s;\n' % (s.__repr__(), self.alloc[s].__repr__())
+            rep += s_rep
+        return rep
+
+    def auto_allocate(self):
+        """place all VMs on the first server"""
+        for vm in self.VMs:
+            self.place(vm, self.servers[0])
+
+
+    def place(self, vm, s):
+        """change current state to have vm in s"""
+        self.alloc[s].add(vm)
+
+    def remove(self, vm, s):
+        """change current state to not have vm in s"""
+        self.alloc[s].remove(vm)
         
+    def migrate(self, vm, s):
+        """change current state to have vm in s instead of the old location"""
+        for server, vms in self.alloc.iteritems():
+            if vm in vms:
+                if server == s:
+                    # it's already there
+                    return
+                else:
+                    # remove from old server
+                    vms.remove(vm)
+                    # add to the new one
+                    self.alloc[s].add(vm)
+
+        
+    def copy(self):
+        """ return a copy of the state with a new alloc instance"""
+        new_state = State()
+        #new_state.__dict__.update(self.__dict__)
+        new_state.servers = self.servers
+        new_state.VMs = self.VMs
+        new_state.alloc = {}
+        for s, vms in self.alloc.iteritems():
+            new_state.alloc[s] = set(vms) # create a new set
+        return new_state
+
     def transition(self, migration):
         """transition acccording to migration"""
-        new_state = copy.deepcopy(self)
-        new_state
+        new_state = self.copy()
+        new_state.migrate(migration.vm, migration.server)
+        return new_state
+
+    # constraint checking
+    # C1
+    def is_allocated(self, vm):
+        for s in self.servers:
+            if vm in self.alloc[s]:
+                return True
+        return False
+
+    def all_allocated(self):
+        to_check = set(copy.copy(self.VMs))
+        for s in self.servers:
+            to_check = to_check.difference(self.alloc[s])
+        return len(to_check) == 0
+
+    #C2
+    def within_capacity(self, s):
+        for i in s.resource_types:
+            used = 0
+            for vm in self.alloc[s]:
+                used += vm.res[i]
+            #print('%d vs %d' % (used, s.cap[i]))
+            if used > s.cap[i]:
+                return False
+        return True
+
+    def all_within_capacity(self):
+        for s in self.servers:
+            if not self.within_capacity(s):
+                return False
+        return True
 
         
 class Migration():
@@ -110,6 +142,9 @@ class Migration():
     def __init__(self, vm, server):
         self.vm = vm
         self.server = server
+
+    def __repr__(self):
+        return '%s -> %s' % (self.vm, self.server)
         
 class Schedule():
     """initial state and a time series of migrations"""
