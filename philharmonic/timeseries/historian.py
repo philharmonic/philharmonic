@@ -2,6 +2,8 @@
 Created on 14. 9. 2012.
 
 @author: kermit
+
+Historian parses historical electricity prices, but temperatures added too.
 '''
 
 from datetime import datetime, time

@@ -4,7 +4,7 @@ Created on Oct 22, 2012
 @author: kermit
 '''
 import unittest
-from philharmonic.energy_price import historian
+from philharmonic.timeseries import historian
 import pandas as pd
 from datetime import datetime
 

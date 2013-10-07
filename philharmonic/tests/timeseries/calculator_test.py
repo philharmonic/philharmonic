@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.loc = "./io/tests/energy_price_data-test.csv"
         self.price_predictor = EnergyPredictor(self.loc)
-        en_data = pd.DataFrame.load("./io/tests/energy_consumption.pickle")
+        en_data = pd.read_pickle("./io/tests/energy_consumption.pickle")
         self.active_power = en_data.xs("snowwhite").xs("active_power")
 
     def tearDown(self):

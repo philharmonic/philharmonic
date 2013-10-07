@@ -6,7 +6,7 @@ Created on Oct 15, 2012
 from datetime import datetime
 import math
 
-import philharmonic.energy_price.historian as historian
+import philharmonic.timeseries.historian as historian
 
 class EnergyPredictor(object):
     '''

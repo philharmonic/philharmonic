@@ -2,6 +2,8 @@
 Created on 25. 10. 2012.
 
 @author: kermit
+
+Calculates data from timeseries - total electricity price, converts currencies...
 '''
 
 from historian import *
@@ -104,7 +106,7 @@ def calculate_energy(power, estimate=False):
     return en
 
 def joul2kwh(jouls):
-    """@return: equivalent kWh """
+    """@Return: equivalent kWh """
     kWh = jouls / _KWH_RATIO
     return kWh
     

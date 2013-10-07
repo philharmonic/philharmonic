@@ -87,7 +87,7 @@ class ContinuousEnergyMeter(threading.Thread):
         self.data[current_time] = new_series
         
     def _finalize(self): 
-        self.data.save(self.location)
+        self.data.to_pickle(self.location)
         log("#wattmeter#end")
         log("-------------\n")
                   
