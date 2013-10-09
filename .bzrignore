@@ -5,3 +5,4 @@ io/*.pickle
 /*.pickle
 /philharmonic/*.pickle
 **/.DS_Store
+*.pkl
