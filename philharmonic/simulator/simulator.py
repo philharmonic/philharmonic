@@ -77,6 +77,11 @@ def run(steps=None):
     requests = VM_requests(times[0], times[steps-1])
     for r in requests:
         debug(str(r))
+        # prepare known data (past and future up to a point)
+        # call scheduler to decide on actions
+
+    # perform the actions somehow
+
 
     for t in times[:steps]: # first version - iterate through all the hours TODO: through events
         info(" - now at step {0}".format(t))
