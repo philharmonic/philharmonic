@@ -1,0 +1,58 @@
+digraph "packages_philharmonic" {
+charset="utf-8"
+rankdir=BT
+"3" [shape="box", label="philharmonic.energy_meter.runner_til_keypressed"];
+"5" [shape="box", label="philharmonic.openstack.console_api"];
+"6" [shape="box", label="philharmonic.scheduler.peak_pauser"];
+"9" [shape="box", label="philharmonic.conf"];
+"10" [shape="box", label="philharmonic.energy_meter.conf"];
+"11" [shape="box", label="philharmonic.scheduler.energy_predictor"];
+"13" [shape="box", label="philharmonic.timeseries"];
+"14" [shape="box", label="philharmonic.energy_meter.getch"];
+"18" [shape="box", label="philharmonic.benchmark"];
+"21" [shape="box", label="philharmonic.energy_meter.simple_visualiser"];
+"22" [shape="box", label="philharmonic.timeseries.historian"];
+"23" [shape="box", label="philharmonic.energy_meter.continuous_energy_meter"];
+"25" [shape="box", label="philharmonic.simulator.simulator"];
+"26" [shape="box", label="philharmonic"];
+"27" [shape="box", label="philharmonic.energy_meter.haley_api"];
+"29" [shape="box", label="philharmonic.simulator"];
+"30" [shape="box", label="philharmonic.energy_meter"];
+"31" [shape="box", label="philharmonic.runner"];
+"32" [shape="box", label="philharmonic.energy_meter.exception"];
+"35" [shape="box", label="philharmonic.openstack"];
+"36" [shape="box", label="philharmonic.scheduler"];
+"37" [shape="box", label="philharmonic.scheduler.ischeduler"];
+"39" [shape="box", label="philharmonic.logger"];
+"40" [shape="box", label="philharmonic.simulator.inputgen"];
+"42" [shape="box", label="philharmonic.scheduler.generic.model"];
+"49" [shape="box", label="philharmonic.timeseries.calculator"];
+"50" [shape="box", label="philharmonic.scheduler.generic"];
+"3" -> "10" [arrowtail="none", arrowhead="open"];
+"3" -> "23" [arrowtail="none", arrowhead="open"];
+"3" -> "14" [arrowtail="none", arrowhead="open"];
+"6" -> "9" [arrowtail="none", arrowhead="open"];
+"6" -> "5" [arrowtail="none", arrowhead="open"];
+"6" -> "11" [arrowtail="none", arrowhead="open"];
+"6" -> "26" [arrowtail="none", arrowhead="open"];
+"6" -> "37" [arrowtail="none", arrowhead="open"];
+"11" -> "22" [arrowtail="none", arrowhead="open"];
+"18" -> "9" [arrowtail="none", arrowhead="open"];
+"18" -> "6" [arrowtail="none", arrowhead="open"];
+"21" -> "23" [arrowtail="none", arrowhead="open"];
+"21" -> "27" [arrowtail="none", arrowhead="open"];
+"21" -> "3" [arrowtail="none", arrowhead="open"];
+"23" -> "27" [arrowtail="none", arrowhead="open"];
+"23" -> "32" [arrowtail="none", arrowhead="open"];
+"25" -> "40" [arrowtail="none", arrowhead="open"];
+"25" -> "39" [arrowtail="none", arrowhead="open"];
+"26" -> "22" [arrowtail="none", arrowhead="open"];
+"26" -> "42" [arrowtail="none", arrowhead="open"];
+"26" -> "49" [arrowtail="none", arrowhead="open"];
+"27" -> "32" [arrowtail="none", arrowhead="open"];
+"31" -> "9" [arrowtail="none", arrowhead="open"];
+"31" -> "18" [arrowtail="none", arrowhead="open"];
+"31" -> "6" [arrowtail="none", arrowhead="open"];
+"40" -> "42" [arrowtail="none", arrowhead="open"];
+"49" -> "22" [arrowtail="none", arrowhead="open"];
+}

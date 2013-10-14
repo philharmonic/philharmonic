@@ -1,0 +1,38 @@
+digraph "classes_philharmonic" {
+charset="utf-8"
+rankdir=BT
+"4" [shape="record", label="{RunnerTilKeypressed|\l|run()\l}"];
+"7" [shape="record", label="{NoScheduler|duration\lstart\lend\lresults : dict\l|initialize()\lrun()\lfinalize()\l}"];
+"8" [shape="record", label="{PeakPauser|end\lresults : dict\lenergy_price\lpaused : bool\lstart\lduration\l|pause()\lrun()\lfinalize()\lprice_is_expensive()\lbenchmark_done()\lparse_prices()\linitialize()\lunpause()\l}"];
+"12" [shape="record", label="{EnergyPredictor|prices\lexpensive_hours : set\lfig_location : str\l|parse()\lis_expensive()\l}"];
+"15" [shape="record", label="{_GetchWindows|\l|}"];
+"16" [shape="record", label="{_GetchUnix|\l|}"];
+"17" [shape="record", label="{_Getch|impl\l|}"];
+"19" [shape="record", label="{Benchmark|command\l|wait_til_finished()\lrun()\l}"];
+"20" [shape="record", label="{BenchmarkWaiter|\l|soap_deferred()\lsoap_add()\lsoap_echo()\lsoap_done()\l}"];
+"24" [shape="record", label="{ContinuousEnergyMeter|interval\lenergy_meter\lmetrics\llocation : str\ldata : DataFrame\lmachines\l|run()\lget_all_data()\l}"];
+"28" [shape="record", label="{Wattmeter|max_recoveries : int\l|measure_multiple()\lmeasure_single()\l}"];
+"33" [fontcolor="red", shape="record", label="{UnknownMetricError|\l|}"];
+"34" [fontcolor="red", shape="record", label="{SilentWattmeterError|\l|}"];
+"38" [shape="record", label="{IScheduler|\l|run()\l}"];
+"41" [shape="record", label="{VMEvent|what: str\lvm: VM\lt: pandas.Timestamp\l|}"];
+"43" [shape="record", label="{Schedule|migrations: list\ltimes: list\l|}"];
+"44" [shape="record", label="{VM|res : dict\l|}"];
+"45" [shape="record", label="{Server|cap : dict\l|}"];
+"46" [shape="record", label="{Machine|spec : dict\lresource_types : list\l|}"];
+"47" [shape="record", label="{State|alloc : dict\lVMs : list\lservers : list\l|transition()\lauto_allocate()\lis_allocated()\lrandom()\lremove()\lmigrate()\lwithin_capacity()\lplace()\lall_allocated()\lcopy()\lall_within_capacity()\l}"];
+"48" [shape="record", label="{Migration|vm : VM\lserver : Server\l|}"];
+"7" -> "8" [arrowtail="none", arrowhead="empty"];
+"8" -> "38" [arrowtail="none", arrowhead="empty"];
+"44" -> "46" [arrowtail="none", arrowhead="empty"];
+"45" -> "46" [arrowtail="none", arrowhead="empty"];
+"12" -> "8" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="energy_price"];
+"15" -> "17" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="impl"];
+"16" -> "17" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="impl"];
+"28" -> "24" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="energy_meter"];
+"44" -> "48" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="vm"];
+"44" -> "47" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="VMs"];
+"45" -> "47" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="servers"];
+"45" -> "48" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="server"];
+"48" -> "43" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="servers"];
+}
