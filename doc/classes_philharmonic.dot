@@ -34,5 +34,5 @@ rankdir=BT
 "44" -> "47" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="VMs"];
 "45" -> "47" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="servers"];
 "45" -> "48" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="server"];
-"48" -> "43" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="servers"];
+"48" -> "43" [arrowhead="diamond", style="solid", arrowtail="none", fontcolor="green", label="migrations"];
 }

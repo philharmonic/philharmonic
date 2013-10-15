@@ -15,9 +15,9 @@ class Machine(object):
             self.spec[self.resource_types[i]] = arg
             
     def __str__(self):
-        return str(self.spec)
+        return "<id:{0}, spec:{1}>".format(str(id(self))[-3:], str(self.spec))
     def __repr__(self):
-        return str(self.spec)
+        return str(self)
 
 # the model
 class VM(Machine):

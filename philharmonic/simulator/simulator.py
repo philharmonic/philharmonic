@@ -75,7 +75,8 @@ def run(steps=None):
 
     # simulate how users will use our cloud
     requests = VM_requests(times[0], times[steps-1])
-    for r in requests:
+    print(requests)
+    for r in requests: # TODO: events every time we get new data as well (below)
         debug(str(r))
         # prepare known data (past and future up to a point)
         # call scheduler to decide on actions
@@ -83,12 +84,15 @@ def run(steps=None):
     # perform the actions somehow
 
 
-    for t in times[:steps]: # first version - iterate through all the hours TODO: through events
-        info(" - now at step {0}".format(t))
-        for s in servers:
-            info('   * server {0} - el.: {1}, temp.: {2}'
-                 .format(s, el_prices[s.loc][t], temperatures[s.loc][t]))
-
+    # for t in times[:steps]: # alt. version - iterate through all the hours
+    #     # print info
+    #     info(" - now at step {0}".format(t))
+    #     for s in servers:
+    #         info('   * server {0} - el.: {1}, temp.: {2}'
+    #              .format(s, el_prices[s.loc][t], temperatures[s.loc][t]))
+    #     # TODO: these will be the event triggers
+    #     # - we get new data about the future temp. and el. prices
+    
 #TODO:
 # - shorthand to access temp, price in server
 # - print info in detailed function

@@ -56,14 +56,13 @@ min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
 
-class VMEvent():
+class VMRequest():
     """Container for VM creation/deletion events."""
-    def __init__(self, vm, t, what):
+    def __init__(self, vm, what):
         self.vm = vm
-        self.t = t
         self.what = what
     def __str__(self):
-        return "{2} {0} @{1}".format(self.vm, self.t, self.what)
+        return "{0} {1}".format(self.what, self.vm)
     def __repr__(self):
         return self.__str__()
 
@@ -77,14 +76,18 @@ def normal_vmreqs(start, end=None):
     sizes = normal_population(VM_num, min_size, max_size)
     # duration of VMs
     durations = normal_population(VM_num, min_duration, max_duration)
-    events = []
+    requests = []
+    moments = []
     for size, duration in zip(sizes, durations):
         vm = VM(size)
         # the moment a VM is created
         offset = pd.offsets.Second(np.random.uniform(0., delta.total_seconds()))
-        events.append(VMEvent(vm, start + offset, 'boot'))
+        requests.append(VMRequest(vm, 'boot'))
+        moments.append(start + offset)
         # the moment a VM is destroyed
         offset += pd.offsets.Second(duration)
         if start + offset <= end: # event is relevant
-            events.append(VMEvent(vm, start + offset, 'delete'))
-    return events
+            requests.append(VMRequest(vm, 'delete'))
+            moments.append(start + offset)
+    events = pd.TimeSeries(data=requests, index=moments)
+    return events.sort_index()
