@@ -55,6 +55,19 @@ def VM_requests(start, end):
     return inputgen.normal_vmreqs(start, end)
 
 
+def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel for dataset
+    """ @returns a subset of the @param dataset
+    that is known at moment @param t
+
+    """
+    future_horizon = future_horizon or pd.offsets.Hour(4)
+    el_prices, temperatures = dataset # unpack
+    # known data (past and future up to a point)
+    known_el_prices = el_prices[:t+future_horizon]
+    known_temperatures = temperatures[:t+future_horizon]
+    return known_el_prices, known_temperatures
+
+
 # main run
 # --------
 def run(steps=None):
@@ -75,15 +88,19 @@ def run(steps=None):
 
     # simulate how users will use our cloud
     requests = VM_requests(times[0], times[steps-1])
-    print(requests)
-    for r in requests: # TODO: events every time we get new data as well (below)
-        debug(str(r))
-        # prepare known data (past and future up to a point)
+    debug(requests)
+    # TODO: events every time we get new data as well (below) !!!!!
+    for t in requests.index:
+        request = requests[t]
+        debug(str(request))
+        known_data = prepare_known_data((el_prices, temperatures), t)
+        debug(known_data[0].index)
         # call scheduler to decide on actions
 
     # perform the actions somehow
 
 
+    # - group requests for that step
     # for t in times[:steps]: # alt. version - iterate through all the hours
     #     # print info
     #     info(" - now at step {0}".format(t))
