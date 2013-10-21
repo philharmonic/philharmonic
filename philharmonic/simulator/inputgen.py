@@ -5,7 +5,7 @@ import numpy as np
 from scipy import stats
 from datetime import timedelta
 
-from philharmonic.scheduler.generic.model import Machine, Server, VM
+from philharmonic.scheduler.generic.model import Machine, Server, VM, VMRequest
 
 # Cummon functionality
 #---------------------
@@ -33,6 +33,7 @@ def normal_population(num, bottom, top, ceil=True):
 #---------------
 
 def small_infrastructure():
+    """return a list of Servers with determined resource capacities"""
     num_servers = 3
     Machine.resource_types = ['RAM', '#CPUs']
     RAM = [4]*num_servers
@@ -55,16 +56,6 @@ max_size = 8
 min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
-
-class VMRequest():
-    """Container for VM creation/deletion events."""
-    def __init__(self, vm, what):
-        self.vm = vm
-        self.what = what
-    def __str__(self):
-        return "{0} {1}".format(self.what, self.vm)
-    def __repr__(self):
-        return self.__str__()
 
 def normal_vmreqs(start, end=None):
     """Generate the VM creation and deletion events in. 

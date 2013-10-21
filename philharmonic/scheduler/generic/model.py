@@ -8,12 +8,12 @@ import copy
 # some non-semantic functionality common for VMs and servers
 class Machine(object):
     resource_types = ['RAM', '#CPUs'] # to be overridden with actual values
-     
+
     def __init__(self, *args):
         self.spec = {}
         for (i, arg) in enumerate(args):
             self.spec[self.resource_types[i]] = arg
-            
+
     def __str__(self):
         return "<id:{0}, spec:{1}>".format(str(id(self))[-3:], str(self.spec))
     def __repr__(self):
@@ -21,7 +21,7 @@ class Machine(object):
 
 # the model
 class VM(Machine):
-    
+
     def __init__(self, *args):
         super(VM, self).__init__(*args)
         self.res = self.spec
@@ -30,8 +30,16 @@ class Server(Machine):
     def __init__(self, *args):
         super(Server, self).__init__(*args)
         self.cap = self.spec
-        
 
+class VMRequest():
+    """Container for VM creation/deletion events."""
+    def __init__(self, vm, what):
+        self.vm = vm
+        self.what = what
+    def __str__(self):
+        return "{0} {1}".format(self.what, self.vm)
+    def __repr__(self):
+        return self.__str__()
 
 # Schedule
 # ==========
@@ -136,7 +144,6 @@ class State():
                 return False
         return True
 
-        
 class Migration():
     """ migrate vm to server """
     def __init__(self, vm, server):
@@ -145,7 +152,7 @@ class Migration():
 
     def __repr__(self):
         return '%s -> %s' % (self.vm, self.server)
-        
+
 class Schedule():
     """initial state and a time series of migrations"""
     pass

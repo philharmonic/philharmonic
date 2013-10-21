@@ -2,6 +2,7 @@ import pandas as pd
 
 from philharmonic.logger import *
 import inputgen
+from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
 
 """The philharmonic simulator.
 
@@ -57,6 +58,7 @@ def VM_requests(start, end):
 
 def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel for dataset
     """ @returns a subset of the @param dataset
+    (a tuple of pd.TimeSeries objects)
     that is known at moment @param t
 
     """
@@ -100,7 +102,8 @@ def run(steps=None):
 
     # # perform the actions somehow
 
-
+    # instantiate scheduler
+    scheduler = FBFOptimiser(servers)
 
     for t in times[:steps-1]: # iterate through all the hours
         # print info
@@ -109,6 +112,7 @@ def run(steps=None):
             debug('   * server {0} - el.: {1}, temp.: {2}'
                  .format(s, el_prices[s.loc][t], temperatures[s.loc][t]))
         # these are the event triggers
+        # - we find any requests that might arise in this interval
         # - group requests for that step
         new_requests = requests[t:t+freq]
         debug(' - new requests:')
@@ -117,6 +121,7 @@ def run(steps=None):
         known_data = prepare_known_data((el_prices, temperatures), t)
         debug(known_data[0].index)
         # call scheduler to decide on actions
+        scheduler.find_solution(known_data, new_requests)
 
     # perform the actions somehow
 
