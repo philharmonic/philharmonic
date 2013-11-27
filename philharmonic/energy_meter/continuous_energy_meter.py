@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import logging
+import os
 
 from haley_api import Wattmeter
 from philharmonic.energy_meter.exception import SilentWattmeterError
@@ -32,9 +33,9 @@ class ContinuousEnergyMeter(threading.Thread):
         @param metrics: list of method objects that the energy meter will perform and get the results of   
         @param interval: number of seconds to wait between measurements
         @param location: where to store the time series pickle
-        
+
         Builds an internal representation in self.data as a multi-index Dataframe, e.g.
-        
+
         machine     metric                 14:24:24         14:24:25       ...
         ---------------------------------------------------------------------------
         snowwhite   active_power              38               39
@@ -44,30 +45,30 @@ class ContinuousEnergyMeter(threading.Thread):
         ---------------------------------------------------------------------------
         '''
         threading.Thread.__init__(self)
-        
+
         #self.q = q
         self.machines = machines
         self.metrics = metrics
         self.interval = interval
         self.location = location
-        
+
         self.energy_meter =Wattmeter()
 
         #this is under haley_api now
         index_tuples = [(machine, metric) for machine in self.machines for metric in self.metrics]
         index = pd.MultiIndex.from_tuples(index_tuples, names=["machine", "metric"])
         self.data = pd.DataFrame({}, index = index)
-        
+
         logging.basicConfig(filename='io/energy_meter.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         log("\n-------------\nENERGY_METER\n-------------")
         log("#wattmeter#start")
-        
+
     def get_all_data(self):
         """
         @return: DataFrame containing measurements collected so far
         """
         return self.data
-    
+
     def _add_current_data(self):
         """
         Fetch current measurements from the energy meter
@@ -85,12 +86,12 @@ class ContinuousEnergyMeter(threading.Thread):
             raise
         current_time = datetime.now()
         self.data[current_time] = new_series
-        
+
     def _finalize(self): 
         self.data.to_pickle(self.location)
         log("#wattmeter#end")
         log("-------------\n")
-                  
+
     def run(self):
         while True:
             self._add_current_data()
@@ -105,4 +106,27 @@ class ContinuousEnergyMeter(threading.Thread):
             except Empty:
                 pass
         print("Stopping background measurements.")
-        
+
+class Measurement():
+    pass
+
+def  deserialize_folder(base_loc):
+    """read the pd.DataFrame pickled by the ContinuousEnergyMeter"""
+    # find the location
+    m = Measurement()
+    base_loc = os.path.expanduser(base_loc)
+    # Load the benchmark results
+    with open(os.path.join(base_loc, "results.pickle")) as results_pickle:
+        #print(hashlib.md5(results_pickle.read()).hexdigest())
+        results_pickle.seek(0)
+        results = pickle.load(results_pickle)
+        m.start = results["start"]
+        m.end = results["end"]
+        m.duration = results["duration"]
+    # Load the energy measurements
+    energy_data = pd.read_pickle(os.path.join(base_loc, "energy_consumption.pickle"))
+    # Cut off only the energy measurements during the benchmark.
+    buffer = timedelta(minutes=2)
+    m.active_power = energy_data.xs("snowwhite").xs("active_power")[m.start-buffer:m.end+buffer]
+    m.ewma_power = pd.ewma(m.active_power, span=100)
+    return m
