@@ -2,6 +2,7 @@ import pandas as pd
 
 from optimiser import Optimiser
 import philharmonic as ph
+from model import Schedule
 
 def better(pm1, pm2, vm):
     """return better of the two physical machines for hosting vm"""
@@ -23,4 +24,5 @@ class FBFOptimiser(Optimiser):
         #     best_fit = None
         #     for server in self.infrastructure: # check out all the servers
         #         best_fit = better(best_fit, server, request.vm)
-        pass
+        schedule = Schedule()
+        return schedule
