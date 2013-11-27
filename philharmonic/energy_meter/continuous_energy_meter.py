@@ -12,6 +12,8 @@ import pandas as pd
 from datetime import datetime
 import logging
 import os
+import pickle
+from datetime import timedelta
 
 from haley_api import Wattmeter
 from philharmonic.energy_meter.exception import SilentWattmeterError
@@ -127,6 +129,6 @@ def  deserialize_folder(base_loc):
     energy_data = pd.read_pickle(os.path.join(base_loc, "energy_consumption.pickle"))
     # Cut off only the energy measurements during the benchmark.
     buffer = timedelta(minutes=2)
-    m.active_power = energy_data.xs("snowwhite").xs("active_power")[m.start-buffer:m.end+buffer]
-    m.ewma_power = pd.ewma(m.active_power, span=100)
+    # columns and rows kinda upside-down, so tranpose
+    m.energy_data = energy_data.transpose()[m.start-buffer:m.end+buffer]
     return m
