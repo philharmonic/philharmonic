@@ -141,7 +141,8 @@ def synthetic_power(mean, std, start, end, freq='5s'):
     P_synth.ix[P_synth < 0] = 0
     return P_synth
 
-def build_synth_measurement(m, P_peak, en_elasticity=0.5, ewma_span=100):
+def build_synth_measurement(m, P_peak, en_elasticity=0.5,
+                            ewma_span=100, uptime=None):
     """build an artificial copy of a Measurement with arbitrary
     peak and idle power values.
 
@@ -156,7 +157,12 @@ def build_synth_measurement(m, P_peak, en_elasticity=0.5, ewma_span=100):
     start = m.active_power.index[0]
     end = m.active_power.index[-1]
     pause_start = m.active_power[m.active_power<40].index[0]
-    pause_end = m.active_power[m.active_power<40].index[-1]
+    if uptime:
+        downtime_ratio = (1-uptime)
+        pause_length = 24 * downtime_ratio
+        pause_end = pause_start + timedelta(hours=pause_length)
+    else:
+        pause_end = m.active_power[m.active_power<40].index[-1]
     m_synth = copy.deepcopy(m)
     m_synth.active_power = pd.concat([P_synth_peak[start:pause_start],
                                       P_synth_idle[pause_start:pause_end],

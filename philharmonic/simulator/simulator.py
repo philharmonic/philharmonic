@@ -132,3 +132,38 @@ def run(steps=None):
 
 if __name__ == "__main__":
     run()
+
+
+from philharmonic.manager.imanager import IManager
+
+class Environment():
+    """stores the data about all the data centers
+    - e.g. the temperature and prices at different location
+
+    """
+    def __init__(self):
+        pass
+
+    def current_data(self):
+        """return the current data for all the locations"""
+        raise NotImplemented
+
+class Cloud():
+    """dummy cloud that stores all the actions applied to it
+    and provides data about the current state.
+
+    """
+    def __init__(self):
+        pass
+
+class Simulator(IManager):
+    """simulates the passage of time and prepares all the data for
+    the scheduler
+
+    """
+    def run(self):
+        """go through all the timesteps and call the scheduler to ask for
+        actions
+
+        """
+        pass
