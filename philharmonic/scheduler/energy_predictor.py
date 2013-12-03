@@ -20,8 +20,8 @@ class EnergyPredictor(object):
     def _find_expensive_hours(self, m):
         """ find the top m*100% most expensive hours
         @param m: the percentage of hours to exclude
-        @return: list of expensive hours 
-        """ 
+        @return: list of expensive hours
+        """
         # group hours by hour
         grouped_hours = self.prices.groupby(lambda t : t.hour)
         # how many of the 24 hours exactly
@@ -32,7 +32,7 @@ class EnergyPredictor(object):
         mean_prices.sort()
         expensive_prices = mean_prices[-exclude_num:]
         self.expensive_hours = set(expensive_prices.index)
-        
+
     def __init__(self, price_file, percentage_to_pause = 0.15):
         '''
         Constructor
@@ -43,7 +43,7 @@ class EnergyPredictor(object):
         print("Expensive hours:")
         print(self.expensive_hours)
         self.fig_location = "/home/kermit/Downloads"
-        
+
     def is_expensive(self, time = None):
         ''' tells if price is expensive now or at time
         @return: bool

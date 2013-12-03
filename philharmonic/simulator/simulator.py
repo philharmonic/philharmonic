@@ -130,9 +130,6 @@ def run(steps=None):
 # - shorthand to access temp, price in server
 # - print info in detailed function
 
-if __name__ == "__main__":
-    run()
-
 
 from philharmonic.manager.imanager import IManager
 
@@ -161,9 +158,21 @@ class Simulator(IManager):
     the scheduler
 
     """
+    def __init__(self):
+        self.environment = Environment()
+        self.cloud = Cloud()
+
     def run(self):
         """go through all the timesteps and call the scheduler to ask for
         actions
 
         """
-        pass
+        times = range(24)
+        for t in times:
+            print(t)
+
+
+if __name__ == "__main__":
+    # run()
+    simulator = Simulator()
+    simulator.run()

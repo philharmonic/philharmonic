@@ -4,22 +4,31 @@ Created on 5. 11. 2012.
 @author: kermit
 '''
 
-import threading
+from philharmonic.logger import log
 
-class IScheduler(threading.Thread):
+class IScheduler():
     '''
     Scheduler interface
     '''
 
-    _initial_sleep = 5
-
     def __init__(self):
         '''
-        Constructor
+        Constructor - scheduler may be created before everything starts running
+
         '''
-        threading.Thread.__init__(self)
         pass
-    
-    def run(self):
-        raise NotImplementedError
-        
+
+    def initialize(self):
+        '''Hook to start any necessary preparations (VM resets etc.)'''
+        pass
+
+    def finalize(self):
+        '''Hook to wrap it all up (put VMs back to the default state etc.)'''
+        pass
+
+    def reevaluate(self):
+        '''Look at the current state of the Cloud and Environment
+        and schedule new/different actions if necessary.
+
+        '''
+        pass

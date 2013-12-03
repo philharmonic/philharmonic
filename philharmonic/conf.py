@@ -25,7 +25,8 @@ scheduler= "PeakPauser"
 # Benchmark
 #===========
 
-# if dummy == True, will do just a local dummy benchmark, faking all the OpenStack commands
+# if dummy == True, will do just a local dummy benchmark,
+# faking all the OpenStack commands
 dummy = True
 #dummy = False
 # for False set all these other settings...
@@ -33,7 +34,7 @@ dummy = True
 # host on which the benchmark VM is deployed (for energy measurements)
 host = "snowwhite"
 
-# VM (instance) which executes the benchmark  
+# VM (instance) which executes the benchmark
 instance = "kermit-test"
 
 # The command to execute as a benchmark (use ssh to execute something in a VM).

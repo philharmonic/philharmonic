@@ -10,7 +10,7 @@ import time
 from twisted.web import soap, server
 from twisted.internet import reactor, defer
 
-from scheduler.peak_pauser import log
+from philharmonic.logger import log
 import philharmonic.conf as conf
 
 class BenchmarkWaiter(soap.SOAPPublisher):

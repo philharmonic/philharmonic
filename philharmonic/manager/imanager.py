@@ -6,8 +6,9 @@ class IManager(object):
 
     """
 
-    def __init__(self):
-        raise NotImplemented
+    def __init__(self, scheduler):
+        """Create manager's assets."""
+        self.scheduler = scheduler
 
-    def run():
+    def run(self):
         raise NotImplemented
