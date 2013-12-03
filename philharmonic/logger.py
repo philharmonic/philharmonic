@@ -1,8 +1,12 @@
 import logging
 from logging import info, debug, error
 
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+# log to console
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+
+# log to file
+logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG,
+                    format='%(asctime)s %(message)s')
 
 def log(message):
-    print(message)
     logging.info(message)

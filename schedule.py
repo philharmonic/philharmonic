@@ -12,7 +12,7 @@ from philharmonic import conf
 
 if __name__ == "__main__":
     # create the cloud manager with the desired modules
-    manager = ManagerFactory(conf)
+    manager = ManagerFactory.create_from_conf(conf)
 
     # waiting for the start time
     if len(sys.argv)>1:

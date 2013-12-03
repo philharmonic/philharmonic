@@ -22,7 +22,7 @@ class BenchmarkWaiter(soap.SOAPPublisher):
     def soap_add(self, a=0, b=0):
         return a + b
     soap_add.useKeywords = 1
-    
+
     def soap_done(self, results=None):
         #dt1, dt2 = results
         #print("stopping nowwwww " + results)
@@ -59,7 +59,7 @@ class Benchmark():
         Constructor
         '''
         self.command = command
-    
+
     def run(self):
         if conf.dummy:
             dummy_benchmark()
@@ -70,10 +70,10 @@ class Benchmark():
                 subprocess.call(self.command)
             print("started benchmark")
             self.wait_til_finished()
-        
+
     def wait_til_finished(self):
         reactor.listenTCP(8088, server.Site(BenchmarkWaiter()))
         reactor.run()
-        
+
 if __name__=="__main__":
     dummy_benchmark()

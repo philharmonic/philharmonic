@@ -8,6 +8,7 @@ import pickle
 from imanager import IManager
 from philharmonic.logger import log
 from philharmonic import conf
+from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
 
 class Manager(IManager, threading.Thread):
     """A real implementation of an IManager"""
@@ -25,7 +26,7 @@ class Manager(IManager, threading.Thread):
 
 
     def initialize(self):
-        logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+        #logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         log("\n-------------\nPHILHARMONIC\n-------------")
         self.start = datetime.now()
         self.scheduler.initialize()
@@ -65,6 +66,7 @@ class Manager(IManager, threading.Thread):
 class ManagerFactory():
     """Easier manager creation"""
 
+    @staticmethod
     def create_from_conf(conf):
         """pass a conf module to read paramenters from"""
         # create the scheduler
