@@ -6,5 +6,8 @@ from philharmonic.timeseries.calculator import *
 from philharmonic.energy_meter.continuous_energy_meter import deserialize_folder, synthetic_power, build_synth_measurement
 
 # generic scheduler stuff
-from philharmonic.scheduler.generic.model import *
+from philharmonic.cloud.model import *
 from philharmonic.logger import info, debug, error
+
+# default data generators
+import philharmonic.simulator.inputgen as inputgen

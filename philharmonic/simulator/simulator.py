@@ -170,6 +170,7 @@ class Simulator(IManager):
         times = range(24)
         for t in times:
             print(t)
+            # TODO: call scheduler to create new state (if an action is made)
 
 
 if __name__ == "__main__":

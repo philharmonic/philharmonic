@@ -2,7 +2,7 @@ import pandas as pd
 
 from optimiser import Optimiser
 import philharmonic as ph
-from model import Schedule
+from philharmonic import Schedule
 
 def better(pm1, pm2, vm):
     """return better of the two physical machines for hosting vm"""

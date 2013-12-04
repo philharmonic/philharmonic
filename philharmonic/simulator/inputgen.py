@@ -5,7 +5,7 @@ import numpy as np
 from scipy import stats
 from datetime import timedelta
 
-from philharmonic.scheduler.generic.model import Machine, Server, VM, VMRequest
+from philharmonic import Machine, Server, VM, VMRequest, Cloud
 
 # Cummon functionality
 #---------------------
@@ -13,14 +13,14 @@ from philharmonic.scheduler.generic.model import Machine, Server, VM, VMRequest
 def normal_population(num, bottom, top, ceil=True):
     """ Return array @ normal distribution.
     bottom, top are approx. min/max values.
-    
+
     """
     half = (top - bottom)/2.0
     # we want 99% of the population to enter the [min,max] interval
     sigma = half/3.0
     mu = bottom + half
     print(mu, sigma)
-    
+
     values = mu + sigma * np.random.randn(num)
     # negative to zero
     values[values<0]=0
@@ -44,6 +44,12 @@ def small_infrastructure():
         servers.append(s)
     return servers
 
+def peak_pauser_infrastructure():
+    """1 server hosting 1 vm"""
+    server = Server()
+    vm = VM()
+    cloud = Cloud([server], [vm])
+    return cloud
 
 # VM requests
 #------------
@@ -61,6 +67,7 @@ def normal_vmreqs(start, end=None):
     """Generate the VM creation and deletion events in. 
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
+
     """
     delta = end - start
     # array of VM sizes

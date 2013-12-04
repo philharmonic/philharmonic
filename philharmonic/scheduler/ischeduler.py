@@ -11,12 +11,12 @@ class IScheduler():
     Scheduler interface
     '''
 
-    def __init__(self):
+    def __init__(self, cloud=None):
         '''
         Constructor - scheduler may be created before everything starts running
 
         '''
-        pass
+        self.cloud = cloud
 
     def initialize(self):
         '''Hook to start any necessary preparations (VM resets etc.)'''

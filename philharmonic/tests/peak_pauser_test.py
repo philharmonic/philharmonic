@@ -7,6 +7,7 @@ import unittest
 from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
 from philharmonic.scheduler.ischeduler import IScheduler
 import philharmonic.conf as my_conf
+from philharmonic import inputgen
 
 def price_is_expensive(self): # our dummy version of the method
     if self.test_state==1: # expensive on first query
@@ -27,7 +28,8 @@ class Test(unittest.TestCase):
         IScheduler._initial_sleep = 0.1
 
     def testPeakPauser(self):
-        scheduler = PeakPauser()
+        cloud=inputgen.peak_pauser_infrastructure()
+        scheduler = PeakPauser(cloud)
         self.assertEqual(scheduler.paused, False,
                          "unpaused initially")
         scheduler.test_state = 1 # expensive

@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
-from philharmonic.scheduler.generic.model import Schedule, VMRequest, VM
+from philharmonic import Schedule, VMRequest, VM
 from philharmonic.simulator.inputgen import small_infrastructure
 
 

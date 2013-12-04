@@ -1,7 +1,7 @@
 from nose.tools import *
 import pandas as pd
 
-from philharmonic.scheduler.generic.model import Server, VM
+from philharmonic import Server, VM
 from philharmonic.simulator.inputgen import *
 
 def test_small_infrastructure():

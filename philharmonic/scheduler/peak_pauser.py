@@ -14,8 +14,8 @@ from philharmonic.logger import log
 
 class PeakPauser(IScheduler):
 
-    def __init__(self):
-        IScheduler.__init__(self)
+    def __init__(self, cloud=None):
+        IScheduler.__init__(self, cloud)
         self.paused=False
         openstack.dummy = conf.dummy
         openstack.authenticate()
@@ -27,16 +27,18 @@ class PeakPauser(IScheduler):
     def price_is_expensive(self):
         return self.energy_price.is_expensive()
 
-    def pause(self):
+    def pause(self, vm):
         if not self.paused:
-            if not conf.dummy:
+            vm.pause()
+            if not conf.dummy: # TODO: this should go inside vm.pause()
                 openstack.pause(conf.instance)
             self.paused = True
             log("paused")
 
-    def unpause(self):
+    def unpause(self, vm):
         if self.paused:
-            if not conf.dummy:
+            vm.unpause()
+            if not conf.dummy: # TODO: this should go inside vm.unpause()
                 openstack.unpause(conf.instance)
             log("unpaused")
             self.paused = False
@@ -51,9 +53,11 @@ class PeakPauser(IScheduler):
 
     def reevaluate(self):
         if self.price_is_expensive():
-            self.pause()
+            for vm in self.cloud.vms: #TODO: green instances only
+                self.pause(vm)
         else:
-            self.unpause()
+            for vm in self.cloud.vms: #TODO: green instances only
+                self.unpause(vm)
 
 
 class NoScheduler(IScheduler):

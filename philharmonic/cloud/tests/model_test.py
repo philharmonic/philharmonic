@@ -5,7 +5,7 @@ Created on Jul 11, 2013
 '''
 import unittest
 
-from philharmonic.scheduler.generic.model import *
+from philharmonic import *
 
 class Test(unittest.TestCase):
 
@@ -21,16 +21,16 @@ class Test(unittest.TestCase):
         vm2 = VM(2000, 2);
         VMs = [vm1, vm2]
         a = State(servers, VMs, auto_allocate=False)
-        
+
         # allocate and check capacity and allocation
         a.place(vm1,s1)
         self.assertEqual(a.all_within_capacity(), True, 'all servers within capacity')
         self.assertEqual(a.all_allocated(), False, 'not all VMs are allocated')
-        
+
         a.place(vm2, s1)
         self.assertEqual(a.all_within_capacity(), False, 'not all servers within capacity')
         self.assertEqual(a.all_allocated(), True, 'all VMs are allocated')
-        
+
         a.remove(vm2, s1)
         a.place(vm2, s2)
         self.assertEqual(a.all_within_capacity(), True, 'all servers within capacity')
@@ -63,18 +63,31 @@ class Test(unittest.TestCase):
         # some VMs
         vm1 = VM(2000, 1);
         VMs = [vm1]
-        
+
         a = State(servers, VMs)
         # initial position
         a.place(vm1, s1)
         migr = Migration(vm1, s2)
         b = a.transition(migr)
-        
+
         self.assertIn(vm1, a.alloc[s1], 'vm1 should be on s1 before transition')
         self.assertNotIn(vm1, a.alloc[s2], 'vm1 should be on s1 before transition')
 
         self.assertNotIn(vm1, b.alloc[s1], 'vm1 should have moved after the transition')
         self.assertIn(vm1, b.alloc[s2], 'vm1 should have moved after the transition')
+
+    def test_cloud(self):
+        # some servers
+        s1 = Server(4000, 2)
+        s2 = Server(8000, 4)
+        servers = [s1, s2]
+        # some VMs
+        vm1 = VM(2000, 1);
+        vm2 = VM(2000, 2);
+        VMs = [vm1, vm2]
+        cloud = Cloud(servers, VMs)
+        #TODO: test that auto_allocate doesn't break constraints
+        self.assertEqual(cloud.vms, VMs)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
