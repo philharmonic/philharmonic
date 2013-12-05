@@ -7,7 +7,7 @@ from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
 """The philharmonic simulator.
 
 Traces geotemporal input data, asks the scheduler to determine actions
-and simulates the outcome of the schedule.
+nand simulates the outcome of the schedule.
 
 """
 
@@ -130,11 +130,14 @@ def run(steps=None):
 # - shorthand to access temp, price in server
 # - print info in detailed function
 
+# new simulator design
+#----------------------
 
 from philharmonic.manager.imanager import IManager
+from philharmonic import conf
 
-class Environment():
-    """stores the data about all the data centers
+class Environment(object):
+    """provides data about all the data centers
     - e.g. the temperature and prices at different location
 
     """
@@ -142,11 +145,28 @@ class Environment():
         pass
 
     def current_data(self):
-        """return the current data for all the locations"""
+        """return all the current data for all the locations"""
         raise NotImplemented
 
-class Cloud():
-    """dummy cloud that stores all the actions applied to it
+class SimulatedEnvironment(Environment):
+    """stores and provides simulated data about the environment
+    - e.g. the temperature and prices at different location
+
+    """
+    def __init__(self):
+        super(SimulatedEnvironment, self).__init__()
+        self._t = None
+
+    def set_time(self, t):
+        self._t = t
+
+    def get_time(self, t):
+        return t
+
+    t = property(get_time, set_time, doc="current time")
+
+class SimulatedCloudDriver(object):
+    """dummy cloud driver that stores all the actions applied to it
     and provides data about the current state.
 
     """
@@ -158,20 +178,26 @@ class Simulator(IManager):
     the scheduler
 
     """
-    def __init__(self):
-        self.environment = Environment()
-        self.cloud = Cloud()
+    def __init__(self, scheduler=None):
+        IManager.__init__(self, scheduler)
+        # TODO: initialise the environment based on conf
+        self.environment = SimulatedEnvironment()
+        # TODO: initialise the cloud based on conf
+        self.cloud = inputgen.peak_pauser_infrastructure()
+        self.scheduler.cloud = self.cloud
+        self.scheduler.environment = self.environment
 
     def run(self):
         """go through all the timesteps and call the scheduler to ask for
         actions
 
         """
-        times = range(24)
-        for t in times:
+        self.environment.times = range(24)
+        for t in self.environment.times:
+            self.environment.t = t
             print(t)
+            # TODO: set time in the environment
             # TODO: call scheduler to create new state (if an action is made)
-
 
 if __name__ == "__main__":
     # run()

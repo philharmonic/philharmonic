@@ -33,11 +33,11 @@ class Test(unittest.TestCase):
         time_afternoon = datetime.strptime("2012-05-05-17-16", "%Y-%m-%d-%H-%M")
         price2 = self.price_predictor.is_expensive(time_afternoon)
         self.assertEqual(price2, True, "price must be high at this time")
-        
+
     def test_calculate_energy_real_data(self):
         en = ph.calculate_energy(self.active_power)
         self.assertAlmostEqual(en, 35627.631317890715, delta=1000)
-        
+
     def test_calculate_energy(self):
         # power = 1
         samples = [1]*24
@@ -48,13 +48,13 @@ class Test(unittest.TestCase):
         power.ix[:12] = 3
         energy = ph.calculate_energy(power)
         self.assertAlmostEqual(energy, 48, delta=1.0)#'energy not correctly calculated')
-        
+
     def test_calculate_price_real_data(self):
         total_price = ph.calculate_price(self.active_power, self.loc,
                                       self.active_power.index[0].to_pydatetime())
         self.assertEqual(total_price, 0.00030026175949577949)
-    
-    #def test_calculate_price(self):    
+
+    #def test_calculate_price(self):
         #power = pd.Series(pd.date_range())
         #ph.calculate_price(power, prices)
 

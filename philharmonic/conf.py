@@ -13,6 +13,12 @@ historical_en_prices = "./io/energy_price/train/3month.csv"
 
 results = "./io/results.pickle"
 
+# Manager
+#========
+# Manager - actually sleeps and wakes up the scheduler
+# Simulator - just runs through the simulation
+manager = "Simulator"
+
 # Scheduler
 #==========
 # these schedulers are available:

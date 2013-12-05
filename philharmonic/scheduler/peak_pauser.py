@@ -19,6 +19,7 @@ class PeakPauser(IScheduler):
         self.paused=False
         openstack.dummy = conf.dummy
         openstack.authenticate()
+        self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
 
 
     def parse_prices(self, location, percentage_to_pause):
@@ -44,9 +45,9 @@ class PeakPauser(IScheduler):
             self.paused = False
 
     def initialize(self):
-        #TODO: act on a set of VMs, not only one
-        self.unpause()  # in case the VM was paused before we started
-        self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
+        # act on a set of VMs, not only one
+        for vm in self.cloud.vms:
+            self.unpause(vm) # in case the VM was paused before we started
 
     def finalize(self):
         self.unpause()  # don't leave a VM hanging after the experiment's done

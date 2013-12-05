@@ -29,3 +29,10 @@ def test_prepare_known_data():
     assert_in(pd.Timestamp('2013-01-01'), known_data.index)
     assert_in(pd.Timestamp('2013-01-05'), known_data.index)
     assert_not_in(pd.Timestamp('2013-01-06'), known_data.index)
+
+from philharmonic.scheduler import NoScheduler
+
+def test_simulator():
+    # w/ NoScheduler
+    simulator = Simulator(scheduler=NoScheduler)
+    simulator.run()

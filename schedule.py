@@ -3,7 +3,7 @@ Created on Oct 15, 2012
 
 @author: kermit
 '''
-from philharmonic.manager.manager import ManagerFactory
+from philharmonic.manager.imanager import ManagerFactory
 import sys
 from datetime import datetime
 import time
