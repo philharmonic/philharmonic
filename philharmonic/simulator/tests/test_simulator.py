@@ -34,5 +34,5 @@ from philharmonic.scheduler import NoScheduler
 
 def test_simulator():
     # w/ NoScheduler
-    simulator = Simulator(scheduler=NoScheduler)
+    simulator = Simulator(scheduler=NoScheduler())
     simulator.run()

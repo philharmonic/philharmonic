@@ -31,6 +31,9 @@ def authenticate():
         subprocess.call(". ./io/authenticate.sh", shell=True)
     #if execute(command)==0: print("success!")
 
+def connect():
+    authenticate()
+
 def instance_info(instance_name):
     command = "nova show " + instance_name
     print(execute(command))
@@ -54,7 +57,6 @@ def unpause(instance):
 def migrate(instance, machine):
     pass
 
-    
 def basic_test():
     #list_files()
     authenticate()

@@ -1,15 +1,15 @@
+"""The philharmonic simulator.
+
+Traces geotemporal input data, asks the scheduler to determine actions
+and simulates the outcome of the schedule.
+
+"""
+
 import pandas as pd
 
 from philharmonic.logger import *
 import inputgen
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
-
-"""The philharmonic simulator.
-
-Traces geotemporal input data, asks the scheduler to determine actions
-nand simulates the outcome of the schedule.
-
-"""
 
 
 # inputs (probably separate modules in the future, but we'll see)
@@ -135,6 +135,8 @@ def run(steps=None):
 
 from philharmonic.manager.imanager import IManager
 from philharmonic import conf
+from philharmonic.cloud.driver import simdriver
+from philharmonic.scheduler import PeakPauser
 
 class Environment(object):
     """provides data about all the data centers
@@ -165,13 +167,6 @@ class SimulatedEnvironment(Environment):
 
     t = property(get_time, set_time, doc="current time")
 
-class SimulatedCloudDriver(object):
-    """dummy cloud driver that stores all the actions applied to it
-    and provides data about the current state.
-
-    """
-    def __init__(self):
-        pass
 
 class Simulator(IManager):
     """simulates the passage of time and prepares all the data for
@@ -184,8 +179,10 @@ class Simulator(IManager):
         self.environment = SimulatedEnvironment()
         # TODO: initialise the cloud based on conf
         self.cloud = inputgen.peak_pauser_infrastructure()
+        self.cloud.driver = simdriver
         self.scheduler.cloud = self.cloud
         self.scheduler.environment = self.environment
+        self.cloud.driver.environment = self.environment
 
     def run(self):
         """go through all the timesteps and call the scheduler to ask for
@@ -194,12 +191,26 @@ class Simulator(IManager):
         """
         self.environment.times = range(24)
         for t in self.environment.times:
+            # set time in the environment
             self.environment.t = t
             print(t)
-            # TODO: set time in the environment
             # TODO: call scheduler to create new state (if an action is made)
+            self.scheduler.reevaluate()
+        events = self.cloud.driver.events
+        print(events)
+
+class PeakPauserSimulator(Simulator):
+    def __init__(self, scheduler):
+        super(PeakPauserSimulator, self).__init__(scheduler)
+        pass
+
+
+
+def create_peak_pauser_simulator():
+    scheduler = PeakPauser()
+    simulator = Simulator(scheduler=scheduler)
 
 if __name__ == "__main__":
     # run()
-    simulator = Simulator()
+    
     simulator.run()

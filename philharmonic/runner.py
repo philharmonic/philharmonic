@@ -3,7 +3,7 @@ Created on 5. 11. 2012.
 
 @author: kermit
 '''
-from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
+from philharmonic.scheduler import PeakPauser, NoScheduler
 from Queue import Queue
 import conf
 from philharmonic.benchmark import Benchmark

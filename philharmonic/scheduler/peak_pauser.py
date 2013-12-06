@@ -6,19 +6,17 @@ Created on Oct 9, 2012
 
 from philharmonic import conf
 from energy_predictor import EnergyPredictor
-import philharmonic.openstack.console_api as openstack
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.logger import log
 
-
-
 class PeakPauser(IScheduler):
 
-    def __init__(self, cloud=None):
-        IScheduler.__init__(self, cloud)
+    def __init__(self, cloud=None, driver=None):
+        IScheduler.__init__(self, cloud, driver)
         self.paused=False
-        openstack.dummy = conf.dummy
-        openstack.authenticate()
+        self.driver.connect()
+        #openstack.dummy = conf.dummy
+        #openstack.authenticate()
         self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)
 
 
@@ -61,18 +59,3 @@ class PeakPauser(IScheduler):
                 self.unpause(vm)
 
 
-class NoScheduler(IScheduler):
-
-    def __init__(self):
-        # call IScheduler's constructor
-        #super(PeakPauser, self).__init__()
-        IScheduler.__init__(self)
-
-    def initialize(self):
-        pass
-
-    def finalize(self):
-        pass
-
-    def reevaluate(self):
-        pass

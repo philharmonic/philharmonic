@@ -7,7 +7,7 @@ import unittest
 
 from philharmonic.manager.manager import Manager
 
-from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
+from philharmonic.scheduler import PeakPauser, NoScheduler
 from philharmonic.scheduler.ischeduler import IScheduler
 import philharmonic.conf as my_conf
 from philharmonic import runner
@@ -19,8 +19,7 @@ def price_is_expensive(self): # our dummy version of the method
     else:
         return False
 
-class DummyScheduler(IScheduler):
-    pass
+
 
 class Test(unittest.TestCase):
 
@@ -32,8 +31,8 @@ class Test(unittest.TestCase):
         Manager._initial_sleep = 0
 
     def testManager(self):
-        dummy_scheduler = DummyScheduler()
-        manager = Manager(scheduler=dummy_scheduler)
+        scheduler = NoScheduler()
+        manager = Manager(scheduler=scheduler)
         runner.run(manager)
         manager.q.put("quit")
 

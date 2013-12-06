@@ -6,6 +6,11 @@ class IManager(object):
 
     """
 
+    #def set_scheduler(self, scheduler):
+    #    self._scheduler
+
+    #scheduler = property(set_scheduler, get_scheduler, "the scheduler instance")
+
     def __init__(self, scheduler):
         """Create manager's assets."""
         self.scheduler = scheduler
@@ -14,7 +19,8 @@ class IManager(object):
         raise NotImplemented
 
 
-class ManagerFactory():
+
+class ManagerFactory(object):
     """Easier manager creation"""
 
     @staticmethod
@@ -29,10 +35,13 @@ class ManagerFactory():
 
         # create the scheduler
         ChosenScheduler = globals()[conf.scheduler]
-        scheduler = ChosenScheduler()
-        if not scheduler:
-            scheduler = NoScheduler
+        if not ChosenScheduler:
+            scheduler = NoScheduler()
+        else:
+            scheduler = ChosenScheduler()
         # connect everything in a manager
         ChosenManager = globals()[conf.manager]
         manager = ChosenManager(scheduler)
         return manager
+
+#TODO: rethink the order of creation

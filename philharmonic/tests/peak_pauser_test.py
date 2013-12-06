@@ -4,8 +4,9 @@ Created on Oct 16, 2012
 @author: kermit
 '''
 import unittest
-from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
+from philharmonic.scheduler import PeakPauser, NoScheduler
 from philharmonic.scheduler.ischeduler import IScheduler
+from philharmonic.cloud.driver import nodriver
 import philharmonic.conf as my_conf
 from philharmonic import inputgen
 
@@ -29,7 +30,7 @@ class Test(unittest.TestCase):
 
     def testPeakPauser(self):
         cloud=inputgen.peak_pauser_infrastructure()
-        scheduler = PeakPauser(cloud)
+        scheduler = PeakPauser(cloud, driver=nodriver)
         self.assertEqual(scheduler.paused, False,
                          "unpaused initially")
         scheduler.test_state = 1 # expensive

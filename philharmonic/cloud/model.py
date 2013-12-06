@@ -79,7 +79,8 @@ class State():
         self.servers = servers
         self.vms = vms
         self.alloc = {} # servers -> allocated machines
-        # TODO: paused, suspended
+        self.paused = set() # those VMs that are paused
+        self.suspended = set() # those VMs that are paused
         for s in self.servers:
             self.alloc[s] = set()
         if auto_allocate:
@@ -122,11 +123,10 @@ class State():
         # http://stackoverflow.com/a/2569076/544059
 
     def pause(self, vm):
-        pass # TODO: add to paused set
+        self.paused.add(vm) # add to paused set
 
     def unpause(self, vm):
-        pass # TODO: remove from paused set
-
+        self.paused.remove(vm) # remove from paused set
 
     def copy(self):
         """ return a copy of the state with a new alloc instance"""
@@ -140,10 +140,12 @@ class State():
         #TODO: copy.copy - probably faster
         return new_state
 
-    def transition(self, migration):
-        """transition acccording to migration"""
+    def transition(self, action):
+        """transition into new state acccording to action"""
         new_state = self.copy()
-        new_state.migrate(migration.vm, migration.server)
+        #new_state.migrate(migration.vm, migration.server)
+        apply_effect = getattr(new_state, action.name)
+        apply_effect(*action.args)
         return new_state
 
     # constraint checking
@@ -177,17 +179,33 @@ class State():
                 return False
         return True
 
-class Migration():
-    """ migrate vm to server """
-    def __init__(self, vm, server):
-        self.vm = vm
-        self.server = server
+class Action(object):
+    """a static representation of an action on the cloud"""
+    name = ''
+    args = None
 
+class Migration(Action):
+    """migrate vm to server"""
+    def __init__(self, vm, server):
+        self.args = [vm, server]
+    name = 'migrate'
     def __repr__(self):
         return '%s -> %s' % (self.vm, self.server)
 
+class Pause(Action):
+    """pause vm"""
+    def __init__(self, vm):
+        self.args = [vm]
+    name = 'pause'
+
+class Unpause(Action):
+    """pause vm"""
+    def __init__(self, vm):
+        self.args = [vm]
+    name = 'unpause'
+
 class Schedule():
-    """initial state and a time series of migrations"""
+    """initial state and a time series of actions"""
     pass
 
 
@@ -218,3 +236,8 @@ class Cloud():
     def unpause(self, *args):
         _delegate_to_obj(self._current, self.unpause.__name__, *args)
 
+
+#TODO: break into several files
+# - model
+# - schedule
+# (- cloud)

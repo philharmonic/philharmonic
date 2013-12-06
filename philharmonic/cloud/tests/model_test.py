@@ -76,6 +76,27 @@ class Test(unittest.TestCase):
         self.assertNotIn(vm1, b.alloc[s1], 'vm1 should have moved after the transition')
         self.assertIn(vm1, b.alloc[s2], 'vm1 should have moved after the transition')
 
+    def test_pause(self):
+        # some servers
+        s1 = Server(4000, 2)
+        s2 = Server(8000, 4)
+        servers = [s1, s2]
+        # some VMs
+        vm1 = VM(2000, 1);
+        VMs = [vm1]
+
+        a = State(servers, VMs)
+        # initial position
+        a.place(vm1, s1)
+        pause = Pause(vm1)
+        b = a.transition(pause)
+
+        self.assertNotIn(vm1, a.paused,
+                         'vm1 should not be paused before transition')
+        self.assertIn(vm1, b.paused,
+                         'vm1 should be paused after transition')
+
+
     def test_cloud(self):
         # some servers
         s1 = Server(4000, 2)
