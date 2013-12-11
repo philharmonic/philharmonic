@@ -1,4 +1,5 @@
 from nose.tools import *
+from mock import Mock
 import numpy as np
 import pandas as pd
 
@@ -35,4 +36,10 @@ from philharmonic.scheduler import NoScheduler
 def test_simulator():
     # w/ NoScheduler
     simulator = Simulator(scheduler=NoScheduler())
+    simulator.run()
+
+def test_simulator_pp():
+    driver = Mock()
+    cloud = Mock()
+    simulator = Simulator(scheduler=PeakPauser(cloud, driver))
     simulator.run()

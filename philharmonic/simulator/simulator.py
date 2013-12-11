@@ -3,6 +3,18 @@
 Traces geotemporal input data, asks the scheduler to determine actions
 and simulates the outcome of the schedule.
 
+                              (_)(_)
+                             /     \    ssssssimulator
+                            /       |  /
+                           /   \  * |
+             ________     /    /\__/
+     _      /        \   /    /
+    / \    /  ____    \_/    /
+   //\ \  /  /    \         /
+   V  \ \/  /      \       /
+       \___/        \_____/
+
+
 """
 
 import pandas as pd
@@ -173,7 +185,7 @@ class Simulator(IManager):
     the scheduler
 
     """
-    def __init__(self, scheduler=None):
+    def __init__(self, scheduler):
         IManager.__init__(self, scheduler)
         # TODO: initialise the environment based on conf
         self.environment = SimulatedEnvironment()
@@ -190,27 +202,30 @@ class Simulator(IManager):
 
         """
         self.environment.times = range(24)
+        self.scheduler.initialize()
         for t in self.environment.times:
             # set time in the environment
             self.environment.t = t
             print(t)
-            # TODO: call scheduler to create new state (if an action is made)
+            # call scheduler to create new cloud state (if an action is made)
             self.scheduler.reevaluate()
         events = self.cloud.driver.events
         print(events)
 
+#-- probably not needed ------------------------------
 class PeakPauserSimulator(Simulator):
     def __init__(self, scheduler):
         super(PeakPauserSimulator, self).__init__(scheduler)
         pass
 
-
-
 def create_peak_pauser_simulator():
     scheduler = PeakPauser()
     simulator = Simulator(scheduler=scheduler)
+#-----------------------------------------------------
 
 if __name__ == "__main__":
     # run()
-    
+    from philharmonic import conf
+    from philharmonic.manager import ManagerFactory
+    simulator = ManagerFactory.create_from_conf(conf)
     simulator.run()

@@ -14,7 +14,7 @@ Ubuntu dependencies
 
 Development packages
 
-    pip install nose nosy nose-exclude yanc ipdbplugin
+    pip install nose nosy nose-exclude yanc ipdbplugin mock coverage
 
 To test just run this from the project's root
 

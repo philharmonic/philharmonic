@@ -25,22 +25,26 @@ class ManagerFactory(object):
 
     @staticmethod
     def create_from_conf(conf):
-        """pass a conf module to read paramenters from"""
+        """Pass a conf module to read paramenters from. The method creates
+        a scheduler instance and constructs a manager with it.
+        The manager's constructor will link it with the appropriate
+        environment and cloud objects.
 
+        """
         # schedulers to choose from
-        from philharmonic.scheduler.peak_pauser import PeakPauser, NoScheduler
+        from philharmonic.scheduler import PeakPauser, NoScheduler
         # managers to choose from
         from philharmonic.manager.manager import Manager
         from philharmonic.simulator.simulator import Simulator
 
         # create the scheduler
-        ChosenScheduler = globals()[conf.scheduler]
+        ChosenScheduler = locals()[conf.scheduler]
         if not ChosenScheduler:
             scheduler = NoScheduler()
         else:
             scheduler = ChosenScheduler()
         # connect everything in a manager
-        ChosenManager = globals()[conf.manager]
+        ChosenManager = locals()[conf.manager]
         manager = ChosenManager(scheduler)
         return manager
 

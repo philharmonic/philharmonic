@@ -10,12 +10,15 @@ from philharmonic.cloud.driver import nodriver
 import philharmonic.conf as my_conf
 from philharmonic import inputgen
 
-def price_is_expensive(self): # our dummy version of the method
-    if self.test_state==1: # expensive on first query
-        self.test_state = 0
-        return True
-    else: # cheap afterwards
-        return False
+
+ #TODO: use mock instead of overriding!
+class MockedPeakPauser(PeakPauser):
+    def price_is_expensive(self): # our dummy version of the method
+        if self.test_state==1: # expensive on first query
+            self.test_state = 0
+            return True
+        else: # cheap afterwards
+            return False
 
 class Test(unittest.TestCase):
 
@@ -23,14 +26,11 @@ class Test(unittest.TestCase):
         unittest.TestCase.setUp(self)
         my_conf.dummy = True
         my_conf.historical_en_prices_file = "./io/energy_price_data-test.csv"
-        # we're changing the method dynamically,
-        # but could also have subclassed it
-        PeakPauser.price_is_expensive = price_is_expensive
         IScheduler._initial_sleep = 0.1
 
     def testPeakPauser(self):
         cloud=inputgen.peak_pauser_infrastructure()
-        scheduler = PeakPauser(cloud, driver=nodriver)
+        scheduler = MockedPeakPauser(cloud, driver=nodriver)
         self.assertEqual(scheduler.paused, False,
                          "unpaused initially")
         scheduler.test_state = 1 # expensive

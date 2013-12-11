@@ -45,7 +45,7 @@ instance = "kermit-test"
 
 # The command to execute as a benchmark (use ssh to execute something in a VM).
 # If command=="noscript" then just some local execution will be done
-#command="noscript" 
+#command="noscript"
 #command = "/usr/bin/ssh 192.168.100.4 ls"
 #command = "./io/benchmark.sh"
 command = "./io/benchmark-local.sh"

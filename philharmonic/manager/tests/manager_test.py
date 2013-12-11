@@ -21,7 +21,7 @@ def price_is_expensive(self): # our dummy version of the method
 
 
 
-class Test(unittest.TestCase):
+class ManagerTest(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
         my_conf.historical_en_prices_file = "./io/energy_price_data-test.csv"
         Manager._initial_sleep = 0
 
-    def testManager(self):
+    def test_run(self):
         scheduler = NoScheduler()
         manager = Manager(scheduler=scheduler)
         runner.run(manager)
