@@ -230,6 +230,13 @@ class Cloud():
     vms = property(get_vms, doc="get the VMs in the current state")
     servers = property(get_servers, doc="get the servers (always the same)")
 
+    def connect(self):
+        """establish a connection with the driver"""
+        self.driver.connect()
+
+    # TODO: when an action is applied to the current state, forward it
+    # to the driver as well
+
     def pause(self, *args):
         _delegate_to_obj(self._current, self.pause.__name__, *args)
 

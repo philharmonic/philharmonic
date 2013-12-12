@@ -11,19 +11,38 @@ class IManager(object):
 
     #scheduler = property(set_scheduler, get_scheduler, "the scheduler instance")
 
-    def __init__(self, scheduler):
+    factory = {
+        "scheduler": None,
+        "environment": None,
+        "cloud": None,
+        "driver": None
+    }
+
+    def _empty(self):
+        return None
+
+    def _create(self, cls):
+        return (cls or self._empty)()
+
+    def __init__(self):
         """Create manager's assets."""
-        self.scheduler = scheduler
+        self.scheduler = self._create(self.factory['scheduler'])
+        self.environment = self._create(self.factory['environment'])
+        self.cloud = self._create(self.factory['cloud'])
+        if self.cloud:
+            self.cloud.driver = self.factory['driver']
 
     def run(self):
         raise NotImplemented
 
 
+from philharmonic.utils import deprecated
 
 class ManagerFactory(object):
     """Easier manager creation"""
 
     @staticmethod
+    @deprecated
     def create_from_conf(conf):
         """Pass a conf module to read paramenters from. The method creates
         a scheduler instance and constructs a manager with it.
@@ -48,4 +67,3 @@ class ManagerFactory(object):
         manager = ChosenManager(scheduler)
         return manager
 
-#TODO: rethink the order of creation

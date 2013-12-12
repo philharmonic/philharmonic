@@ -35,11 +35,11 @@ from philharmonic.scheduler import NoScheduler
 
 def test_simulator():
     # w/ NoScheduler
-    simulator = Simulator(scheduler=NoScheduler())
+    simulator = NoSchedulerSimulator()
     simulator.run()
 
 def test_simulator_pp():
     driver = Mock()
     cloud = Mock()
-    simulator = Simulator(scheduler=PeakPauser(cloud, driver))
+    simulator = PeakPauserSimulator()
     simulator.run()

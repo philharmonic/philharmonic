@@ -5,7 +5,7 @@ Created on Oct 16, 2012
 '''
 import unittest
 
-from philharmonic.manager.manager import Manager
+from philharmonic.manager.manager import Manager, PeakPauserManager, NoSchedulerManager
 
 from philharmonic.scheduler import PeakPauser, NoScheduler
 from philharmonic.scheduler.ischeduler import IScheduler
@@ -28,11 +28,11 @@ class ManagerTest(unittest.TestCase):
         my_conf.dummy = True
         my_conf.sleep_interval = 0
         my_conf.historical_en_prices_file = "./io/energy_price_data-test.csv"
-        Manager._initial_sleep = 0
+        Manager._initial_sleep = 0 # TODO: mock patch
 
     def test_run(self):
-        scheduler = NoScheduler()
-        manager = Manager(scheduler=scheduler)
+        #scheduler = NoScheduler()
+        manager = NoSchedulerManager()
         runner.run(manager)
         manager.q.put("quit")
 

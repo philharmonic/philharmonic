@@ -38,7 +38,7 @@ class PeakPauser(IScheduler):
             self.paused = False
 
     def initialize(self):
-        self.driver.connect()
+        self.cloud.connect()
         #openstack.dummy = conf.dummy
         #openstack.authenticate()
         self.parse_prices(conf.historical_en_prices, conf.percentage_to_pause)

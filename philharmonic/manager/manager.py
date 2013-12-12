@@ -14,12 +14,22 @@ class Manager(IManager, threading.Thread):
 
     _initial_sleep = 5
 
-    def __init__(self, scheduler=None):
+    factory = {
+        "scheduler": None,
+        "environment": None, #TODO
+        "cloud": None, #TODO
+        "driver": None #TODO
+    }
+
+    #TODO: factory has to be - specifiable in the conf and in unittests directly
+    #- maybe using mock patching
+
+    def __init__(self):
         '''
         IManager creates the assets, I start the thread.
 
         '''
-        IManager.__init__(self, scheduler)
+        IManager.__init__(self)
         threading.Thread.__init__(self)
         pass
 
@@ -63,3 +73,21 @@ class Manager(IManager, threading.Thread):
         self.finalize()
 
 
+from philharmonic.scheduler import PeakPauser, NoScheduler
+from philharmonic.cloud.driver.openstack import console_api
+
+class PeakPauserManager(Manager):
+    factory = {
+        "scheduler": PeakPauser,
+        "environment": None, #TODO
+        "cloud": None, #TODO
+        "driver": console_api #TODO
+    }
+
+class NoSchedulerManager(Manager):
+    factory = {
+        "scheduler": NoScheduler,
+        "environment": None, #TODO
+        "cloud": None, #TODO
+        "driver": console_api #TODO
+    }

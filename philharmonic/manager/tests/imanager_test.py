@@ -1,13 +1,11 @@
 import unittest
 from mock import Mock
 
-from philharmonic.manager import ManagerFactory
+from philharmonic.manager import IManager
 
-class ManagerFactoryTest(unittest.TestCase):
+class IManagerTest(unittest.TestCase):
 
-    def test_create_from_conf(self):
-        conf = Mock()
-        conf.scheduler = "PeakPauser"
-        conf.manager = "Simulator"
-        manager = ManagerFactory.create_from_conf(conf)
-        self.assertIsNotNone(manager)
+    # def test_create_from_conf(self):
+    #     manager = IManager
+    #     self.assertIsNotNone(manager)
+    pass

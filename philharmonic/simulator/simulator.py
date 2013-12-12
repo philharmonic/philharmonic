@@ -148,52 +148,28 @@ def run(steps=None):
 from philharmonic.manager.imanager import IManager
 from philharmonic import conf
 from philharmonic.cloud.driver import simdriver
-from philharmonic.scheduler import PeakPauser
-
-class Environment(object):
-    """provides data about all the data centers
-    - e.g. the temperature and prices at different location
-
-    """
-    def __init__(self):
-        pass
-
-    def current_data(self):
-        """return all the current data for all the locations"""
-        raise NotImplemented
-
-class SimulatedEnvironment(Environment):
-    """stores and provides simulated data about the environment
-    - e.g. the temperature and prices at different location
-
-    """
-    def __init__(self):
-        super(SimulatedEnvironment, self).__init__()
-        self._t = None
-
-    def set_time(self, t):
-        self._t = t
-
-    def get_time(self, t):
-        return t
-
-    t = property(get_time, set_time, doc="current time")
-
+from philharmonic.scheduler import PeakPauser, NoScheduler
+from environment import SimulatedEnvironment
 
 class Simulator(IManager):
     """simulates the passage of time and prepares all the data for
     the scheduler
 
     """
-    def __init__(self, scheduler):
-        IManager.__init__(self, scheduler)
-        # TODO: initialise the environment based on conf
-        self.environment = SimulatedEnvironment()
-        # TODO: initialise the cloud based on conf
-        self.cloud = inputgen.peak_pauser_infrastructure()
-        self.cloud.driver = simdriver
+
+    factory = {
+        "scheduler": PeakPauser,
+        "environment": SimulatedEnvironment,
+        "cloud": inputgen.peak_pauser_infrastructure,
+        "driver": simdriver
+    }
+
+    def __init__(self):
+        IManager.__init__(self)
+        # arm scheduler
         self.scheduler.cloud = self.cloud
         self.scheduler.environment = self.environment
+        # arm cloud.driver
         self.cloud.driver.environment = self.environment
 
     def run(self):
@@ -212,20 +188,28 @@ class Simulator(IManager):
         events = self.cloud.driver.events
         print(events)
 
-#-- probably not needed ------------------------------
-class PeakPauserSimulator(Simulator):
-    def __init__(self, scheduler):
-        super(PeakPauserSimulator, self).__init__(scheduler)
-        pass
 
-def create_peak_pauser_simulator():
-    scheduler = PeakPauser()
-    simulator = Simulator(scheduler=scheduler)
-#-----------------------------------------------------
+class PeakPauserSimulator(Simulator):
+
+    def __init__(self):
+        self.factory["scheduler"] = PeakPauser
+        super(PeakPauserSimulator, self).__init__()
+
+
+class NoSchedulerSimulator(Simulator):
+
+    def __init__(self):
+        self.factory["scheduler"] = NoScheduler
+        super(NoSchedulerSimulator, self).__init__()
+
+
+#-- simulation starter ------------------------------
 
 if __name__ == "__main__":
     # run()
     from philharmonic import conf
     from philharmonic.manager import ManagerFactory
-    simulator = ManagerFactory.create_from_conf(conf)
+    simulator = PeakPauserSimulator()
     simulator.run()
+
+#-----------------------------------------------------
