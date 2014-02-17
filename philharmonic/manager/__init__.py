@@ -1,1 +1,1 @@
-from imanager import IManager, ManagerFactory
+from .imanager import IManager, ManagerFactory

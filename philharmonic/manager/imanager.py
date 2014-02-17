@@ -6,11 +6,6 @@ class IManager(object):
 
     """
 
-    #def set_scheduler(self, scheduler):
-    #    self._scheduler
-
-    #scheduler = property(set_scheduler, get_scheduler, "the scheduler instance")
-
     factory = {
         "scheduler": None,
         "environment": None,
@@ -66,4 +61,3 @@ class ManagerFactory(object):
         ChosenManager = locals()[conf.manager]
         manager = ChosenManager(scheduler)
         return manager
-
