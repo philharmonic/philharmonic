@@ -19,13 +19,18 @@ class IManager(object):
     def _create(self, cls):
         return (cls or self._empty)()
 
-    def __init__(self):
-        """Create manager's assets."""
-        self.scheduler = self._create(self.factory['scheduler'])
-        self.environment = self._create(self.factory['environment'])
-        self.cloud = self._create(self.factory['cloud'])
+    def __init__(self, factory=None):
+        """Create manager's assets.
+        @property factory: optional dict of components to use.
+
+        """
+        if not factory:
+            factory = self.factory
+        self.scheduler = self._create(factory['scheduler'])
+        self.environment = self._create(factory['environment'])
+        self.cloud = self._create(factory['cloud'])
         if self.cloud:
-            self.cloud.driver = self.factory['driver']
+            self.cloud.driver = factory['driver']
 
     def run(self):
         raise NotImplemented
