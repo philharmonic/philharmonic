@@ -6,6 +6,7 @@ Created on Jul 11, 2013
 import unittest
 
 from philharmonic import *
+import pandas as pd
 
 class Test(unittest.TestCase):
 
@@ -96,6 +97,18 @@ class Test(unittest.TestCase):
         self.assertIn(vm1, b.paused,
                          'vm1 should be paused after transition')
 
+    def test_schedule(self):
+        vm1 = VM(2000, 1);
+        a1 = Pause(vm1)
+        t1 = pd.datetime.now()
+        a2 = Unpause(vm1)
+        t2 = t1 + pd.offsets.Hour(1)
+        schedule = Schedule()
+        schedule.add(a2, t2)
+        schedule.add(a1, t1)
+        self.assertEquals(
+            (schedule.actions == pd.Series({t1: a1, t2: a2})).all(), True)
+        #self.assertListEqual(schedule.actions, pd.Series({t1: a1, t2: a2}))
 
     def test_cloud(self):
         # some servers

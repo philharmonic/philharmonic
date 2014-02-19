@@ -4,6 +4,7 @@ Created on Oct 16, 2012
 @author: kermit
 '''
 import unittest
+from mock import MagicMock
 from philharmonic.scheduler import PeakPauser, NoScheduler
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.cloud.driver import nodriver
@@ -31,6 +32,7 @@ class Test(unittest.TestCase):
     def testPeakPauser(self):
         cloud=inputgen.peak_pauser_infrastructure()
         scheduler = MockedPeakPauser(cloud, driver=nodriver)
+        scheduler.environment = MagicMock()
         self.assertEqual(scheduler.paused, False,
                          "unpaused initially")
         scheduler.test_state = 1 # expensive

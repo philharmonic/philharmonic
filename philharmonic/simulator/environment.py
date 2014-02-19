@@ -22,7 +22,14 @@ class SimulatedEnvironment(Environment):
     def set_time(self, t):
         self._t = t
 
-    def get_time(self, t):
+    def get_time(self):
         return t
 
+    def get_period(self):
+        return self.period
+
     t = property(get_time, set_time, doc="current time")
+
+class PPSimulatedEnvironment(SimulatedEnvironment):
+    """Peak pauser simulation scenario with one location, el price"""
+    pass

@@ -1,3 +1,5 @@
+import copy
+
 from philharmonic import conf
 
 class IManager(object):
@@ -13,11 +15,28 @@ class IManager(object):
         "driver": None
     }
 
+    @classmethod
+    def factory_copy(cls):
+        return copy.copy(cls.factory)
+
     def _empty(self):
         return None
 
     def _create(self, cls):
         return (cls or self._empty)()
+
+    def arm(self):
+        """Take assembled components and inter-connect them."""
+        # arm driver
+        if self.cloud:
+            self.cloud.driver = self.driver
+        # arm scheduler
+        if self.scheduler:
+            self.scheduler.cloud = self.cloud
+            self.scheduler.environment = self.environment
+        # arm cloud.driver
+        #self.cloud.driver.environment = self.environment
+
 
     def __init__(self, factory=None):
         """Create manager's assets.
@@ -29,8 +48,8 @@ class IManager(object):
         self.scheduler = self._create(factory['scheduler'])
         self.environment = self._create(factory['environment'])
         self.cloud = self._create(factory['cloud'])
-        if self.cloud:
-            self.cloud.driver = factory['driver']
+        self.driver = factory['driver']
+        self.arm()
 
     def run(self):
         raise NotImplemented

@@ -1,5 +1,5 @@
 from nose.tools import *
-from mock import Mock
+from mock import Mock, MagicMock
 import numpy as np
 import pandas as pd
 
@@ -43,3 +43,25 @@ def test_simulator_pp():
     cloud = Mock()
     simulator = PeakPauserSimulator()
     simulator.run()
+
+def test_simulator_noscheduler_nodriver():
+    """no scheduler; driver mock - catches all methods and does nothing"""
+    driver = MagicMock()
+    factory = Simulator.factory_copy()
+    factory['scheduler'] = NoScheduler
+    simulator = Simulator(factory)
+    # arm driver mock
+    simulator.driver = driver
+    simulator.arm()
+    simulator.run()
+    #driver.assert...
+
+def test_simulator_pp_nodriver():
+    """peak pauser; driver mock"""
+    driver = MagicMock()
+    simulator = PeakPauserSimulator()
+    assert_is_instance(simulator.scheduler, PeakPauser)
+    simulator.driver = driver
+    simulator.arm()
+    simulator.run()
+    #assert_true(simulator.driver.apply_actions.called)

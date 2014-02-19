@@ -149,7 +149,7 @@ from philharmonic.manager.imanager import IManager
 from philharmonic import conf
 from philharmonic.cloud.driver import simdriver
 from philharmonic.scheduler import PeakPauser, NoScheduler
-from environment import SimulatedEnvironment
+from environment import SimulatedEnvironment, PPSimulatedEnvironment
 
 class Simulator(IManager):
     """simulates the passage of time and prepares all the data for
@@ -159,18 +159,23 @@ class Simulator(IManager):
 
     factory = {
         "scheduler": PeakPauser,
-        "environment": SimulatedEnvironment,
+        "environment": PPSimulatedEnvironment,
         "cloud": inputgen.peak_pauser_infrastructure,
         "driver": simdriver
     }
 
-    def __init__(self):
-        IManager.__init__(self)
-        # arm scheduler
-        self.scheduler.cloud = self.cloud
-        self.scheduler.environment = self.environment
-        # arm cloud.driver
-        self.cloud.driver.environment = self.environment
+#    def __init__(self, factory=None):
+#        IManager.__init__(self, factory)
+
+    def filter_current_actions(self, schedule, t):
+        #yield action for action, t in schedule if 
+        period = self.environment.get_period()
+        return schedule.actions.ix[t:t + period]
+
+    def apply_actions(self, actions):
+        for t, action in actions.iteritems():
+            info('apply %s at time %d'.format(action, t))
+            self.driver.apply_action(action, t)
 
     def run(self):
         """go through all the timesteps and call the scheduler to ask for
@@ -178,13 +183,18 @@ class Simulator(IManager):
 
         """
         self.environment.times = range(24)
+        self.environment.period = 1
         self.scheduler.initialize()
         for t in self.environment.times:
             # set time in the environment
-            self.environment.t = t
+            self.environment.set_time(t)
             print(t)
             # call scheduler to create new cloud state (if an action is made)
-            self.scheduler.reevaluate()
+            schedule = self.scheduler.reevaluate()
+            # TODO: when an action is applied to the current state, forward it
+            # to the driver as well
+            actions = self.filter_current_actions(schedule, t)
+            self.apply_actions(actions)
         events = self.cloud.driver.events
         print(events)
 
@@ -193,6 +203,7 @@ class PeakPauserSimulator(Simulator):
 
     def __init__(self):
         self.factory["scheduler"] = PeakPauser
+        self.factory["environment"] = PPSimulatedEnvironment
         super(PeakPauserSimulator, self).__init__()
 
 

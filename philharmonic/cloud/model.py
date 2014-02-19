@@ -68,7 +68,8 @@ class VMRequest():
 # ==========
 
 class State():
-    """the state of the cloud at a single moment"""
+    """the state of the cloud at a single moment. Various methods like migrate,
+    pause... for changing it."""
 
     @staticmethod
     def random():
@@ -180,9 +181,13 @@ class State():
         return True
 
 class Action(object):
-    """a static representation of an action on the cloud"""
+    """A static representation of an action on the cloud."""
     name = ''
     args = None
+    def __repr__(self):
+        return '%s: %s'.format(name, str(args))
+    def __str__(self):
+        return self.__str__()
 
 class Migration(Action):
     """migrate vm to server"""
@@ -204,16 +209,31 @@ class Unpause(Action):
         self.args = [vm]
     name = 'unpause'
 
-class Schedule():
-    """initial state and a time series of actions"""
-    pass
+import pandas as pd
+class Schedule(object):
+    """(initial state? - part of Cloud) and a time series of actions"""
+    def __init__(self):
+        self.actions = pd.Series()
 
-
+    def add(self, action, t):
+        new_action = pd.Series({t: action})
+        self.actions = pd.concat([self.actions, new_action])
+        self.actions.sort()
 # Cloud
 # ==========
 
 class Cloud():
-    """contains all the VMs and servers and keeps the current and past states"""
+    """Contains all the VMs and servers and keeps current/future/past states.
+    Does not perform real actions by itself, but serves as a placeholder
+    for experimenting with and evaluating actions by the Scheduler.
+
+    The IManager can then use the current state and the Schedule to
+    perform actual actions.
+
+    Workflow:
+    - action on Cloud -> create Action instance -> add to Schedule
+
+    """
     def __init__(self, servers, initial_vms, auto_allocate=True):
         self._servers = servers
         self._initial = State(servers, initial_vms, auto_allocate)
@@ -222,6 +242,7 @@ class Cloud():
         self._current = self._initial
 
     def get_vms(self):
+        """return the VMs in the current state"""
         return self._current.vms
 
     def get_servers(self):
@@ -234,17 +255,17 @@ class Cloud():
         """establish a connection with the driver"""
         self.driver.connect()
 
-    # TODO: when an action is applied to the current state, forward it
-    # to the driver as well
-
+    #TODO: do we really want methods here as well? Action instances better?
     def pause(self, *args):
         _delegate_to_obj(self._current, self.pause.__name__, *args)
 
     def unpause(self, *args):
         _delegate_to_obj(self._current, self.unpause.__name__, *args)
 
+#TODO: separate model for planning actions (state, transition etc.)
+# and model for really executing actions
 
-#TODO: break into several files
+#TODO: maybe split into several files
 # - model
 # - schedule
 # (- cloud)

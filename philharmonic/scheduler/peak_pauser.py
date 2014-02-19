@@ -8,6 +8,7 @@ from philharmonic import conf
 from energy_predictor import EnergyPredictor
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.logger import log
+from philharmonic.cloud.model import Schedule, Pause, Unpause
 
 class PeakPauser(IScheduler):
 
@@ -15,6 +16,8 @@ class PeakPauser(IScheduler):
         IScheduler.__init__(self, cloud, driver)
         self.paused=False
 
+    # TODO: use price data from environment, not directly from file
+    # !!!
     def parse_prices(self, location, percentage_to_pause):
         self.energy_price = EnergyPredictor(location, percentage_to_pause)
 
@@ -22,15 +25,19 @@ class PeakPauser(IScheduler):
         return self.energy_price.is_expensive()
 
     def pause(self, vm):
-        if not self.paused:
-            vm.pause()
+        if not self.paused: # this should be checked in the model
+            vm.pause() # TODO: think if this interface is better
+            # and decide what to do with this manual Schedule mgmt:
+            pause = Pause(vm)
+            t = self.environment.get_time()
+            self.schedule.add(pause, t)
             if not conf.dummy: # TODO: this should go inside vm.pause()
                 openstack.pause(conf.instance)
             self.paused = True
             log("paused")
 
     def unpause(self, vm):
-        if self.paused:
+        if self.paused: # see pause()
             vm.unpause()
             if not conf.dummy: # TODO: this should go inside vm.unpause()
                 openstack.unpause(conf.instance)
@@ -50,11 +57,18 @@ class PeakPauser(IScheduler):
         self.unpause()  # don't leave a VM hanging after the experiment's done
 
     def reevaluate(self):
+        """Look at the current state of the Cloud and el. prices in the
+        environment and schedule pause/unpause actions if necessary.
+
+        @returns: a Schedule with a time series of actions.
+
+        """
+        self.schedule = Schedule()
         if self.price_is_expensive():
             for vm in self.cloud.vms: #TODO: green instances only
                 self.pause(vm)
         else:
             for vm in self.cloud.vms: #TODO: green instances only
                 self.unpause(vm)
-
+        return self.schedule
 
