@@ -10,11 +10,12 @@ from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.cloud.driver import nodriver
 import philharmonic.conf as my_conf
 from philharmonic import inputgen
+from philharmonic.simulator.environment import PPSimulatedEnvironment
 
 
  #TODO: use mock instead of overriding!
 class MockedPeakPauser(PeakPauser):
-    def price_is_expensive(self): # our dummy version of the method
+    def price_is_expensive(self, t=None): # our dummy version of the method
         if self.test_state==1: # expensive on first query
             self.test_state = 0
             return True
@@ -32,7 +33,8 @@ class Test(unittest.TestCase):
     def testPeakPauser(self):
         cloud=inputgen.peak_pauser_infrastructure()
         scheduler = MockedPeakPauser(cloud, driver=nodriver)
-        scheduler.environment = MagicMock()
+        # use PPEnvironment
+        scheduler.environment = PPSimulatedEnvironment()
         self.assertEqual(scheduler.paused, False,
                          "unpaused initially")
         scheduler.test_state = 1 # expensive

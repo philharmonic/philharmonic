@@ -21,8 +21,8 @@ class PeakPauser(IScheduler):
     def parse_prices(self, location, percentage_to_pause):
         self.energy_price = EnergyPredictor(location, percentage_to_pause)
 
-    def price_is_expensive(self):
-        return self.energy_price.is_expensive()
+    def price_is_expensive(self, time=None):
+        return self.energy_price.is_expensive(time)
 
     def pause(self, vm):
         if not self.paused: # this should be checked in the model
@@ -30,6 +30,7 @@ class PeakPauser(IScheduler):
             # and decide what to do with this manual Schedule mgmt:
             pause = Pause(vm)
             t = self.environment.get_time()
+            #import ipdb; ipdb.set_trace()
             self.schedule.add(pause, t)
             if not conf.dummy: # TODO: this should go inside vm.pause()
                 openstack.pause(conf.instance)
@@ -64,7 +65,8 @@ class PeakPauser(IScheduler):
 
         """
         self.schedule = Schedule()
-        if self.price_is_expensive():
+        t = self.environment.get_time()
+        if self.price_is_expensive(t):
             for vm in self.cloud.vms: #TODO: green instances only
                 self.pause(vm)
         else:

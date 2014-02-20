@@ -185,9 +185,9 @@ class Action(object):
     name = ''
     args = None
     def __repr__(self):
-        return '%s: %s'.format(name, str(args))
+        return '{0}: {1}'.format(self.name, str(self.args))
     def __str__(self):
-        return self.__str__()
+        return self.__repr__()
 
 class Migration(Action):
     """migrate vm to server"""

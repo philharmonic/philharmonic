@@ -7,8 +7,8 @@ from philharmonic.simulator.simulator import *
 from philharmonic.simulator.inputgen import small_infrastructure
 
 
-def test_run():
-    run(steps=3)
+#def test_run():
+#    run(steps=3)
 
 def test_server_locations():
     servers = small_infrastructure()
@@ -38,11 +38,11 @@ def test_simulator():
     simulator = NoSchedulerSimulator()
     simulator.run()
 
-def test_simulator_pp():
-    driver = Mock()
-    cloud = Mock()
-    simulator = PeakPauserSimulator()
-    simulator.run()
+#def test_simulator_pp():
+#    driver = Mock()
+#    cloud = Mock()
+#    simulator = PeakPauserSimulator()
+#    simulator.run()
 
 def test_simulator_noscheduler_nodriver():
     """no scheduler; driver mock - catches all methods and does nothing"""
@@ -62,6 +62,6 @@ def test_simulator_pp_nodriver():
     simulator = PeakPauserSimulator()
     assert_is_instance(simulator.scheduler, PeakPauser)
     simulator.driver = driver
-    simulator.arm()
+    #simulator.arm()
     simulator.run()
-    #assert_true(simulator.driver.apply_actions.called)
+    assert_true(simulator.driver.apply_action.called)

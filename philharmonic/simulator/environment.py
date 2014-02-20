@@ -23,7 +23,7 @@ class SimulatedEnvironment(Environment):
         self._t = t
 
     def get_time(self):
-        return t
+        return self._t
 
     def get_period(self):
         return self.period

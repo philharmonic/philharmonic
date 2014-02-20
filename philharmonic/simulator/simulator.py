@@ -183,17 +183,19 @@ class Simulator(IManager):
 
         """
         self.environment.times = range(24)
-        self.environment.period = 1
+        self.environment.period = pd.offsets.Hour(1)
         self.scheduler.initialize()
-        for t in self.environment.times:
-            # set time in the environment
-            self.environment.set_time(t)
-            print(t)
+        for hour in self.environment.times:
+            # TODO: set time in the environment instead of here
+            timestamp = pd.Timestamp('2013-02-20 {0}:00'.format(hour))
+            self.environment.set_time(timestamp)
+            print(timestamp)
             # call scheduler to create new cloud state (if an action is made)
             schedule = self.scheduler.reevaluate()
             # TODO: when an action is applied to the current state, forward it
             # to the driver as well
-            actions = self.filter_current_actions(schedule, t)
+            actions = self.filter_current_actions(schedule, timestamp)
+            #import ipdb; ipdb.set_trace()
             self.apply_actions(actions)
         events = self.cloud.driver.events
         print(events)

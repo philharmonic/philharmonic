@@ -108,7 +108,7 @@ class Test(unittest.TestCase):
         schedule.add(a1, t1)
         self.assertEquals(
             (schedule.actions == pd.Series({t1: a1, t2: a2})).all(), True)
-        #self.assertListEqual(schedule.actions, pd.Series({t1: a1, t2: a2}))
+    
 
     def test_cloud(self):
         # some servers
