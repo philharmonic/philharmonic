@@ -10,7 +10,11 @@ def better(pm1, pm2, vm):
     #remains_pm1 = 
 
 class FBFOptimiser(Optimiser):
-    '''First-best-fit schedule optimiser'''
+    """First-best-fit schedule optimiser. Goes through the available servers
+    to find the first one able to fit target VM s.t. minimum "unused" resources
+    remain.
+
+    """
     def __init__(self, infrastructure):
         self.infrastructure = infrastructure
     def find_solution(self, known_data=None, new_requests=pd.TimeSeries([])):

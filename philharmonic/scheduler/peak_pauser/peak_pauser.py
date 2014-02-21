@@ -46,6 +46,7 @@ class PeakPauser(IScheduler):
             self.paused = False
 
     def initialize(self):
+        # this should go inside the driver
         self.cloud.connect()
         #openstack.dummy = conf.dummy
         #openstack.authenticate()

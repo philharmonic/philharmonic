@@ -22,7 +22,7 @@ class MockedPeakPauser(PeakPauser):
         else: # cheap afterwards
             return False
 
-class Test(unittest.TestCase):
+class PeakPauserTest(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)

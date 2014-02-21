@@ -8,7 +8,7 @@ import unittest
 from philharmonic import *
 import pandas as pd
 
-class Test(unittest.TestCase):
+class ModelTest(unittest.TestCase):
 
 
     def test_constraints(self):
@@ -108,7 +108,7 @@ class Test(unittest.TestCase):
         schedule.add(a1, t1)
         self.assertEquals(
             (schedule.actions == pd.Series({t1: a1, t2: a2})).all(), True)
-    
+
 
     def test_cloud(self):
         # some servers

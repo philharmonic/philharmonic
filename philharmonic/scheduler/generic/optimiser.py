@@ -1,5 +1,6 @@
 '''
-An abstract scheduler optimiser
+An abstract scheduler optimiser. Used by an actual Scheduler's reevaluate method
+to decouple computation.
 '''
 
 class Optimiser(object):

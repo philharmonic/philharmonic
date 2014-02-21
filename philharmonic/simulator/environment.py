@@ -33,3 +33,16 @@ class SimulatedEnvironment(Environment):
 class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""
     pass
+
+class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
+    """Couple of requests in a day."""
+    def __init__(self, times):
+        """@param times: list of time ticks"""
+        super(SimulatedEnvironment, self).__init__()
+        self._times = times
+
+    def itertimes(self):
+        """Generator that iterates over times. To be called by the simulator."""
+        for t in self._times:
+            self._t = t
+            yield t
