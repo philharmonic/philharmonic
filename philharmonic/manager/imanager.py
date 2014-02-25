@@ -12,18 +12,21 @@ class IManager(object):
         "scheduler": None,
         "environment": None,
         "cloud": None,
-        "driver": None
+        "driver": None,
+
+        "times": None,
+        "requests": None,
     }
 
     @classmethod
     def factory_copy(cls):
         return copy.copy(cls.factory)
 
-    def _empty(self):
+    def _empty(self, *args, **kwargs):
         return None
 
-    def _create(self, cls):
-        return (cls or self._empty)()
+    def _create(self, cls, *args, **kwargs):
+        return (cls or self._empty)(*args, **kwargs)
 
     def arm(self):
         """Take assembled components and inter-connect them."""
@@ -40,15 +43,22 @@ class IManager(object):
 
     def __init__(self, factory=None):
         """Create manager's assets.
-        @property factory: optional dict of components to use.
+        @param factory: optional dict of components to use.
 
         """
         if not factory:
             factory = self.factory
         self.scheduler = self._create(factory['scheduler'])
-        self.environment = self._create(factory['environment'])
         self.cloud = self._create(factory['cloud'])
         self.driver = factory['driver']
+
+        self.times = self._create(factory['times'])
+        if self.times is not None:
+            self.requests = self._create(factory['requests'],
+                                         start=self.times[0],
+                                         end=self.times[-1])
+        self.environment = self._create(factory['environment'],
+                                        self.times, self.requests)
         self.arm()
 
     def run(self):

@@ -18,7 +18,10 @@ class Manager(IManager, threading.Thread):
         "scheduler": None,
         "environment": None, #TODO
         "cloud": None, #TODO
-        "driver": None #TODO
+        "driver": None, #TODO
+
+        "times": None,
+        "requests": None,
     }
 
     #TODO: factory has to be - specifiable in the conf and in unittests directly
@@ -76,18 +79,10 @@ class Manager(IManager, threading.Thread):
 from philharmonic.scheduler import PeakPauser, NoScheduler
 from philharmonic.cloud.driver.openstack import console_api
 
+#TODO: similarly to simulator, override factory with
+# PeakPauser scheduler and console_api as driver
 class PeakPauserManager(Manager):
-    factory = {
-        "scheduler": PeakPauser,
-        "environment": None, #TODO
-        "cloud": None, #TODO
-        "driver": console_api #TODO
-    }
+    pass
 
 class NoSchedulerManager(Manager):
-    factory = {
-        "scheduler": NoScheduler,
-        "environment": None, #TODO
-        "cloud": None, #TODO
-        "driver": console_api #TODO
-    }
+    pass

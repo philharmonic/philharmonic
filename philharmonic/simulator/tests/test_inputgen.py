@@ -1,11 +1,13 @@
 from nose.tools import *
 import pandas as pd
 
-from philharmonic import Server, VM
+from philharmonic import Server, VM, Cloud
 from philharmonic.simulator.inputgen import *
 
 def test_small_infrastructure():
-    servers = small_infrastructure()
+    cloud = small_infrastructure()
+    assert_is_instance(cloud, Cloud)
+    servers = cloud.servers
     assert_is_instance(servers, list)
     assert_is_instance(servers[0], Server)
 

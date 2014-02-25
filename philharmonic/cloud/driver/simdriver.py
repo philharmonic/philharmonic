@@ -5,6 +5,9 @@ and provides data about the current state.
 
 from philharmonic import Pause, Unpause, Migration
 
+#TODO: we probably don't want all these actions here - the Schedule is already
+# built inside the simulator
+
 events = None
 
 def connect():
@@ -34,4 +37,6 @@ def migrate(instance, machine):
     action = Unpause(instance, machine)
     store(action)
 
-#TODO: apply Action instance
+#TODO: maybe move all the printing, logging stuff here
+def apply_action(*args):
+    pass

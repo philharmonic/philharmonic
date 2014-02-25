@@ -22,7 +22,7 @@ import pandas as pd
 from philharmonic.logger import *
 import inputgen
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
-
+import evaluator
 
 # inputs (probably separate modules in the future, but we'll see)
 # -------
@@ -146,7 +146,7 @@ def run(steps=None):
 #----------------------
 
 from philharmonic.manager.imanager import IManager
-from philharmonic import conf
+from philharmonic import conf, Schedule
 from philharmonic.cloud.driver import simdriver
 from philharmonic.scheduler import PeakPauser, NoScheduler
 from environment import SimulatedEnvironment, PPSimulatedEnvironment
@@ -161,20 +161,20 @@ class Simulator(IManager):
         "scheduler": PeakPauser,
         "environment": PPSimulatedEnvironment,
         "cloud": inputgen.peak_pauser_infrastructure,
-        "driver": simdriver
+        "driver": simdriver,
+
+        "times": None,
+        "requests": None,
     }
 
-#    def __init__(self, factory=None):
-#        IManager.__init__(self, factory)
-
-    def filter_current_actions(self, schedule, t):
-        #yield action for action, t in schedule if 
-        period = self.environment.get_period()
-        return schedule.actions.ix[t:t + period]
+    def __init__(self, factory=None):
+        self.real_schedule = Schedule() # schedule of actions that get applied
+        super(Simulator, self).__init__(factory)
 
     def apply_actions(self, actions):
         for t, action in actions.iteritems():
-            info('apply %s at time %d'.format(action, t))
+            #debug('apply %s at time %d'.format(action, t))
+            self.real_schedule.add(action, t)
             self.driver.apply_action(action, t)
 
     def run(self):
@@ -189,16 +189,15 @@ class Simulator(IManager):
             # TODO: set time in the environment instead of here
             timestamp = pd.Timestamp('2013-02-20 {0}:00'.format(hour))
             self.environment.set_time(timestamp)
-            debug(timestamp)
             # call scheduler to create new cloud state (if an action is made)
             schedule = self.scheduler.reevaluate()
             # TODO: when an action is applied to the current state, forward it
             # to the driver as well
-            actions = self.filter_current_actions(schedule, timestamp)
+            period = self.environment.get_period()
+            actions = schedule.filter_current_actions(timestamp, period)
             #import ipdb; ipdb.set_trace()
             self.apply_actions(actions)
         events = self.cloud.driver.events
-        print(events)
 
 
 class PeakPauserSimulator(Simulator):
@@ -210,21 +209,26 @@ class PeakPauserSimulator(Simulator):
 from philharmonic.scheduler import FBFScheduler
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 class FBFSimulator(Simulator):
-    def __init__(self):
+    def __init__(self, factory=None):
+        if factory:
+            self.factory = factory
         self.factory["scheduler"] = FBFScheduler
         self.factory["environment"] = FBFSimpleSimulatedEnvironment
-        super(Simulator, self).__init__()
+        super(FBFSimulator, self).__init__()
 
+    # this should be the normal Simulator run method
     def run(self):
         self.scheduler.initialize()
         for t in self.environment.itertimes():
-            debug(t)
             schedule = self.scheduler.reevaluate()
-            actions = self.filter_current_actions(schedule, t)
+            period = self.environment.get_period()
+            actions = schedule.filter_current_actions(t, period)
             #import ipdb; ipdb.set_trace()
             self.apply_actions(actions)
         events = self.cloud.driver.events
-        debug(events)
+        evaluator.print_history(self.cloud,
+                                self.environment,
+                                self.real_schedule)
 
 class NoSchedulerSimulator(Simulator):
     def __init__(self):
@@ -234,11 +238,14 @@ class NoSchedulerSimulator(Simulator):
 
 #-- simulation starter ------------------------------
 
+# TODO: route to here straight from schedule.py
+
 if __name__ == "__main__":
     # run()
     from philharmonic import conf
-    from philharmonic.manager import ManagerFactory
-    simulator = PeakPauserSimulator()
+    #from philharmonic.manager import ManagerFactory
+    #simulator = PeakPauserSimulator()
+    simulator = FBFSimulator(conf.get_factory())
     simulator.run()
 
 #-----------------------------------------------------

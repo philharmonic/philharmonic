@@ -29,11 +29,12 @@ def test_fbf_run():
     request_series = pd.TimeSeries(requests, request_times)
     env = FBFSimpleSimulatedEnvironment(times, request_series)
     simulator.environment = env
-    simulator.cloud = Cloud(servers=inputgen.small_infrastructure())
+    simulator.cloud = inputgen.small_infrastructure()
     simulator.arm()
     assert_is_instance(simulator.scheduler.environment,
                        FBFSimpleSimulatedEnvironment)
     simulator.run()
     assert_true(simulator.driver.apply_action.called)
+
 
 

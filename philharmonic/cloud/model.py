@@ -10,6 +10,14 @@ import copy
 
 from philharmonic.utils import deprecated
 
+def format_spec(spec):
+    s = "{"
+    for key, value in spec.iteritems():
+        s += "{0}:{1}, ".format(key, value)
+    s = s[:-2]
+    s += "}"
+    return s
+
 # some non-semantic functionality common for VMs and servers
 class Machine(object):
     resource_types = ['RAM', '#CPUs'] # to be overridden with actual values
@@ -20,7 +28,8 @@ class Machine(object):
             self.spec[self.resource_types[i]] = arg
 
     def __str__(self):
-        return "<id:{0}, spec:{1}>".format(str(id(self))[-3:], str(self.spec))
+        return "({2}:{0}:{1})".format(str(id(self))[-3:], format_spec(self.spec),
+                                            self.machine_type)
     def __repr__(self):
         return str(self)
 
@@ -33,6 +42,8 @@ def _delegate_to_obj(obj, method_name, *args):
 # ==========
 
 class VM(Machine):
+
+    machine_type = 'VM'
 
     def __init__(self, *args):
         super(VM, self).__init__(*args)
@@ -52,6 +63,9 @@ class VM(Machine):
         _delegate_to_obj(self.cloud, self.pause.__name__, self, server)
 
 class Server(Machine):
+
+    machine_type = 'PM'
+
     def __init__(self, *args):
         super(Server, self).__init__(*args)
         self.cap = self.spec
@@ -194,6 +208,8 @@ class Action(object):
 class Migration(Action):
     """migrate vm to server"""
     def __init__(self, vm, server):
+        self.vm = vm
+        self.server = server
         self.args = [vm, server]
     name = 'migrate'
     def __repr__(self):
@@ -221,6 +237,9 @@ class Schedule(object):
         new_action = pd.Series({t: action})
         self.actions = pd.concat([self.actions, new_action])
         self.actions.sort()
+
+    def filter_current_actions(self, t, period):
+        return self.actions.ix[t:t + period]
 # Cloud
 # ==========
 

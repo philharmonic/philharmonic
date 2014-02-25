@@ -14,19 +14,37 @@ historical_en_prices = "./io/energy_price/train/3month.csv"
 results = "./io/results.pickle"
 
 # Manager
-#========
+#=========
 # Manager - actually sleeps and wakes up the scheduler
 # Simulator - just runs through the simulation
 manager = "Simulator"
 
-# Scheduler
-#==========
-# these schedulers are available:
-# PeakPauser
-# NoScheduler
+# Manager factory
+#=================
 
-#scheduler = "NoScheduler"
-scheduler= "PeakPauser"
+# won't have to be function once I kick out conf from PeakPauser
+def get_factory():
+    # these schedulers are available:
+    from philharmonic.scheduler import PeakPauser, NoScheduler, FBFScheduler
+
+    # environments
+    from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
+
+    from philharmonic.simulator import inputgen
+    from philharmonic.cloud.driver import simdriver
+
+    factory = {
+        "scheduler": FBFScheduler,
+        "environment": FBFSimpleSimulatedEnvironment,
+        "cloud": inputgen.small_infrastructure,
+        "driver": simdriver,
+
+        "times": inputgen.two_days,
+        "requests": inputgen.normal_vmreqs,
+        "servers": inputgen.small_infrastructure,
+    }
+
+    return factory
 
 # Benchmark
 #===========

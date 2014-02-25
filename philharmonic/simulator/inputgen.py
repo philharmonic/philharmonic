@@ -19,7 +19,7 @@ def normal_population(num, bottom, top, ceil=True):
     # we want 99% of the population to enter the [min,max] interval
     sigma = half/3.0
     mu = bottom + half
-    print(mu, sigma)
+    #print(mu, sigma)
 
     values = mu + sigma * np.random.randn(num)
     # negative to zero
@@ -34,15 +34,15 @@ def normal_population(num, bottom, top, ceil=True):
 
 def small_infrastructure():
     """return a list of Servers with determined resource capacities"""
-    num_servers = 3
+    num_servers = 5
     Machine.resource_types = ['RAM', '#CPUs']
-    RAM = [4]*num_servers
-    numCPUs = [2]*num_servers
+    RAM = [8]*num_servers
+    numCPUs = [4]*num_servers
     servers = []
     for i in range(num_servers):
         s = Server(RAM[i], numCPUs[i])
         servers.append(s)
-    return servers
+    return Cloud(servers=servers)
 
 def peak_pauser_infrastructure():
     """1 server hosting 1 vm"""
@@ -54,12 +54,12 @@ def peak_pauser_infrastructure():
 # VM requests
 #------------
 # - global settings TODO: config file
-VM_num = 7
+VM_num = 3
 # e.g. CPUs
 min_cpu = 1
-max_cpu = 4
+max_cpu = 2
 min_ram = 1
-max_ram = 8
+max_ram = 2
 # e.g. seconds
 min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
@@ -92,3 +92,11 @@ def normal_vmreqs(start, end=None):
             moments.append(start + offset)
     events = pd.TimeSeries(data=requests, index=moments)
     return events.sort_index()
+
+def no_requests(start, end):
+    return pd.TimeSeries()
+
+# time range (for the simulation)
+#------------
+def two_days():
+    return pd.date_range('2013-02-25 00:00', periods=48, freq='H')

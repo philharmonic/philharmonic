@@ -19,8 +19,6 @@ def price_is_expensive(self): # our dummy version of the method
     else:
         return False
 
-
-
 class ManagerTest(unittest.TestCase):
 
     def setUp(self):
@@ -36,6 +34,7 @@ class ManagerTest(unittest.TestCase):
         runner.run(manager)
         manager.q.put("quit")
 
+    #TODO: fix & test PeakPauser as a management scheduler
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
