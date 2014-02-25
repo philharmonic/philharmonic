@@ -264,11 +264,11 @@ class Cloud():
     vms = property(get_vms, doc="get the VMs in the current state")
     servers = property(get_servers, doc="get the servers (always the same)")
 
-    def apply(action):
+    def apply(self, action):
         """Apply an Action on the current state."""
         self._current = self._current.transition(action)
 
-    def apply_real(action):
+    def apply_real(self, action):
         """Apply an Action on the real state (reflecting the actual physical
         state) and reset the virtual state.
 

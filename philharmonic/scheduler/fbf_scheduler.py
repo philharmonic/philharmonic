@@ -1,5 +1,5 @@
 from philharmonic.scheduler.ischeduler import IScheduler
-from philharmonic import Schedule
+from philharmonic import Schedule, Migration
 
 class FBFScheduler(IScheduler):
     """First-best-fit scheduler."""
@@ -33,6 +33,7 @@ class FBFScheduler(IScheduler):
 
     def reevaluate(self):
         self.schedule = Schedule()
+        t = self.environment.get_time()
         # get new requests
         requests = self.environment.get_requests()
         # if len(requests) > 0:
@@ -46,7 +47,7 @@ class FBFScheduler(IScheduler):
                         #import ipdb; ipdb.set_trace()
                         action = Migration(request.vm, server)
                         self.cloud.apply(action)
-                        self.schedule.add(action)
+                        self.schedule.add(action, t)
                         break
         # for each boot request:
         # find the best server

@@ -6,12 +6,13 @@ from philharmonic import Schedule
 from philharmonic.scheduler import FBFScheduler
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 from philharmonic.simulator.simulator import FBFSimulator
-from philharmonic import inputgen, Cloud
+from philharmonic import inputgen, Cloud, VMRequest, VM
 
 def test_fbf_returns_schedule():
     scheduler = FBFScheduler()
     scheduler.environment = FBFSimpleSimulatedEnvironment()
     scheduler.environment.get_requests = MagicMock(return_value = [])
+    scheduler.environment.get_time = MagicMock(return_value = 1)
     schedule = scheduler.reevaluate()
     assert_is_instance(schedule, Schedule)
 
@@ -20,15 +21,19 @@ def test_fbf_run():
     simulator = FBFSimulator()
     assert_is_instance(simulator.scheduler, FBFScheduler)
     simulator.driver = driver
-    times = pd.date_range('2013-02-25', periods=48, freq='H')
-    env = FBFSimpleSimulatedEnvironment(times)
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    requests = [VMRequest(VM(2,1), 'boot'), VMRequest(VM(4,2), 'boot')]
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 01:00')
+    request_times = [t1, t2]
+    request_series = pd.TimeSeries(requests, request_times)
+    env = FBFSimpleSimulatedEnvironment(times, request_series)
     simulator.environment = env
     simulator.cloud = Cloud(servers=inputgen.small_infrastructure())
     simulator.arm()
     assert_is_instance(simulator.scheduler.environment,
                        FBFSimpleSimulatedEnvironment)
     simulator.run()
-    #TODO: assert this with deterministic requests
-    #assert_true(simulator.driver.apply_action.called)
+    assert_true(simulator.driver.apply_action.called)
 
 

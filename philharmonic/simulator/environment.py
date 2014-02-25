@@ -28,7 +28,7 @@ class SimulatedEnvironment(Environment):
         return self._t
 
     def get_period(self):
-        return self.period
+        return self._period
 
     t = property(get_time, set_time, doc="current time")
 
@@ -38,15 +38,18 @@ class PPSimulatedEnvironment(SimulatedEnvironment):
 
 class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
     """Couple of requests in a day."""
-    def __init__(self, times=None):
+    def __init__(self, times=None, requests=None):
         """@param times: list of time ticks"""
         super(SimulatedEnvironment, self).__init__()
         if not times is None:
             self._times = times
-            self.period = times[1] - times[0]
+            self._period = times[1] - times[0]
             start = self._times[0]
             end = self._times[-1]
-            self._requests = inputgen.normal_vmreqs(start, end)
+            if requests is not None:
+                self._requests = requests
+            else:
+                self._requests = inputgen.normal_vmreqs(start, end)
 
     def itertimes(self):
         """Generator that iterates over times. To be called by the simulator."""

@@ -183,7 +183,7 @@ class Simulator(IManager):
 
         """
         self.environment.times = range(24)
-        self.environment.period = pd.offsets.Hour(1)
+        self.environment._period = pd.offsets.Hour(1)
         self.scheduler.initialize()
         for hour in self.environment.times:
             # TODO: set time in the environment instead of here
