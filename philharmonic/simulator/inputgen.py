@@ -56,28 +56,31 @@ def peak_pauser_infrastructure():
 # - global settings TODO: config file
 VM_num = 7
 # e.g. CPUs
-min_size = 1
-max_size = 8
+min_cpu = 1
+max_cpu = 4
+min_ram = 1
+max_ram = 8
 # e.g. seconds
 min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
 
 def normal_vmreqs(start, end=None):
-    """Generate the VM creation and deletion events in. 
+    """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
 
     """
     delta = end - start
     # array of VM sizes
-    sizes = normal_population(VM_num, min_size, max_size)
+    cpu_sizes = normal_population(VM_num, min_cpu, max_cpu)
+    ram_sizes = normal_population(VM_num, min_ram, max_ram)
     # duration of VMs
     durations = normal_population(VM_num, min_duration, max_duration)
     requests = []
     moments = []
-    for size, duration in zip(sizes, durations):
-        vm = VM(size)
+    for cpu_size, ram_size, duration in zip(cpu_sizes, ram_sizes, durations):
+        vm = VM(ram_size, cpu_size)
         # the moment a VM is created
         offset = pd.offsets.Second(np.random.uniform(0., delta.total_seconds()))
         requests.append(VMRequest(vm, 'boot'))

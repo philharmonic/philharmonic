@@ -8,6 +8,8 @@ Created on Jul 11, 2013
 '''
 import copy
 
+from philharmonic.utils import deprecated
+
 # some non-semantic functionality common for VMs and servers
 class Machine(object):
     resource_types = ['RAM', '#CPUs'] # to be overridden with actual values
@@ -227,19 +229,30 @@ class Cloud():
     Does not perform real actions by itself, but serves as a placeholder
     for experimenting with and evaluating actions by the Scheduler.
 
-    The IManager can then use the current state and the Schedule to
+    The IManager can then use the real state and the Schedule to
     perform actual actions.
+
+    States:
+    - _initial - at the very beginning (probably no VMs allocated)
+    - _real - reflects the actual physical allocations
+              (as of the last action applied by the manager)
+    - _current - _real or some later virtual state - controlled by the Scheduler
 
     Workflow:
     - action on Cloud -> create Action instance -> add to Schedule
 
     """
-    def __init__(self, servers, initial_vms, auto_allocate=True):
+    def __init__(self, servers, initial_vms=[], auto_allocate=True):
         self._servers = servers
         self._initial = State(servers, initial_vms, auto_allocate)
         for machine in servers + initial_vms: # know thy parent
             machine.cloud = self
-        self._current = self._initial
+        self._real = self._initial
+        self.reset_to_real()
+
+    def reset_to_real(self):
+        """set the current state back to what the real state of the cloud is"""
+        self._current = self._real
 
     def get_vms(self):
         """return the VMs in the current state"""
@@ -251,8 +264,22 @@ class Cloud():
     vms = property(get_vms, doc="get the VMs in the current state")
     servers = property(get_servers, doc="get the servers (always the same)")
 
+    def apply(action):
+        """Apply an Action on the current state."""
+        self._current = self._current.transition(action)
+
+    def apply_real(action):
+        """Apply an Action on the real state (reflecting the actual physical
+        state) and reset the virtual state.
+
+        """
+        self._real = self._real.trainsition(action)
+        self.reset_to_real()
+
+    @deprecated
     def connect(self):
-        """establish a connection with the driver"""
+        """establish a connection with the driver
+        Deprecated - the manager should apply actions, not the Cloud model"""
         self.driver.connect()
 
     #TODO: do we really want methods here as well? Action instances better?

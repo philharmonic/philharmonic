@@ -1,3 +1,5 @@
+import inputgen
+
 class Environment(object):
     """provides data about all the data centers
     - e.g. the temperature and prices at different location
@@ -36,13 +38,23 @@ class PPSimulatedEnvironment(SimulatedEnvironment):
 
 class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
     """Couple of requests in a day."""
-    def __init__(self, times):
+    def __init__(self, times=None):
         """@param times: list of time ticks"""
         super(SimulatedEnvironment, self).__init__()
-        self._times = times
+        if not times is None:
+            self._times = times
+            self.period = times[1] - times[0]
+            start = self._times[0]
+            end = self._times[-1]
+            self._requests = inputgen.normal_vmreqs(start, end)
 
     def itertimes(self):
         """Generator that iterates over times. To be called by the simulator."""
         for t in self._times:
             self._t = t
             yield t
+
+    def get_requests(self):
+        start = self.get_time()
+        end = start + self.get_period()
+        return self._requests[start:end]

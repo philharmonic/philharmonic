@@ -189,7 +189,7 @@ class Simulator(IManager):
             # TODO: set time in the environment instead of here
             timestamp = pd.Timestamp('2013-02-20 {0}:00'.format(hour))
             self.environment.set_time(timestamp)
-            print(timestamp)
+            debug(timestamp)
             # call scheduler to create new cloud state (if an action is made)
             schedule = self.scheduler.reevaluate()
             # TODO: when an action is applied to the current state, forward it
@@ -202,15 +202,31 @@ class Simulator(IManager):
 
 
 class PeakPauserSimulator(Simulator):
-
     def __init__(self):
         self.factory["scheduler"] = PeakPauser
         self.factory["environment"] = PPSimulatedEnvironment
         super(PeakPauserSimulator, self).__init__()
 
+from philharmonic.scheduler import FBFScheduler
+from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
+class FBFSimulator(Simulator):
+    def __init__(self):
+        self.factory["scheduler"] = FBFScheduler
+        self.factory["environment"] = FBFSimpleSimulatedEnvironment
+        super(Simulator, self).__init__()
+
+    def run(self):
+        self.scheduler.initialize()
+        for t in self.environment.itertimes():
+            debug(t)
+            schedule = self.scheduler.reevaluate()
+            actions = self.filter_current_actions(schedule, t)
+            #import ipdb; ipdb.set_trace()
+            self.apply_actions(actions)
+        events = self.cloud.driver.events
+        debug(events)
 
 class NoSchedulerSimulator(Simulator):
-
     def __init__(self):
         self.factory["scheduler"] = NoScheduler
         super(NoSchedulerSimulator, self).__init__()

@@ -7,7 +7,7 @@ Created on 5. 11. 2012.
 from philharmonic.logger import log
 from philharmonic import Schedule
 
-class IScheduler():
+class IScheduler(object):
     '''
     Scheduler interface
     '''
@@ -23,7 +23,7 @@ class IScheduler():
 
     def initialize(self):
         '''Hook to start any necessary preparations (VM resets etc.)'''
-        raise NotImplemented
+        pass
 
     def finalize(self):
         '''Hook to wrap it all up (put VMs back to the default state etc.)'''
