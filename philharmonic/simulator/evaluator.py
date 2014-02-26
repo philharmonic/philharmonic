@@ -11,10 +11,11 @@ def print_history(cloud, environment, schedule):
 
         print('---t={}----'.format(t))
         if len(requests) > 0:
-            print("requests:")
-            print(requests)
+            print(" - requests:")
+            print("    {}".format(str(requests.values)))
         if len(actions) > 0:
-            print("actions:")
-            print(actions)
+            print(" - actions:")
+            print("    {}".format(str(actions.values)))
+            print('')
 
 #TODO: check why some requests/actions filtered under the wrong timeslot

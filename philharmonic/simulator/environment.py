@@ -1,3 +1,5 @@
+import pandas as pd
+
 import inputgen
 
 class Environment(object):
@@ -59,5 +61,6 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
 
     def get_requests(self):
         start = self.get_time()
-        end = start + self.get_period()
+        justabit = pd.offsets.Micro(1)
+        end = start + self.get_period() - justabit
         return self._requests[start:end]

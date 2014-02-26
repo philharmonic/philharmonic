@@ -231,7 +231,7 @@ import pandas as pd
 class Schedule(object):
     """(initial state? - part of Cloud) and a time series of actions"""
     def __init__(self):
-        self.actions = pd.Series()
+        self.actions = pd.TimeSeries()
 
     def add(self, action, t):
         new_action = pd.Series({t: action})
@@ -239,7 +239,14 @@ class Schedule(object):
         self.actions.sort()
 
     def filter_current_actions(self, t, period):
-        return self.actions.ix[t:t + period]
+        """return time series of actions in interval
+        (closed on the left, open on the right)
+
+        """
+        justabit = pd.offsets.Micro(1)
+        return self.actions.ix[t:t + period - justabit]
+        #return self.actions[t:t + period - justabit]
+
 # Cloud
 # ==========
 

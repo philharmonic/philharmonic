@@ -65,7 +65,7 @@ min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
 
-def normal_vmreqs(start, end=None):
+def normal_vmreqs(start, end=None, round_to_hour=True):
     """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
@@ -84,7 +84,10 @@ def normal_vmreqs(start, end=None):
         # the moment a VM is created
         offset = pd.offsets.Second(np.random.uniform(0., delta.total_seconds()))
         requests.append(VMRequest(vm, 'boot'))
-        moments.append(start + offset)
+        t = start + offset
+        if round_to_hour:
+            t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
+        moments.append(t)
         # the moment a VM is destroyed
         offset += pd.offsets.Second(duration)
         if start + offset <= end: # event is relevant
