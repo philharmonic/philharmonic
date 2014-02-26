@@ -22,7 +22,7 @@ import pandas as pd
 from philharmonic.logger import *
 import inputgen
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
-import evaluator
+from philharmonic.scheduler import evaluator
 
 # inputs (probably separate modules in the future, but we'll see)
 # -------

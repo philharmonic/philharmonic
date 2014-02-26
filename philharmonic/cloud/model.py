@@ -28,10 +28,12 @@ class Machine(object):
             self.spec[self.resource_types[i]] = arg
 
     def __str__(self):
-        return "({2}:{0}:{1})".format(str(id(self))[-3:], format_spec(self.spec),
-                                            self.machine_type)
+        # return "({2}:{0}:{1})".format(str(id(self))[-3:],
+        #                               format_spec(self.spec),
+        #                               self.machine_type)
+        return self.__repr__()
     def __repr__(self):
-        return str(self)
+        return "{}:{}".format(self.machine_type, str(id(self))[-3:])
 
 def _delegate_to_obj(obj, method_name, *args):
     method = getattr(obj, method_name)
@@ -131,11 +133,11 @@ class State():
                 if server == s:
                     # it's already there
                     return
-                else:
+                else: # VM was elsewhere - removing
                     # remove from old server
                     vms.remove(vm)
-                    # add to the new one
-                    self.alloc[s].add(vm)
+        # add it to the new one
+        self.alloc[s].add(vm)
         # TODO: faster reverse-dictionary lookup
         # http://stackoverflow.com/a/2569076/544059
 
@@ -164,6 +166,23 @@ class State():
         apply_effect = getattr(new_state, action.name)
         apply_effect(*action.args)
         return new_state
+
+    def calculate_utilisations(self):
+        self.utilisations = {}
+        uniform_weight = 1./len(Server.resource_types)
+        weights = {res : uniform_weight for res in Server.resource_types}
+        for server in self.servers:
+            total_utilisation = 0.
+            utilisations = {}
+            for i in server.resource_types:
+                used = 0.
+                for vm in self.alloc[server]:
+                    used += vm.res[i]
+                utilisations[i] = used/server.cap[i]
+            for resource_type, utilisation in utilisations.iteritems():
+                total_utilisation += weights[resource_type] * utilisation
+            self.utilisations[server] = total_utilisation
+        return self.utilisations
 
     # constraint checking
     # C1
@@ -213,7 +232,7 @@ class Migration(Action):
         self.args = [vm, server]
     name = 'migrate'
     def __repr__(self):
-        return '%s -> %s' % (self.vm, self.server)
+        return '{} -> {}'.format(str(self.vm), str(self.server))
 
 class Pause(Action):
     """pause vm"""
@@ -232,10 +251,12 @@ class Schedule(object):
     """(initial state? - part of Cloud) and a time series of actions"""
     def __init__(self):
         self.actions = pd.TimeSeries()
+        self.actions.name = 'actions'
 
     def add(self, action, t):
         new_action = pd.Series({t: action})
         self.actions = pd.concat([self.actions, new_action])
+        self.actions.name = 'actions'
         self.actions.sort()
 
     def filter_current_actions(self, t, period):
@@ -277,8 +298,12 @@ class Cloud():
         self.reset_to_real()
 
     def reset_to_real(self):
-        """set the current state back to what the real state of the cloud is"""
+        """Set the current state back to what the real state of the cloud is."""
         self._current = self._real
+
+    def reset_to_initial(self):
+        """Set the current state back to the initial state."""
+        self._current = self._initial
 
     def get_vms(self):
         """return the VMs in the current state"""
@@ -286,6 +311,10 @@ class Cloud():
 
     def get_servers(self):
         return self._servers
+
+    def get_current(self):
+        """Get the current state."""
+        return self._current
 
     vms = property(get_vms, doc="get the VMs in the current state")
     servers = property(get_servers, doc="get the servers (always the same)")
@@ -304,8 +333,8 @@ class Cloud():
 
     @deprecated
     def connect(self):
-        """establish a connection with the driver
-        Deprecated - the manager should apply actions, not the Cloud model"""
+        """Establish a connection with the driver
+        Deprecated - the manager should apply actions, not the Cloud model."""
         self.driver.connect()
 
     #TODO: do we really want methods here as well? Action instances better?

@@ -75,6 +75,17 @@ def test_migration():
     assert_not_in(vm1, b.alloc[s1], 'vm1 should have moved after the transition')
     assert_in(vm1, b.alloc[s2], 'vm1 should have moved after the transition')
 
+def test_allocation():
+    s1 = Server(4000, 2)
+    servers = [s1]
+    vm1 = VM(2000, 1);
+    a = State(servers)
+    migr = Migration(vm1, s1)
+    b = a.transition(migr)
+
+    assert_not_in(vm1, a.alloc[s1], 'vm1 initially unallocated')
+    assert_in(vm1, b.alloc[s1], 'vm1 allocated after the transition')
+
 def test_pause():
     # some servers
     s1 = Server(4000, 2)
