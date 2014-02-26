@@ -57,6 +57,8 @@ class IManager(object):
             self.requests = self._create(factory['requests'],
                                          start=self.times[0],
                                          end=self.times[-1])
+        else:
+            self.requests = None
         self.environment = self._create(factory['environment'],
                                         self.times, self.requests)
         self.arm()

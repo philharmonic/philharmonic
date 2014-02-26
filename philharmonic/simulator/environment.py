@@ -17,7 +17,7 @@ class SimulatedEnvironment(Environment):
     - e.g. the temperature and prices at different location
 
     """
-    def __init__(self):
+    def __init__(self, *args):
         super(SimulatedEnvironment, self).__init__()
         self._t = None
 

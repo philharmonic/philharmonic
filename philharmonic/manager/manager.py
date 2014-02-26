@@ -85,4 +85,12 @@ class PeakPauserManager(Manager):
     pass
 
 class NoSchedulerManager(Manager):
-    pass
+    factory = {
+        "scheduler": NoScheduler,
+        "environment": None, #TODO
+        "cloud": None, #TODO
+        "driver": None, #TODO
+
+        "times": None,
+        "requests": None,
+    }
