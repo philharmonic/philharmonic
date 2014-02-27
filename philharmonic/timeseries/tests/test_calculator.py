@@ -10,7 +10,7 @@ from philharmonic.scheduler.energy_predictor import EnergyPredictor
 #from philharmonic.energy_price.calculator import *
 import philharmonic as ph
 
-class Test(unittest.TestCase):
+class TestCalculator(unittest.TestCase):
 
     def setUp(self):
         self.loc = "./io/tests/energy_price_data-test.csv"
@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
         price1 = self.price_predictor.is_expensive(time = time_morning)
         self.assertEqual(price1, False, "price must be low at this time")
         # afternoon - expensive
-        time_afternoon = datetime.strptime("2012-05-05-17-16", "%Y-%m-%d-%H-%M")
+        time_afternoon = datetime.strptime("2012-05-05-15-16", "%Y-%m-%d-%H-%M")
         price2 = self.price_predictor.is_expensive(time_afternoon)
         self.assertEqual(price2, True, "price must be high at this time")
 
@@ -48,6 +48,16 @@ class Test(unittest.TestCase):
         power.ix[:12] = 3
         energy = ph.calculate_energy(power)
         self.assertAlmostEqual(energy, 48, delta=1.0)#'energy not correctly calculated')
+
+    def test_calculate_energy_df(self):
+        n = 24
+        samples1 = [1] * n
+        samples2 = [2] * n
+        power = pd.DataFrame({'samples1':samples1, 'samples2':samples2},
+                             pd.date_range('2013-01-23', periods=n, freq='s'))
+        energy = ph.calculate_energy(power)
+        self.assertEqual(energy['samples1'], 24)
+        self.assertEqual(energy['samples2'], 48)
 
     def test_calculate_price_real_data(self):
         total_price = ph.calculate_price(self.active_power, self.loc,

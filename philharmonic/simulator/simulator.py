@@ -19,6 +19,7 @@ and simulates the outcome of the schedule.
 
 import pandas as pd
 
+import philharmonic as ph
 from philharmonic.logger import *
 import inputgen
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
@@ -252,6 +253,8 @@ def run():
     util.plot()
     power = evaluator.generate_cloud_power(util)
     power.plot()
+    energy = ph.calculate_energy(power)
+    print(energy)
     plt.show()
     #print(power)
 

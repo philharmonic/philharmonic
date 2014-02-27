@@ -24,9 +24,9 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(prices[1], 0.01826, places, "expecting to continue with this value")
 
         #expected_end = datetime.strptime("2012-09-04", "%Y-%m-%d")
-        tn = datetime(2012,9,4,23,0)
+        tn = datetime(2012,5,9,23,0)
         self.assertEqual(prices.index[-1], tn, "expecting to end on this date")
-        self.assertAlmostEqual(prices[-1], 0.02372, places,
+        self.assertAlmostEqual(prices[-1], 0.02178, places,
                                "expecting to end with this value")
 
     def testRealign(self):
@@ -37,12 +37,12 @@ class Test(unittest.TestCase):
         self.assertEqual(prices.index[0], t1, "expecting to start on this date")
         self.assertEqual(prices.index[1], t2, "expecting to continue on this date")
 
-        tn = datetime(2012,9,7,23,0)
+        tn = datetime(2012,5,12,23,0)
         #expected_end = datetime.strptime("2012-09-07", "%Y-%m-%d")
         self.assertEqual(prices.index[-1], tn, "expecting to end on this date")
 
     def testParseTemp(self):
-        temp = historian.parse_temp('./io/tests/novosibirsk.txt')
+        temp = historian.parse_temp('./io/tests/novosibirsk-small.txt')
         self.assertIsInstance(temp, pd.TimeSeries, 'expecting a time series')
 
 if __name__ == "__main__":
