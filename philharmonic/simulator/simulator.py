@@ -84,17 +84,17 @@ def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel fo
 
 # main run
 # --------
-def run(steps=None):
-    """run the simulation
-    @param steps: number of time steps to make through the input data
-    (None - go through the whole input)
-    """
-    info("simulation started")
+# def run(steps=None):
+#     """run the simulation
+#     @param steps: number of time steps to make through the input data
+#     (None - go through the whole input)
+#     """
+#     info("simulation started")
 
-    # get the input data
-    servers = infrastructure_info()
-    el_prices, temperatures = geotemporal_inputs()
-    server_locations(servers, temperatures.columns)
+#     # get the input data
+#     servers = infrastructure_info()
+#     el_prices, temperatures = geotemporal_inputs()
+#     server_locations(servers, temperatures.columns)
 
     times = temperatures[temperatures.columns[0]].index # TODO: attach this to server objects in a function
     freq = temperatures[temperatures.columns[0]].index.freq
@@ -226,13 +226,7 @@ class FBFSimulator(Simulator):
             #import ipdb; ipdb.set_trace()
             self.apply_actions(actions)
         events = self.cloud.driver.events
-        evaluator.print_history(self.cloud,
-                                self.environment,
-                                self.real_schedule)
-        util = evaluator.calculate_cloud_utilisation(self.cloud,
-                                                     self.environment,
-                                                     self.real_schedule)
-        print(util)
+        return self.cloud, self.environment, self.real_schedule
 
 class NoSchedulerSimulator(Simulator):
     def __init__(self):
@@ -244,12 +238,24 @@ class NoSchedulerSimulator(Simulator):
 
 # TODO: route to here straight from schedule.py
 
-if __name__ == "__main__":
-    # run()
+import matplotlib.pyplot as plt
+
+def run():
     from philharmonic import conf
     #from philharmonic.manager import ManagerFactory
     #simulator = PeakPauserSimulator()
     simulator = FBFSimulator(conf.get_factory())
-    simulator.run()
+    cloud, env, schedule = simulator.run()
+    evaluator.print_history(cloud, env, schedule)
+    util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
+    print(util)
+    util.plot()
+    power = evaluator.generate_cloud_power(util)
+    power.plot()
+    plt.show()
+    #print(power)
+
+if __name__ == "__main__":
+    run()
 
 #-----------------------------------------------------

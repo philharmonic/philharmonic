@@ -39,3 +39,4 @@ def test_generate_cloud_power():
     util = pd.Series([0]*num + [0.5]*num, index)
     util = pd.DataFrame({'s1': util})
     power = generate_cloud_power(util)
+

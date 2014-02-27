@@ -68,3 +68,4 @@ def generate_cloud_power(util):
 
         power[server] = P_synth * server_util
     power[power>0] += P_idle # a server with no load is suspended
+    return power
