@@ -29,10 +29,15 @@ class SimulatedEnvironment(Environment):
     def get_time(self):
         return self._t
 
+    t = property(get_time, set_time, doc="current time")
+
+    def set_period(self, period):
+        self._period = period
+
     def get_period(self):
         return self._period
 
-    t = property(get_time, set_time, doc="current time")
+    period = property(get_period, set_period, doc="period between time steps")
 
 class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""
@@ -59,8 +64,20 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
             self._t = t
             yield t
 
+    def itertimes_immutable(self):
+        """Like itertimes, but doesn't alter state. Goes from start to end."""
+        t = self.start
+        while t <= self.end:
+            yield t
+            t += self._period
+
+    def times_index(self):
+        """Return a pandas Index based on the set times"""
+        idx = pd.date_range(start=self.start, end=self.end, freq=self.period)
+        return idx
+
     def get_requests(self):
         start = self.get_time()
         justabit = pd.offsets.Micro(1)
-        end = start + self.get_period() - justabit
+        end = start + self._period - justabit
         return self._requests[start:end]

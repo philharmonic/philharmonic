@@ -3,7 +3,7 @@ import pandas as pd
 
 from ..evaluator import calculate_cloud_utilisation, generate_cloud_power
 from philharmonic import Cloud, Server, VM, Schedule, Migration
-from philharmonic.simulator.environment import Environment
+from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 
 def test_calculate_cloud_utilisation():
     # some servers
@@ -17,7 +17,8 @@ def test_calculate_cloud_utilisation():
     vm2 = VM(2000, 2);
     VMs = [vm1, vm2]
 
-    env = Environment()
+    env = FBFSimpleSimulatedEnvironment()
+    env.period = pd.offsets.Hour(1)
     env.start = pd.Timestamp('2010-02-26 8:00')
     schedule = Schedule()
     a1 = Migration(vm1, s1)
@@ -32,6 +33,27 @@ def test_calculate_cloud_utilisation():
     assert_true((df_util[s1] == [0., 0.5, 0.5, 0.5]).all())
     assert_true((df_util[s2] == [0., 0., 0.375, 0.375]).all())
     assert_true((df_util[s3] == [0., 0., 0., 0.0]).all())
+
+def test_calculate_cloud_simultaneous_actions():
+    s1 = Server(4000, 2)
+    cloud = Cloud([s1])
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+
+    env = FBFSimpleSimulatedEnvironment()
+    env.period = pd.offsets.Hour(1)
+    env.start = pd.Timestamp('2011-02-26 8:00')
+    schedule = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2011-02-26 11:00')
+    schedule.add(a1, t1)
+    a2 = Migration(vm2, s1)
+    schedule.add(a2, t1)
+    env.end = pd.Timestamp('2011-02-26 12:00')
+
+    df_util = calculate_cloud_utilisation(cloud, env, schedule)
+    assert_equals(len(df_util[s1]), 3, 'duplicate actions must be combined')
+    #assert_true((df_util[s1] == [0., 0.5, 0.5, 0.5]).all())
 
 def test_generate_cloud_power():
     index = pd.date_range('2013-01-01', periods=6, freq='H')
