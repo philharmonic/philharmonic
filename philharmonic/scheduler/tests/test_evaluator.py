@@ -1,11 +1,9 @@
 from nose.tools import *
 import pandas as pd
 
-from ..evaluator import calculate_cloud_utilisation
+from ..evaluator import calculate_cloud_utilisation, generate_cloud_power
 from philharmonic import Cloud, Server, VM, Schedule, Migration
 from philharmonic.simulator.environment import Environment
-
-
 
 def test_calculate_cloud_utilisation():
     # some servers
@@ -28,9 +26,16 @@ def test_calculate_cloud_utilisation():
     a2 = Migration(vm2, s2)
     t2 = pd.Timestamp('2010-02-26 13:00')
     schedule.add(a2, t2)
-    env.end = pd.Timestamp('2010-02-26 6:00')
+    env.end = pd.Timestamp('2010-02-26 16:00')
 
     df_util = calculate_cloud_utilisation(cloud, env, schedule)
     assert_true((df_util[s1] == [0., 0.5, 0.5, 0.5]).all())
     assert_true((df_util[s2] == [0., 0., 0.375, 0.375]).all())
     assert_true((df_util[s3] == [0., 0., 0., 0.0]).all())
+
+def test_generate_cloud_power():
+    index = pd.date_range('2013-01-01', periods=6, freq='H')
+    num = len(index)/2
+    util = pd.Series([0]*num + [0.5]*num, index)
+    util = pd.DataFrame({'s1': util})
+    power = generate_cloud_power(util)

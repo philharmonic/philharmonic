@@ -4,6 +4,7 @@ performed schedule of actions
 """
 
 import pandas as pd
+import numpy as np
 
 def print_history(cloud, environment, schedule):
     for t in environment.itertimes():
@@ -46,4 +47,24 @@ def calculate_cloud_utilisation(cloud, environment, schedule):
     #df_all = df_util.join(schedule.actions)
     return df_util
 
-#def generate_cloud_power(cloud, util)
+def generate_cloud_power(util):
+    """Create power signals from varying utilisation rates."""
+    P_peak = 200
+    P_idle = 100
+    P_delta = P_peak - P_idle
+    P_std = 1.26 # P_delta * 0.05
+    power_freq = '5min'
+
+    power = pd.DataFrame()
+    for server in util.columns:
+        start = util.index[0]
+        end = util.index[-1]
+        index = pd.date_range(start, end, freq=power_freq)
+        synth_data = P_delta + P_std * np.random.randn(len(index))
+        P_synth = pd.TimeSeries(data=synth_data, index=index)
+
+        server_util = util[server]
+        server_util = server_util.reindex(index, method='pad')
+
+        power[server] = P_synth * server_util
+    power[power>0] += P_idle # a server with no load is suspended

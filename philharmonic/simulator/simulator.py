@@ -229,6 +229,10 @@ class FBFSimulator(Simulator):
         evaluator.print_history(self.cloud,
                                 self.environment,
                                 self.real_schedule)
+        util = evaluator.calculate_cloud_utilisation(self.cloud,
+                                                     self.environment,
+                                                     self.real_schedule)
+        print(util)
 
 class NoSchedulerSimulator(Simulator):
     def __init__(self):

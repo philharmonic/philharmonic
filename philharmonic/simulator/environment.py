@@ -46,12 +46,12 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
         if not times is None:
             self._times = times
             self._period = times[1] - times[0]
-            start = self._times[0]
-            end = self._times[-1]
+            self.start = self._times[0]
+            self.end = self._times[-1]
             if requests is not None:
                 self._requests = requests
             else:
-                self._requests = inputgen.normal_vmreqs(start, end)
+                self._requests = inputgen.normal_vmreqs(self.start, self.end)
 
     def itertimes(self):
         """Generator that iterates over times. To be called by the simulator."""

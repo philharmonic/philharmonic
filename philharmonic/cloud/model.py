@@ -257,7 +257,7 @@ class Schedule(object):
         new_action = pd.Series({t: action})
         self.actions = pd.concat([self.actions, new_action])
         self.actions.name = 'actions'
-        self.actions.sort()
+        self.actions = self.actions.sort_index()
 
     def filter_current_actions(self, t, period):
         """return time series of actions in interval
