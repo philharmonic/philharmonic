@@ -21,5 +21,5 @@ def test_normal_vmreqs():
     events = normal_vmreqs(start, end)
     assert_is_instance(events, pd.TimeSeries)
     for t in events.index:
-        assert_greater(t, start)
-        assert_less(t, end)
+        assert_greater_equal(t, start)
+        assert_less_equal(t, end)
