@@ -31,15 +31,21 @@ class Test(unittest.TestCase):
 
     def testRealign(self):
         prices = historian.parse_prices("./io/tests/energy_price_data-test.csv")
-        prices = historian.realign(prices, datetime(2012,5,8))
+        prices2 = historian.realign(prices, datetime(2012,5,8))
         t1 = datetime(2012,5,8,0,0)
         t2 = datetime(2012,5,8,1,0)
-        self.assertEqual(prices.index[0], t1, "expecting to start on this date")
-        self.assertEqual(prices.index[1], t2, "expecting to continue on this date")
+        self.assertEqual(prices2.index[0], t1, "expecting to start on this date")
+        self.assertEqual(prices2.index[1], t2, "expecting to continue on this date")
 
         tn = datetime(2012,5,12,23,0)
         #expected_end = datetime.strptime("2012-09-07", "%Y-%m-%d")
-        self.assertEqual(prices.index[-1], tn, "expecting to end on this date")
+        self.assertEqual(prices2.index[-1], tn, "expecting to end on this date")
+
+        df = pd.DataFrame({'p1': prices.values, 'p2': prices.values},
+                          prices.index)
+        df2 = historian.realign(df, datetime(2012,5,8))
+        self.assertEqual(df2.index[0], t1, "DataFrame realign should start")
+        self.assertEqual(df2.index[1], t2, "DataFrame realign continue")
 
     def testParseTemp(self):
         temp = historian.parse_temp('./io/tests/novosibirsk-small.txt')

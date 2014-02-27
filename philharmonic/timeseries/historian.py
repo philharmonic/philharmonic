@@ -82,17 +82,17 @@ def realign_old(prices_series, start_date):
     # unstack to turn it into a DataSeries first
     return prices_series.unstack().shift(1, freq=delta).stack()
 
-def realign(prices_series, start_date):
+def realign(prices, start_date):
     """
     A function that shifts prices to start on the target date
-    @param prices_series: a Pandas time series (MultiIndex, datetime on level 0)
-    @return: a time series starting at start_date
+    @param prices: a pandas.Series/DataFrame (MultiIndex, datetime on level 0)
+    @return: copy of the data, but starting at start_date
     """
     start_date = datetime.combine(start_date.date(), time(0,0)) # truncate time
-    delta = start_date - prices_series.index[0]
+    delta = start_date - prices.index[0]
     # unstack to turn it into a DataSeries first
-    return prices_series.shift(1, freq=delta)
-    
+    return prices.shift(1, freq=delta)
+
 if __name__ == "__main__":
     path = "/home/kermit/Dropbox/dev/itd/skripte/ipy_notebook/data/DAData_19_20120505-20120904.csv"
     prices = parse_prices(path)

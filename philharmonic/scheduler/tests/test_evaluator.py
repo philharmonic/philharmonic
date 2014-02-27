@@ -1,8 +1,8 @@
 from nose.tools import *
 import pandas as pd
 
-from ..evaluator import calculate_cloud_utilisation, generate_cloud_power
-from philharmonic import Cloud, Server, VM, Schedule, Migration
+from ..evaluator import *
+from philharmonic import Cloud, Server, VM, Schedule, Migration, inputgen
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 
 def test_calculate_cloud_utilisation():
@@ -62,3 +62,19 @@ def test_generate_cloud_power():
     util = pd.DataFrame({'s1': util})
     power = generate_cloud_power(util)
 
+def test_calculate_cost():
+    #import ipdb; ipdb.set_trace()
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+
+    idx = inputgen.two_days()
+    halflen = len(idx)/2
+    power_a = [100] * len(idx)
+    power_b = [200] * halflen + [250] * halflen
+    power = pd.DataFrame({s1: power_a, s2: power_b}, idx)
+
+    el_prices = inputgen.simple_el()
+    cost = calculate_cloud_cost(power, el_prices)
+    assert_almost_equals(cost[s1], 0.42318367346938734)
+    assert_almost_equals(cost[s2], 0.40907755102040827)
+    

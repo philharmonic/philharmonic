@@ -255,6 +255,9 @@ def run():
     power.plot()
     energy = ph.calculate_energy(power)
     print(energy)
+    el_prices = inputgen.simple_el()
+    cost = evaluator.calculate_cloud_cost(power, el_prices)
+    print(cost)
     plt.show()
     #print(power)
 

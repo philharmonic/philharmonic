@@ -6,6 +6,8 @@ performed schedule of actions
 import pandas as pd
 import numpy as np
 
+import philharmonic as ph
+
 def print_history(cloud, environment, schedule):
     for t in environment.itertimes():
         requests = environment.get_requests()
@@ -73,3 +75,12 @@ def generate_cloud_power(util):
         power[server] = P_synth * server_util
     power[power>0] += P_idle # a server with no load is suspended
     return power
+
+def calculate_cloud_cost(power, el_prices):
+    """Take power and el. prices DataFrames & calc. the el. cost"""
+    el_prices_loc = pd.DataFrame()
+    for server in power.columns: # this might be very inefficient
+        loc = server.loc
+        el_prices_loc[server] = el_prices[loc]
+    cost = ph.calculate_price(power, el_prices_loc)
+    return cost

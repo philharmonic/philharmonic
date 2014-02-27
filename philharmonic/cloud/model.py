@@ -65,12 +65,25 @@ class VM(Machine):
         _delegate_to_obj(self.cloud, self.pause.__name__, self, server)
 
 class Server(Machine):
+    """A physical server."""
 
     machine_type = 'PM'
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
+        """@param location: server's geographical location"""
         super(Server, self).__init__(*args)
         self.cap = self.spec
+        if 'location' in kwargs:
+            self._loc = kwargs['location']
+
+    def get_location(self):
+        return self._loc
+
+    def set_location(self, location):
+        self._loc = location
+
+    location = property(get_location, set_location, doc="geographical location")
+    loc = property(get_location, set_location, doc="geographical location")
 
 class VMRequest():
     """Container for VM creation/deletion events."""

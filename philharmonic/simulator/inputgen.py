@@ -40,7 +40,11 @@ def small_infrastructure():
     numCPUs = [4]*num_servers
     servers = []
     for i in range(num_servers):
-        s = Server(RAM[i], numCPUs[i])
+        if i < 3:
+            location = 'A' # TODO: real codes
+        else:
+            location = 'B'
+        s = Server(RAM[i], numCPUs[i], location=location)
         servers.append(s)
     return Cloud(servers=servers)
 
@@ -103,3 +107,14 @@ def no_requests(start, end):
 #------------
 def two_days():
     return pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+
+# geotemporal inputs
+#------------
+
+def simple_el():
+    idx = two_days()
+    halflen = len(idx)/2
+    a = [0.05] * halflen + [0.13] * halflen
+    b = [0.012] * halflen + [0.06] * halflen
+    el_prices = pd.DataFrame({'A': a, 'B': b}, idx)
+    return el_prices
