@@ -268,7 +268,7 @@ def run():
     temperature = inputgen.simple_temperature()
     power_total = evaluator.calculate_cloud_cooling(power, temperature)
     ax = plt.subplot(nplots, 1, 3)
-    power.plot(ax=ax)
+    power_total.plot(ax=ax)
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
     print('Energy with cooling (kWh)')
     print(energy_total)

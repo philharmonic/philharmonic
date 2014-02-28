@@ -28,7 +28,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule):
     cloud.reset_to_initial()
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: check when to add start and end (not always necessary) !!!
-    utilisations = {server : [0.0] for server in cloud.servers}
+    utilisations = {server : [] for server in cloud.servers}
     times = []
     for t in schedule.actions.index.unique():
         # TODO: precise indexing, not dict
@@ -43,11 +43,18 @@ def calculate_cloud_utilisation(cloud, environment, schedule):
         times.append(t)
         for server, utilisation in new_utilisations.iteritems():
             utilisations[server].append(utilisation)
-    # the last utilisation values hold until the end - duplicate last value
-    for server, utilisation in new_utilisations.iteritems():
-        utilisations[server].append(utilisation)
 
-    times = [environment.start] + times + [environment.end]
+    #TODO: use pandas methods
+    if times[0] != environment.start:
+        times = [environment.start] + times
+        for server in cloud.servers:
+            utilisations[server] = [0.0] + utilisations[server]
+
+    if times[-1] != environment.end:
+        # the last utilisation values hold until the end - duplicate last value
+        for server, utilisation in new_utilisations.iteritems():
+            utilisations[server].append(utilisation)
+        times = times + [environment.end]
 
     df_util = pd.DataFrame(utilisations, index=times)
     #df_all = df_util.join(schedule.actions)
