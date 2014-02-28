@@ -27,7 +27,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule):
     """Calculate utilisations of all servers based on the given schedule"""
     cloud.reset_to_initial()
     #TODO: maybe move some of this state iteration functionality into Cloud
-    #TODO: check when to add start and end (not always necessary)
+    #TODO: check when to add start and end (not always necessary) !!!
     utilisations = {server : [0.0] for server in cloud.servers}
     times = []
     for t in schedule.actions.index.unique():
@@ -84,3 +84,16 @@ def calculate_cloud_cost(power, el_prices):
         el_prices_loc[server] = el_prices[loc]
     cost = ph.calculate_price(power, el_prices_loc)
     return cost
+
+def calculate_cloud_cooling(power, temperature):
+    """Take power and temperature DataFrames & calculate the power with
+    cooling overhead.
+
+    """
+    temperature_server = pd.DataFrame()
+    for server in power.columns: # this might be very inefficient
+        loc = server.loc
+        temperature_server[server] = temperature[loc]
+    #cost = ph.calculate_price(power, el_prices_loc)
+    power_with_cooling = ph.calculate_cooling_overhead(power, temperature_server)
+    return power_with_cooling

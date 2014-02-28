@@ -12,8 +12,8 @@ from scipy import integrate
 _KWH_RATIO = 3.6e6
 
 def calculate_price_old(power, price_file, start_date=None, old_parser=False):
-    """parse prices from a price_file ($/kWh), realign it to start_date 
-    (if it's provided) and calculate the price of the energy consumption 
+    """parse prices from a price_file ($/kWh), realign it to start_date
+    (if it's provided) and calculate the price of the energy consumption
     stored in a time series of power values power (W)
 
     @return: calculated price in $
@@ -39,7 +39,7 @@ def calculate_price_old(power, price_file, start_date=None, old_parser=False):
     duration = (t_N - t_0)
     h = duration.total_seconds()/N
 
-    # TODO: use a library for this e.g. 
+    # TODO: use a library for this e.g.
     #   http://docs.scipy.org/doc/scipy/reference/tutorial/integrate.html
     total_price = h * sum(power*experiment_prices)
     return total_price
@@ -111,6 +111,18 @@ def calculate_energy(power, estimate=False):
         return power.apply(_calculate_series_energy, estimate=estimate)
     if isinstance(power, pd.Series):
         return _calculate_series_energy(power, estimate)
+
+def calculate_cooling_overhead(power, temperature):
+    """Use a model of overhead model and real-time temperatures
+    to calculate real-time PUE values and calculate the resulting power.
+
+    """
+    # cooling model (Guler)
+    #CoP = temperature
+    CoP = 1.2 + 0.128 * (temperature + 9)**.5
+    CoP = CoP.reindex(power.index, method='ffill')
+    return power * CoP
+    #return power * CoP
 
 def joul2kwh(jouls):
     """@Return: equivalent kWh """

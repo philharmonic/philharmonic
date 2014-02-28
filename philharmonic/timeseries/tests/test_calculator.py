@@ -59,6 +59,34 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(energy['samples1'], 24)
         self.assertEqual(energy['samples2'], 48)
 
+    def test_calculate_cooling_overhead(self):
+        n = 32
+        power_samples = [100] * n
+        temperature_samples = [15] * (n/2) + [27] * (n/2)
+        idx = pd.date_range('2013-01-23', periods=n, freq='s')
+        power = pd.Series(power_samples, idx)
+        temperature = pd.Series(temperature_samples, idx)
+        p_total = ph.calculate_cooling_overhead(power, temperature)
+        self.assertTrue((p_total > power).all(), 'cooling adds to power')
+        self.assertTrue(p_total[3] < p_total[23], 'colder == more efficient')
+
+    def test_calculate_cooling_overhead_df(self):
+        n = 32
+        power_samples1 = [100] * n
+        power_samples2 = [110] * n
+        temperature_samples1 = [15] * (n/2) + [27] * (n/2)
+        temperature_samples2 = [-3] * (n/2) + [2] * (n/2)
+        idx = pd.date_range('2013-01-23', periods=n, freq='s')
+        power = pd.DataFrame({'A': power_samples1, 'B': power_samples2}, idx)
+        temperature = pd.DataFrame({'A': temperature_samples1,
+                                    'B': temperature_samples2}, idx)
+        p_total = ph.calculate_cooling_overhead(power, temperature)
+        self.assertTrue((p_total['A'] > power['A']).all(),
+                        'cooling adds to power')
+        self.assertTrue((p_total['A'] > p_total['B']).all(),
+                        'cold places more efficient')
+        #self.assertTrue(p_total[3] < p_total[23])
+
     def test_calculate_price_real_data(self):
         total_price = ph.calculate_price(self.active_power, self.loc,
                                       self.active_power.index[0].to_pydatetime())

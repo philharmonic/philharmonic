@@ -242,24 +242,46 @@ class NoSchedulerSimulator(Simulator):
 import matplotlib.pyplot as plt
 
 def run():
+    fig = plt.figure(1)
+    nplots = 3
+    # create necessary objects
+    #-------------------------
     from philharmonic import conf
-    #from philharmonic.manager import ManagerFactory
-    #simulator = PeakPauserSimulator()
     simulator = FBFSimulator(conf.get_factory())
     cloud, env, schedule = simulator.run()
     evaluator.print_history(cloud, env, schedule)
+    # cloud utilisation
+    #------------------
     util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
     print(util)
-    util.plot()
+    ax = plt.subplot(nplots, 1, 1)
+    util.plot(ax=ax)
+    # cloud power consumption
     power = evaluator.generate_cloud_power(util)
-    power.plot()
-    energy = ph.calculate_energy(power)
+    ax = plt.subplot(nplots, 1, 2)
+    power.plot(ax=ax)
+    energy = ph.joul2kwh(ph.calculate_energy(power))
+    print('Energy (kWh)')
     print(energy)
+    # cooling overhead
+    #-----------------
+    temperature = inputgen.simple_temperature()
+    power_total = evaluator.calculate_cloud_cooling(power, temperature)
+    ax = plt.subplot(nplots, 1, 3)
+    power.plot(ax=ax)
+    energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
+    print('Energy with cooling (kWh)')
+    print(energy_total)
+    # electricity costs
+    #------------------
     el_prices = inputgen.simple_el()
     cost = evaluator.calculate_cloud_cost(power, el_prices)
+    print('Electricity prices ($)')
     print(cost)
+    cost_total = evaluator.calculate_cloud_cost(power_total, el_prices)
+    print('Electricity prices with cooling ($)')
+    print(cost_total)
     plt.show()
-    #print(power)
 
 if __name__ == "__main__":
     run()

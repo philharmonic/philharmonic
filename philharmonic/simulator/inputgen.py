@@ -118,3 +118,11 @@ def simple_el():
     b = [0.012] * halflen + [0.06] * halflen
     el_prices = pd.DataFrame({'A': a, 'B': b}, idx)
     return el_prices
+
+def simple_temperature():
+    idx = two_days()
+    n = len(idx)
+    a = 3 * n / 4 * [23] + n / 4 * [0.13]
+    b = 3 * n / 4 * [-3] + n / 4 * [1]
+    temperature = pd.DataFrame({'A': a, 'B': b}, idx)
+    return temperature
