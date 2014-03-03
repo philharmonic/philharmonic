@@ -6,6 +6,7 @@ import numpy as np
 
 from philharmonic import Schedule, Migration
 from philharmonic.scheduler.evaluator import normalised_combined_cost
+from philharmonic import random_time
 
 class ScheduleUnit(Schedule):
     def calculate_fitness(self):
@@ -25,13 +26,9 @@ class ScheduleUnit(Schedule):
         new_unit.actions = new_unit.actions.drop(self.actions.index[i])
         # add new random action
         # - pick random moment
-        # TODO: turn into function in timeseries (used in inputgen - DRY)
         start = self.environment.t
         end = self.environment.forecast_end
-        delta = end - start
-        offset = pd.offsets.Second(np.random.uniform(0., delta.total_seconds()))
-        t = start + offset
-        t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour) # round to hour
+        t = random_time(start, end)
         # - pick random VM (among union of all allocs at t and VMRequests)
         vm = random.sample(self.environment.VMs, 1)[0]
         # - pick random server
@@ -39,3 +36,9 @@ class ScheduleUnit(Schedule):
         new_action = Migration(vm, server)
         new_unit.add(new_action, t)
         return new_unit
+
+    def crossover(self, other):
+        """single-point crossover of both parent's actions series"""
+        start = self.environment.t
+        end = self.environment.forecast_end
+        t = random_time(start, end)

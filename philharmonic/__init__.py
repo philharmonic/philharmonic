@@ -1,6 +1,7 @@
 # reading temperature and el. price data
 from philharmonic.timeseries.historian import *
 from philharmonic.timeseries.calculator import *
+from philharmonic.timeseries.util import *
 
 # reading experiment measurements
 from philharmonic.energy_meter.continuous_energy_meter import deserialize_folder, synthetic_power, build_synth_measurement
