@@ -102,5 +102,40 @@ def calculate_cloud_cooling(power, temperature):
         loc = server.loc
         temperature_server[server] = temperature[loc]
     #cost = ph.calculate_price(power, el_prices_loc)
-    power_with_cooling = ph.calculate_cooling_overhead(power, temperature_server)
+    power_with_cooling = ph.calculate_cooling_overhead(power,
+                                                       temperature_server)
     return power_with_cooling
+
+def combined_cost(cloud, environment, schedule, el_prices, temperature=None):
+    """calculate costs in one method"""
+    util = calculate_cloud_utilisation(cloud, environment, schedule)
+    power = generate_cloud_power(util)
+    if temperature is not None:
+        power = calculate_cloud_cooling(power, temperature)
+    cost = calculate_cloud_cost(power, el_prices)
+    total_cost = cost.sum() # for the whole cloud
+    return total_cost
+
+def normalised_combined_cost(cloud, environment, schedule,
+                             el_prices, temperature=None):
+    """calculates combined costs and normalises them from 0. to 1.0 relative to
+    a theoretical worst and best case.
+
+    """
+    actual_cost = combined_cost(cloud, environment, schedule,
+                         el_prices, temperature=None)
+    best_cost = 0.
+
+    # worst cost (full utilisation)
+    utilisations = {server : [1.0, 1.0] for server in cloud.servers}
+    full_util = pd.DataFrame(utilisations,
+                           index=[environment.start, environment.end])
+    power = generate_cloud_power(full_util)
+    if temperature is not None:
+        power = calculate_cloud_cooling(power, temperature)
+    cost = calculate_cloud_cost(power, el_prices)
+    worst_cost = cost.sum() # worst cost for the whole cloud
+
+    # worst = 1.0, best = 0.0
+    normalised = best_cost + actual_cost/worst_cost
+    return normalised

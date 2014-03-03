@@ -35,6 +35,3 @@ def test_fbf_run():
                        FBFSimpleSimulatedEnvironment)
     simulator.run()
     assert_true(simulator.driver.apply_action.called)
-
-
-

@@ -39,6 +39,17 @@ class SimulatedEnvironment(Environment):
 
     period = property(get_period, set_period, doc="period between time steps")
 
+    def get_forecast_end(self): # TODO: parametrize
+        return self._t + 24 * self._period
+
+    forecast_end = property(get_forecast_end, doc="time by which we forecast")
+
+    def current_data(self):
+        """return el. prices from now to forecast_end"""
+        # TODO: use panel and return el. prices and temperatures
+        # add forecasting error
+        return self.el_prices[self.t:self.forecast_end]
+
 class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""
     pass
@@ -81,3 +92,6 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
         justabit = pd.offsets.Micro(1)
         end = start + self._period - justabit
         return self._requests[start:end]
+
+class GASimpleSimulatedEnvironment(FBFSimpleSimulatedEnvironment):
+    pass

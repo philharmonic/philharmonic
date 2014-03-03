@@ -77,4 +77,33 @@ def test_calculate_cost():
     cost = calculate_cloud_cost(power, el_prices)
     assert_almost_equals(cost[s1], 0.42318367346938734)
     assert_almost_equals(cost[s2], 0.40907755102040827)
-    
+
+def test_calculate_cost_combined():
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+    s3 = Server(4000, 4, location='B')
+    servers = [s1, s2, s3]
+    cloud = Cloud(servers)
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = [vm1, vm2]
+
+    env = FBFSimpleSimulatedEnvironment()
+    env.period = pd.offsets.Hour(1)
+    env.start = pd.Timestamp('2013-02-25 8:00')
+    schedule = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2013-02-25 11:00')
+    schedule.add(a1, t1)
+    a2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2013-02-25 13:00')
+    schedule.add(a2, t2)
+    env.end = pd.Timestamp('2013-02-25 16:00')
+
+    el_prices = inputgen.simple_el()
+
+    cost = combined_cost(cloud, env, schedule, el_prices)
+    assert_is_instance(cost, float)
+
+    normalised = normalised_combined_cost(cloud, env, schedule, el_prices)
+    assert_true(0 <= normalised <= 1.)
