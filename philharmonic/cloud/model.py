@@ -281,6 +281,12 @@ class Schedule(object):
         return self.actions.ix[t:t + period - justabit]
         #return self.actions[t:t + period - justabit]
 
+    def __repr__(self):
+        return self.actions.__repr__()
+
+    def __str__(self):
+        return self.actions.__str__()
+
 # Cloud
 # ==========
 

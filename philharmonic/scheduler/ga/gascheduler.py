@@ -37,8 +37,15 @@ class ScheduleUnit(Schedule):
         new_unit.add(new_action, t)
         return new_unit
 
-    def crossover(self, other):
+    def crossover(self, other, t=None):
         """single-point crossover of both parent's actions series"""
         start = self.environment.t
         end = self.environment.forecast_end
-        t = random_time(start, end)
+        if not t:
+            t = random_time(start, end)
+        child = copy.copy(self)
+        actions1 = self.actions[:t]
+        justabit = pd.offsets.Micro(1)
+        actions2 = other.actions[t + justabit:]
+        child.actions = pd.concat([actions1, actions2])
+        return child
