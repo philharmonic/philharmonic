@@ -1,5 +1,5 @@
 """Evaluates a simulation, based on the cloud, environment and the actually
-performed schedule of actions
+performed schedule of actions.
 
 """
 
@@ -24,10 +24,9 @@ def print_history(cloud, environment, schedule):
             print('')
 
 def calculate_cloud_utilisation(cloud, environment, schedule):
-    """Calculate utilisations of all servers based on the given schedule"""
+    """Calculate utilisations of all servers based on the given schedule."""
     cloud.reset_to_initial()
     #TODO: maybe move some of this state iteration functionality into Cloud
-    #TODO: check when to add start and end (not always necessary) !!!
     utilisations = {server : [] for server in cloud.servers}
     times = []
     for t in schedule.actions.index.unique():
@@ -84,7 +83,7 @@ def generate_cloud_power(util):
     return power
 
 def calculate_cloud_cost(power, el_prices):
-    """Take power and el. prices DataFrames & calc. the el. cost"""
+    """Take power and el. prices DataFrames & calc. the el. cost."""
     el_prices_loc = pd.DataFrame()
     for server in power.columns: # this might be very inefficient
         loc = server.loc

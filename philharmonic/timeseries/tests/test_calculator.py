@@ -69,7 +69,6 @@ class TestCalculator(unittest.TestCase):
         p_total = ph.calculate_cooling_overhead(power, temperature)
         self.assertTrue((p_total > power).all(), 'cooling adds to power')
         self.assertTrue(p_total[3] < p_total[23], 'colder == more efficient')
-
     def test_calculate_cooling_overhead_df(self):
         n = 32
         power_samples1 = [100] * n

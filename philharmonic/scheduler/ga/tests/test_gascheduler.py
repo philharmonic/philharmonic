@@ -3,7 +3,7 @@ from nose.tools import *
 
 import pandas as pd
 
-from ..gascheduler import ScheduleUnit
+from ..gascheduler import ScheduleUnit, create_random
 from philharmonic import VM, Server, Cloud, Migration
 from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
 from philharmonic.simulator import inputgen
@@ -113,3 +113,20 @@ def test_crossover():
     assert_true((unit2.actions.values == actions2).all(), 'original unchanged')
     assert_equals(unit.actions[0], child.actions[0], '1st half one parent')
     assert_equals(unit2.actions[-1], child.actions[-1], '2nd half other parent')
+
+def test_create_random():
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times)
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    env.t = t1
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    env.VMs = set([vm1, vm2])
+
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+    cloud = Cloud([server1, server2])
+
+    unit = create_random(env, cloud)
+    assert_is_instance(unit, ScheduleUnit)
+    

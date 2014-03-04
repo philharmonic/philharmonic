@@ -49,3 +49,24 @@ class ScheduleUnit(Schedule):
         actions2 = other.actions[t + justabit:]
         child.actions = pd.concat([actions1, actions2])
         return child
+
+def create_random(environment, cloud):
+    unit = ScheduleUnit() # empty schedule unit
+    start = environment.t
+    end = environment.forecast_end
+    min_migrations = 0
+    plan_duration = (end - start).total_seconds()
+    plan_duration = int(plan_duration / 3600) # in hours
+    max_migrations = plan_duration * len(environment.VMs)
+    migration_number = random.randint(min_migrations, max_migrations)
+    # generate migration_number of migrations
+    for i in range(migration_number):
+        # - pick random moment
+        t = random_time(start, end)
+        # - pick random VM
+        vm = random.sample(environment.VMs, 1)[0]
+        # - pick random server
+        server = random.sample(cloud.servers, 1)[0]
+        action = Migration(vm, server)
+        unit.add(action, t)
+    return unit
