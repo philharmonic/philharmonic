@@ -3,7 +3,7 @@ from nose.tools import *
 
 import pandas as pd
 
-from ..gascheduler import ScheduleUnit, create_random
+from ..gascheduler import ScheduleUnit, create_random, GAScheduler
 from philharmonic import VM, Server, Cloud, Migration
 from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
 from philharmonic.simulator import inputgen
@@ -129,4 +129,28 @@ def test_create_random():
 
     unit = create_random(env, cloud)
     assert_is_instance(unit, ScheduleUnit)
-    
+
+def test_gascheduler():
+    # cloud
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+    cloud = Cloud([server1, server2])
+
+    # actions
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 13:00')
+    times = [t1, t2]
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times)
+    env.t = t1
+    env.el_prices = inputgen.simple_el()
+    env.VMs = set([vm1, vm2])
+
+    scheduler = GAScheduler()
+    scheduler.cloud = cloud
+    scheduler.environment = env # TODO: part of the IScheduler constructor
+    scheduler.reevaluate()

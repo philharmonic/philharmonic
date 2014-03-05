@@ -23,6 +23,7 @@ def print_history(cloud, environment, schedule):
             print("    {}".format(str(actions.values)))
             print('')
 
+# TODO: add optional start, end limiters for evaluating a certain period
 def calculate_cloud_utilisation(cloud, environment, schedule):
     """Calculate utilisations of all servers based on the given schedule."""
     cloud.reset_to_initial()
@@ -44,16 +45,21 @@ def calculate_cloud_utilisation(cloud, environment, schedule):
             utilisations[server].append(utilisation)
 
     #TODO: use pandas methods
-    if times[0] != environment.start:
-        times = [environment.start] + times
-        for server in cloud.servers:
-            utilisations[server] = [0.0] + utilisations[server]
+    try:
+        if times[0] != environment.start:
+            times = [environment.start] + times
+            for server in cloud.servers:
+                utilisations[server] = [0.0] + utilisations[server]
 
-    if times[-1] != environment.end:
-        # the last utilisation values hold until the end - duplicate last value
-        for server, utilisation in new_utilisations.iteritems():
-            utilisations[server].append(utilisation)
-        times = times + [environment.end]
+        if times[-1] != environment.end:
+            # the last utilisation values hold until the end - duplicate last
+            times = times + [environment.end]
+            for server, utilisation in new_utilisations.iteritems():
+                utilisations[server].append(utilisation)
+    except IndexError: # TODO: check, sth not right
+        times = [environment.start, environment.end]
+        for server in cloud.servers:
+            utilisations[server] = [0.0, 0.0]
 
     df_util = pd.DataFrame(utilisations, index=times)
     #df_all = df_util.join(schedule.actions)
