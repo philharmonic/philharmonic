@@ -143,3 +143,45 @@ def test_calculate_constraint_penalties():
 
     constraint_penalty = calculate_constraint_penalties(cloud, env, schedule)
     assert_not_equal(constraint_penalty, 0.)
+    #TODO: tests for different constraint violations
+
+def test_calculate_sla_penalties():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(4000, 2)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 2);
+    vm2 = VM(2000, 2);
+    VMs = [vm1, vm2]
+    cloud = Cloud(servers, VMs, auto_allocate=False)
+
+    env = FBFSimpleSimulatedEnvironment()
+    env.period = pd.offsets.Hour(1)
+    env.start = pd.Timestamp('2010-02-26 8:00')
+    env.end = pd.Timestamp('2010-02-27 8:00')
+
+    # only 1 migration per VM...
+    schedule = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2010-02-26 8:00')
+    schedule.add(a1, t1)
+    a2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2010-02-26 10:00')
+    schedule.add(a2, t2)
+
+    sla_penalty = calculate_sla_penalties(cloud, env, schedule)
+    assert_equals(sla_penalty, 0.)
+
+    # more migrations per VM...
+    schedule = Schedule()
+    a2 = Migration(vm1, s2)
+    for i in range(48):
+        if i % 2 == 0:
+            action = a1
+        else:
+            action = a2
+        schedule.add(action, t1)
+        t1 += pd.offsets.Minute(30)
+    sla_penalty = calculate_sla_penalties(cloud, env, schedule)
+    assert_almost_equals(sla_penalty, 0.33333333333333331)

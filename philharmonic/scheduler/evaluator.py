@@ -155,6 +155,10 @@ def calculate_constraint_penalties(cloud, environment, schedule):
     """Find all violated hard constraints for the given schedule
     and calculate appropriate penalties.
 
+    no constraints violated: 0.0
+
+    the more constraintes valuated: closer to 1.0
+
     """
     cap_weight, sched_weight = 0.6, 0.5
 
@@ -183,3 +187,41 @@ def calculate_constraint_penalties(cloud, environment, schedule):
     penalties = pd.Series(penalties)
     constraint_penalty = ph.weighted_mean(penalties)
     return constraint_penalty
+
+def inc_migrations(migrations_num, vm):
+    try:
+        migrations_num[vm] += 1
+    except KeyError:
+        migrations_num[vm] = 1
+
+def migr_rate_penalty(migr_rate):
+    """Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0"""
+    migr_rate
+
+def calculate_sla_penalties(cloud, environment, schedule):
+    """1 migration per VM: 0.0; more migrations - closer to 1.0"""
+    # count migrations
+    cloud.reset_to_initial() # TODO: rethink this
+    migrations_num = {}
+    for t in schedule.actions.index.unique():
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            for action in schedule.actions[t].values:
+                inc_migrations(migrations_num, action.vm)
+        else:
+            action = schedule.actions[t]
+            inc_migrations(migrations_num, action.vm)
+    migrations_num = pd.Series(migrations_num)
+    # average migration rate per hour
+    duration = (environment.end - environment.start).total_seconds() / 3600
+    migrations_rate = migrations_num / duration
+    penalty =  (migrations_rate - 1) / 3.
+    penalty[penalty<0] = 0
+    penalty[penalty>1] = 1
+    # 1/hour - tolerated, >1/hour - bad
+    return penalty.mean()
+
+# TODO: utilisation, constraint and sla penalties could all be
+# calculated in one pass through the states
+
+# TODO: add migration energy overhead into the energy calculation
