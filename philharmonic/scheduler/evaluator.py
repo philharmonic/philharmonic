@@ -181,7 +181,5 @@ def calculate_constraint_penalties(cloud, environment, schedule):
     penalties[environment.end] = penalty # last penalty holds 'til end
 
     penalties = pd.Series(penalties)
-    # TODO: put this in timeseries.util
-    constraint_penalty = np.average(penalties,
-                                    weights=penalties.index.asi8)
+    constraint_penalty = ph.weighted_mean(penalties)
     return constraint_penalty

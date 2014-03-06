@@ -17,6 +17,13 @@ def random_time(start, end, round_to_hour=True):
         t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour) # round to hour
     return t
 
-# TODO:
-# - weighted mean
-# http://stackoverflow.com/questions/10839701/time-weighted-average-with-pandas
+def weighted_mean(data):
+    """Data mean weighted on the time durations.
+
+    """
+    mean = np.average(data[:-1], weights=np.diff(data.index.asi8), axis=0)
+    try:
+        mean = pd.Series(mean, data.columns)
+    except AttributeError:
+        pass # data is a 1-d series -> mean already float
+    return mean
