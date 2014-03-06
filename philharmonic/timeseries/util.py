@@ -16,3 +16,7 @@ def random_time(start, end, round_to_hour=True):
     if round_to_hour:
         t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour) # round to hour
     return t
+
+# TODO:
+# - weighted mean
+# http://stackoverflow.com/questions/10839701/time-weighted-average-with-pandas

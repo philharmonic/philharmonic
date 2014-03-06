@@ -24,6 +24,7 @@ def print_history(cloud, environment, schedule):
             print('')
 
 # TODO: add optional start, end limiters for evaluating a certain period
+
 def calculate_cloud_utilisation(cloud, environment, schedule):
     """Calculate utilisations of all servers based on the given schedule."""
     cloud.reset_to_initial()
@@ -144,3 +145,43 @@ def normalised_combined_cost(cloud, environment, schedule,
     # worst = 1.0, best = 0.0
     normalised = best_cost + actual_cost/worst_cost
     return normalised
+
+
+#------------------------
+# constraint_penalties
+#------------------------
+
+def calculate_constraint_penalties(cloud, environment, schedule):
+    """Find all violated hard constraints for the given schedule
+    and calculate appropriate penalties.
+
+    """
+    cap_weight, sched_weight = 0.6, 0.5
+
+    cloud.reset_to_initial()
+    utilisations = {server : [] for server in cloud.servers}
+    penalties = {}
+    # if no actions - scheduling penalty for >0 VMs
+    penalties[environment.start] = sched_weight * np.sign(len(cloud.vms))
+    for t in schedule.actions.index.unique():
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            for action in schedule.actions[t].values:
+                cloud.apply(action)
+        else:
+            action = schedule.actions[t]
+            cloud.apply(action)
+        state = cloud.get_current()
+        # find violated server capacity constraints TODO: find by how much
+        cap_penalty = 1 - int(state.all_within_capacity())
+        # find unscheduled VMs TODO: find how many are not allocated
+        sched_penalty = 1 - int(state.all_allocated())
+        penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
+        penalties[t] = penalty
+    penalties[environment.end] = penalty # last penalty holds 'til end
+
+    penalties = pd.Series(penalties)
+    # TODO: put this in timeseries.util
+    constraint_penalty = np.average(penalties,
+                                    weights=penalties.index.asi8)
+    return constraint_penalty

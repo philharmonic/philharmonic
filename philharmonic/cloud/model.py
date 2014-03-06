@@ -226,7 +226,7 @@ class State():
         for s in self.servers:
             if not self.within_capacity(s):
                 return False
-        return True
+        return True # TODO: return how much over capacity
 
 class Action(object):
     """A static representation of an action on the cloud."""
