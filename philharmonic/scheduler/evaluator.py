@@ -25,10 +25,12 @@ def print_history(cloud, environment, schedule):
 
 # TODO: add optional start, end limiters for evaluating a certain period
 
-def calculate_cloud_utilisation(cloud, environment, schedule):
+def calculate_cloud_utilisation(cloud, environment, schedule,
+                                start=None, end=None):
     """Calculate utilisations of all servers based on the given schedule."""
     cloud.reset_to_initial()
     #TODO: maybe move some of this state iteration functionality into Cloud
+    #TODO: see where schedule window should be propagated - here or Scheduler?
     utilisations = {server : [] for server in cloud.servers}
     times = []
     for t in schedule.actions.index.unique():
@@ -45,20 +47,24 @@ def calculate_cloud_utilisation(cloud, environment, schedule):
         for server, utilisation in new_utilisations.iteritems():
             utilisations[server].append(utilisation)
 
+    if start is None:
+        start = environment.start
+    if end is None:
+        end = environment.end
     #TODO: use pandas methods
     try:
-        if times[0] != environment.start:
-            times = [environment.start] + times
+        if times[0] != start:
+            times = [start] + times
             for server in cloud.servers:
                 utilisations[server] = [0.0] + utilisations[server]
 
-        if times[-1] != environment.end:
+        if times[-1] != end:
             # the last utilisation values hold until the end - duplicate last
-            times = times + [environment.end]
+            times = times + [end]
             for server, utilisation in new_utilisations.iteritems():
                 utilisations[server].append(utilisation)
-    except IndexError: # TODO: check, sth not right
-        times = [environment.start, environment.end]
+    except IndexError: # no actions
+        times = [start, end]
         for server in cloud.servers:
             utilisations[server] = [0.0, 0.0]
 
@@ -151,7 +157,8 @@ def normalised_combined_cost(cloud, environment, schedule,
 # constraint_penalties
 #------------------------
 
-def calculate_constraint_penalties(cloud, environment, schedule):
+def calculate_constraint_penalties(cloud, environment, schedule,
+                                   start=None, end=None):
     """Find all violated hard constraints for the given schedule
     and calculate appropriate penalties.
 
@@ -165,8 +172,12 @@ def calculate_constraint_penalties(cloud, environment, schedule):
     cloud.reset_to_initial()
     utilisations = {server : [] for server in cloud.servers}
     penalties = {}
+    if not start:
+        start = environment.start
+    if not end:
+        end = environment.end
     # if no actions - scheduling penalty for >0 VMs
-    penalties[environment.start] = sched_weight * np.sign(len(cloud.vms))
+    penalties[start] = sched_weight * np.sign(len(cloud.vms))
     for t in schedule.actions.index.unique():
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
@@ -182,7 +193,7 @@ def calculate_constraint_penalties(cloud, environment, schedule):
         sched_penalty = 1 - int(state.all_allocated())
         penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
         penalties[t] = penalty
-    penalties[environment.end] = penalty # last penalty holds 'til end
+    penalties[end] = penalty # last penalty holds 'til end
 
     penalties = pd.Series(penalties)
     constraint_penalty = ph.weighted_mean(penalties)
@@ -198,11 +209,16 @@ def migr_rate_penalty(migr_rate):
     """Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0"""
     migr_rate
 
-def calculate_sla_penalties(cloud, environment, schedule):
+def calculate_sla_penalties(cloud, environment, schedule,
+                            start=None, end=None):
     """1 migration per VM: 0.0; more migrations - closer to 1.0"""
     # count migrations
     cloud.reset_to_initial() # TODO: rethink this
     migrations_num = {}
+    if not start:
+        start = environment.start
+    if not end:
+        end = environment.end
     for t in schedule.actions.index.unique():
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):

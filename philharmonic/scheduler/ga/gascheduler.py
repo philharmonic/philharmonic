@@ -11,7 +11,6 @@ from philharmonic import random_time
 
 class ScheduleUnit(Schedule):
     def calculate_fitness(self):
-        now = self.environment.t
         #TODO: maybe move this method to the Scheduler
         el_prices = self.environment.current_data()
         normalised_cost = normalised_combined_cost(self.cloud, self.environment,
@@ -23,15 +22,16 @@ class ScheduleUnit(Schedule):
         # copy the ScheduleUnit
         new_unit = copy.copy(self)
         # remove one action
-        i = random.randint(0, len(self.actions)-1)
-        new_unit.actions = new_unit.actions.drop(self.actions.index[i])
+        if len(self.actions) > 0:
+            i = random.randint(0, len(self.actions)-1)
+            new_unit.actions = new_unit.actions.drop(self.actions.index[i])
         # add new random action
         # - pick random moment
         start = self.environment.t
         end = self.environment.forecast_end
         t = random_time(start, end)
         # - pick random VM (among union of all allocs at t and VMRequests)
-        vm = random.sample(self.environment.VMs, 1)[0]
+        vm = random.sample(self.cloud.vms, 1)[0]
         # - pick random server
         server = random.sample(self.cloud.servers, 1)[0]
         new_action = Migration(vm, server)
@@ -51,6 +51,21 @@ class ScheduleUnit(Schedule):
         child.actions = pd.concat([actions1, actions2])
         return child
 
+    def update(self):
+        if len(self.actions) == 0:
+            return
+        # throw away old actions
+        t = self.environment.t
+        end = self.environment.forecast_end
+        self.actions = self.actions[t:end]
+        # throy away actions on non-existing vms
+        in_vms = self.actions.map(lambda a, vms=self.cloud.vms: a.vm in vms)
+        try:
+            self.actions = self.actions[in_vms]
+        except IndexError:
+            pass
+
+
     def __repr__(self):
         try:
             s = 'unit ({:.2})'.format(self.fitness)
@@ -69,14 +84,14 @@ def create_random(environment, cloud):
     min_migrations = 0
     plan_duration = (end - start).total_seconds()
     plan_duration = int(plan_duration / 3600) # in hours
-    max_migrations = plan_duration * len(environment.VMs)
+    max_migrations = plan_duration * len(cloud.vms)
     migration_number = random.randint(min_migrations, max_migrations)
     # generate migration_number of migrations
     for i in range(migration_number):
         # - pick random moment
         t = random_time(start, end)
         # - pick random VM
-        vm = random.sample(environment.VMs, 1)[0]
+        vm = random.sample(cloud.vms, 1)[0]
         # - pick random server
         server = random.sample(cloud.servers, 1)[0]
         action = Migration(vm, server)
@@ -100,37 +115,52 @@ class GAScheduler(IScheduler):
         num_children = int(round(population_size * recombination_rate))
         num_mutation = int(round(population_size *mutation_rate))
 
-        # initial population generation - TODO: take existing pop.
-        population = []
-        for i in range(population_size):
-            unit = create_random(self.environment, self.cloud)
-            population.append(unit)
+        start = self.environment.t
+        end = self.environment.forecast_end
+
+        try: # prepare old population for the new environment
+            existing_population = self.population
+            # TODO: if reusing old population, move window
+        except AttributeError: # initial population generation
+            self.population = []
+            for i in range(population_size):
+                unit = create_random(self.environment, self.cloud)
+                self.population.append(unit)
+        else:
+            for unit in existing_population:
+                unit.update()
+
+        # TODO: check for deleted VMs and remove these actions
 
         # main loop TODO: split into smaller functions
-        termination = False
         i = 0
-        while not termination: # get new generation
+        while True: # get new generation
             # calculate fitness
-            for unit in population:
+            for unit in self.population:
                 unit.fitness = unit.calculate_fitness()
+
+            self.population.sort(key=lambda u : u.fitness, reverse=False)
+
+            # check termination condition
+            if i == generation_num:
+                break
+            i += 1
+
             # recombination
-            population.sort(key=lambda u : u.fitness, reverse=True)
-            parents = population[:num_children]
+            parents = self.population[:num_children]
             children = []
             for j in range(num_children): # TODO: choose parents weighted among all
                 parent1, parent2 = random.sample(parents, 2)
                 child = parent1.crossover(parent2)
                 children.append(child)
             # new generation
-            population = population[:-num_children] + children
+            self.population = self.population[:-num_children] + children
             # mutation
-            for unit in random.sample(population, num_mutation):
+            for unit in random.sample(self.population, num_mutation):
                 unit = unit.mutation()
 
-            i += 1
-            if i == generation_num:
-                termination = True
+        # TODO: return best that satisfies hard constraints
+        return self.population[0]
 
     def reevaluate(self):
-        self.genetic_algorithm()
-        pass # return schedule
+        return self.genetic_algorithm()

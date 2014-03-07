@@ -50,7 +50,7 @@ def test_mutation():
     vm2 = VM(4,2)
     server1 = Server(8,4, location="A")
     server2 = Server(8,4, location="B")
-    unit.cloud = Cloud([server1, server2])
+    unit.cloud = Cloud([server1, server2], set([vm1, vm2]), auto_allocate=False)
 
     # actions
     t1 = pd.Timestamp('2013-02-25 00:00')
@@ -121,11 +121,10 @@ def test_create_random():
     env.t = t1
     vm1 = VM(4,2)
     vm2 = VM(4,2)
-    env.VMs = set([vm1, vm2])
 
     server1 = Server(8,4, location="A")
     server2 = Server(8,4, location="B")
-    cloud = Cloud([server1, server2])
+    cloud = Cloud([server1, server2], set([vm1, vm2]), auto_allocate=False)
 
     unit = create_random(env, cloud)
     assert_is_instance(unit, ScheduleUnit)
@@ -136,7 +135,7 @@ def test_gascheduler():
     vm2 = VM(4,2)
     server1 = Server(8,4, location="A")
     server2 = Server(8,4, location="B")
-    cloud = Cloud([server1, server2])
+    cloud = Cloud([server1, server2], set([vm1, vm2]), auto_allocate=False)
 
     # actions
     t1 = pd.Timestamp('2013-02-25 00:00')
@@ -148,9 +147,47 @@ def test_gascheduler():
     env = GASimpleSimulatedEnvironment(times)
     env.t = t1
     env.el_prices = inputgen.simple_el()
-    env.VMs = set([vm1, vm2])
 
     scheduler = GAScheduler()
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
     scheduler.reevaluate()
+
+def test_gascheduler_two_times(): # multiple reevaluation calls
+    # cloud
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+    cloud = Cloud([server1, server2], set([vm1, vm2]), auto_allocate=False)
+
+    # actions
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 13:00')
+    times = [t1, t2]
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times)
+    env.t = t1
+    env.el_prices = inputgen.simple_el()
+
+    scheduler = GAScheduler()
+    scheduler.cloud = cloud
+    scheduler.environment = env # TODO: part of the IScheduler constructor
+    scheduler.reevaluate()
+
+    #TODO: apply actions, propagate time
+    env.t = pd.Timestamp('2013-02-25 17:00')
+    vm3 = VM(4,2)
+    cloud.vms.remove(vm2)
+    schedule = scheduler.reevaluate()
+    assert_true(len(schedule.actions[:'2013-02-25 16:00']) == 0)
+
+# TODO
+def test_update():
+    pass
+
+def test_update_empty_schedule():
+    schedule = ScheduleUnit()
+    schedule.update()
