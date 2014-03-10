@@ -76,6 +76,11 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
     #df_all = df_util.join(schedule.actions)
     return df_util
 
+#TODO: this function uses most of the simulation time
+# - improve it
+# - make sure it's called only when necessary
+# - maybe pregenerate a power signal for the whole simulation and
+#   slice it and scale it
 def generate_cloud_power(util):
     """Create power signals from varying utilisation rates."""
     P_peak = 200
@@ -93,6 +98,7 @@ def generate_cloud_power(util):
         P_synth = pd.TimeSeries(data=synth_data, index=index)
 
         server_util = util[server]
+        # reindex especially slow - scaling existing signal better
         server_util = server_util.reindex(index, method='pad')
 
         power[server] = P_synth * server_util

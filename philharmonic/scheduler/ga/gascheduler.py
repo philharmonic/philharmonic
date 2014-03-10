@@ -10,28 +10,37 @@ from philharmonic.scheduler import evaluator
 from philharmonic import random_time
 
 class ScheduleUnit(Schedule):
+
+    def __init__(self):
+        self.changed = True
+        super(ScheduleUnit, self).__init__()
+
     def calculate_fitness(self):
-        #TODO: maybe move this method to the Scheduler
-        #TODO: set start, end
-        w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
-        el_prices = self.environment.current_data()
-        #TODO: add temperatures
-        cost = evaluator.normalised_combined_cost(
-            self.cloud, self.environment, self, el_prices
-        )
-        sla_penalty = evaluator.calculate_sla_penalties(
-            self.cloud, self.environment, self
-        )
-        constraint_penalty = evaluator.calculate_constraint_penalties(
-            self.cloud, self.environment, self
-        )
-        weighted_sum = (
-            w_cost * cost + w_sla * sla_penalty
-            + w_constraint * constraint_penalty
-        )
-        return weighted_sum
+        if self.changed:
+            #TODO: maybe move this method to the Scheduler
+            #TODO: set start, end
+            w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
+            el_prices = self.environment.current_data()
+            #TODO: add temperatures
+            cost = evaluator.normalised_combined_cost(
+                self.cloud, self.environment, self, el_prices
+            )
+            sla_penalty = evaluator.calculate_sla_penalties(
+                self.cloud, self.environment, self
+            )
+            constraint_penalty = evaluator.calculate_constraint_penalties(
+                self.cloud, self.environment, self
+            )
+            weighted_sum = (
+                w_cost * cost + w_sla * sla_penalty
+                + w_constraint * constraint_penalty
+            )
+            self.fitness = weighted_sum
+            self.changed = False
+        return self.fitness
 
     def mutation(self):
+        self.changed = True
         # copy the ScheduleUnit
         new_unit = copy.copy(self)
         # remove one action
@@ -59,6 +68,7 @@ class ScheduleUnit(Schedule):
         if not t:
             t = random_time(start, end)
         child = copy.copy(self)
+        child.changed = True
         actions1 = self.actions[:t]
         justabit = pd.offsets.Micro(1)
         actions2 = other.actions[t + justabit:]
@@ -151,7 +161,7 @@ class GAScheduler(IScheduler):
         while True: # get new generation
             # calculate fitness
             for unit in self.population:
-                unit.fitness = unit.calculate_fitness()
+                unit.calculate_fitness()
 
             self.population.sort(key=lambda u : u.fitness, reverse=False)
 
