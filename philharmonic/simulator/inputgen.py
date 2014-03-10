@@ -52,7 +52,7 @@ def peak_pauser_infrastructure():
     """1 server hosting 1 vm"""
     server = Server()
     vm = VM()
-    cloud = Cloud([server], [vm])
+    cloud = Cloud([server], set([vm]))
     return cloud
 
 # VM requests
@@ -99,6 +99,30 @@ def normal_vmreqs(start, end=None, round_to_hour=True):
             moments.append(start + offset)
     events = pd.TimeSeries(data=requests, index=moments)
     return events.sort_index()
+
+def simple_vmreqs(start, end):
+    """Generate the VM creation and deletion events in.
+    Normally distributed arrays - VM sizes and durations.
+    @param start, end - time interval (events within it)
+
+    """
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 00:00')
+    t3 = pd.Timestamp('2013-02-25 03:00')
+    t4 = pd.Timestamp('2013-02-26 06:00')
+
+    requests = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
+                VMRequest(vm2, 'delete'), VMRequest(vm1, 'delete')]
+    moments = [t1, t2, t3, t4]
+    events = pd.TimeSeries(data=requests, index=moments)
+    return events
 
 def no_requests(start, end):
     return pd.TimeSeries()

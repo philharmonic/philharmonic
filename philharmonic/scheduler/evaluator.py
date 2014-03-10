@@ -9,6 +9,7 @@ import numpy as np
 import philharmonic as ph
 
 def print_history(cloud, environment, schedule):
+    request_names = set(['boot', 'delete'])
     for t in environment.itertimes():
         requests = environment.get_requests()
         period = environment.get_period()
@@ -18,9 +19,11 @@ def print_history(cloud, environment, schedule):
         if len(requests) > 0:
             print(" - requests:")
             print("    {}".format(str(requests.values)))
+        # only take non-request actions (migrations)
+        actions = [a for a in actions.values if a.name not in request_names]
         if len(actions) > 0:
             print(" - actions:")
-            print("    {}".format(str(actions.values)))
+            print("    {}".format(str(actions)))
             print('')
 
 # TODO: add optional start, end limiters for evaluating a certain period
@@ -42,6 +45,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
+        #import ipdb; ipdb.set_trace()
         new_utilisations = state.calculate_utilisations()
         times.append(t)
         for server, utilisation in new_utilisations.iteritems():

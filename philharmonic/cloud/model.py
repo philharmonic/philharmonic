@@ -85,16 +85,6 @@ class Server(Machine):
     location = property(get_location, set_location, doc="geographical location")
     loc = property(get_location, set_location, doc="geographical location")
 
-class VMRequest():
-    """Container for VM creation/deletion events."""
-    def __init__(self, vm, what):
-        self.vm = vm
-        self.what = what
-    def __str__(self):
-        return "{0} {1}".format(self.what, self.vm)
-    def __repr__(self):
-        return self.__str__()
-
 # Schedule
 # ==========
 
@@ -107,7 +97,7 @@ class State():
         """create a random state"""
         return State([Server(2,2), Server(4,4)], [VM(1,1), VM(1,1)])
 
-    def __init__(self, servers=[], vms=[], auto_allocate=True):
+    def __init__(self, servers=[], vms=set(), auto_allocate=True):
         self.servers = servers
         self.vms = vms
         self.alloc = {} # servers -> allocated machines
@@ -160,6 +150,12 @@ class State():
     def unpause(self, vm):
         self.paused.remove(vm) # remove from paused set
 
+    def boot(self, vm):
+        self.vms.add(vm)
+
+    def delete(self, vm):
+        self.vms.remove(vm)
+
     def copy(self):
         """ return a copy of the state with a new alloc instance"""
         new_state = State()
@@ -192,6 +188,8 @@ class State():
                 for vm in self.alloc[server]:
                     used += vm.res[i]
                 utilisations[i] = used/server.cap[i]
+                if utilisations[i] > 1:
+                    utilisations[i] = 1
             for resource_type, utilisation in utilisations.iteritems():
                 total_utilisation += weights[resource_type] * utilisation
             self.utilisations[server] = total_utilisation
@@ -259,6 +257,18 @@ class Unpause(Action):
         self.args = [vm]
     name = 'unpause'
 
+class VMRequest(Action):
+    """VM creation/deletion actions."""
+    def __init__(self, vm, what):
+        self.vm = vm
+        self.args = [vm]
+        self.what = what
+        self.name = self.what
+    def __str__(self):
+        return "{0} {1}".format(self.what, self.vm)
+    def __repr__(self):
+        return self.__str__()
+
 import pandas as pd
 class Schedule(object):
     """(initial state? - part of Cloud) and a time series of actions"""
@@ -267,6 +277,15 @@ class Schedule(object):
         self.actions.name = 'actions'
 
     def add(self, action, t):
+        try:
+            existing_actions = self.filter_current_actions(
+                t, self.environment.period)
+        except AttributeError:
+            pass
+        else:
+            for t_ex, existing in existing_actions.iteritems():
+                if existing.name == action.name and existing.vm == action.vm:
+                    self.actions = self.actions[self.actions != existing]
         new_action = pd.Series({t: action})
         self.actions = pd.concat([self.actions, new_action])
         self.actions.name = 'actions'
@@ -308,7 +327,7 @@ class Cloud():
     - action on Cloud -> create Action instance -> add to Schedule
 
     """
-    def __init__(self, servers, initial_vms=[], auto_allocate=True):
+    def __init__(self, servers, initial_vms=set(), auto_allocate=False):
         self._servers = servers
         self._initial = State(servers, initial_vms, auto_allocate)
         for machine in servers + list(initial_vms): # know thy parent
@@ -347,7 +366,7 @@ class Cloud():
         state) and reset the virtual state.
 
         """
-        self._real = self._real.trainsition(action)
+        self._real = self._real.transition(action)
         self.reset_to_real()
 
     @deprecated

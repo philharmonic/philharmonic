@@ -143,3 +143,25 @@ def test_cloud():
     cloud = Cloud(servers, VMs)
     #TODO: test that auto_allocate doesn't break constraints
     assert_equals(cloud.vms, VMs)
+
+def test_vm_requests():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    vms = [vm1, vm2]
+    cloud = Cloud(servers)
+
+    assert_not_in(vm1, cloud.vms, 'vm1 should not be booted')
+    assert_not_in(vm2, cloud.vms, 'vm1 should not be booted')
+    req = VMRequest(vm1, 'boot')
+    cloud.apply(req)
+    assert_in(vm1, cloud.vms, 'vm1 should be booted')
+    assert_not_in(vm2, cloud.vms, 'vm1 should not be booted')
+    cloud.apply(VMRequest(vm1, 'delete'))
+    cloud.apply(VMRequest(vm2, 'boot'))
+    assert_not_in(vm1, cloud.vms, 'vm1 should be booted')
+    assert_in(vm2, cloud.vms, 'vm1 should not be booted')

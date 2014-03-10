@@ -164,21 +164,55 @@ class Simulator(IManager):
         "cloud": inputgen.peak_pauser_infrastructure,
         "driver": simdriver,
 
-        "times": None,
-        "requests": None,
+        "times": inputgen.two_days,
+        "requests": None, #inputgen.normal_vmreqs,
+        "servers": None, #inputgen.small_infrastructure,
+
+        "el_prices": inputgen.simple_el,
+        "temperature": inputgen.simple_temperature,
     }
 
     def __init__(self, factory=None):
-        self.real_schedule = Schedule() # schedule of actions that get applied
-        super(Simulator, self).__init__(factory)
+        if factory is not None:
+            self.factory = factory
+        super(Simulator, self).__init__()
+        self.environment.el_prices = self._create(self.factory['el_prices'])
+        self.environment.temperature = self._create(self.factory['temperature'])
+        self.real_schedule = Schedule()
 
     def apply_actions(self, actions):
+        """apply actions on the cloud (for "real") and log them"""
+        self.cloud.reset_to_real()
         for t, action in actions.iteritems():
             #debug('apply %s at time %d'.format(action, t))
+            self.cloud.apply_real(action)
             self.real_schedule.add(action, t)
             self.driver.apply_action(action, t)
 
     def run(self):
+        self.scheduler.initialize()
+        for t in self.environment.itertimes():
+            # get requests & update model
+            requests = self.environment.get_requests()
+            self.apply_actions(requests)
+            #for request in requests:
+            #    self.cloud.vms.
+            # schedule actions
+            schedule = self.scheduler.reevaluate()
+            period = self.environment.get_period()
+            actions = schedule.filter_current_actions(t, period)
+            self.apply_actions(actions)
+        events = self.cloud.driver.events
+        return self.cloud, self.environment, self.real_schedule
+
+
+class PeakPauserSimulator(Simulator):
+    def __init__(self):
+        self.factory["scheduler"] = PeakPauser
+        self.factory["environment"] = PPSimulatedEnvironment
+        super(PeakPauserSimulator, self).__init__()
+
+    def run(self): #TODO: use Simulator.run instead
         """go through all the timesteps and call the scheduler to ask for
         actions
 
@@ -196,22 +230,14 @@ class Simulator(IManager):
             # to the driver as well
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(timestamp, period)
-            #import ipdb; ipdb.set_trace()
             self.apply_actions(actions)
         events = self.cloud.driver.events
-
-
-class PeakPauserSimulator(Simulator):
-    def __init__(self):
-        self.factory["scheduler"] = PeakPauser
-        self.factory["environment"] = PPSimulatedEnvironment
-        super(PeakPauserSimulator, self).__init__()
 
 from philharmonic.scheduler import FBFScheduler
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 class FBFSimulator(Simulator):
     def __init__(self, factory=None):
-        if factory:
+        if factory is not None:
             self.factory = factory
         self.factory["scheduler"] = FBFScheduler
         self.factory["environment"] = FBFSimpleSimulatedEnvironment
@@ -224,7 +250,6 @@ class FBFSimulator(Simulator):
             schedule = self.scheduler.reevaluate()
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(t, period)
-            #import ipdb; ipdb.set_trace()
             self.apply_actions(actions)
         events = self.cloud.driver.events
         return self.cloud, self.environment, self.real_schedule
@@ -242,23 +267,31 @@ class NoSchedulerSimulator(Simulator):
 import matplotlib.pyplot as plt
 
 def run():
-    fig = plt.figure(1)
+    fig = plt.figure(1)#, figsize=(10, 15))
+    fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
+
     nplots = 3
     # create necessary objects
     #-------------------------
     from philharmonic import conf
-    simulator = FBFSimulator(conf.get_factory())
+    simulator = Simulator(conf.get_factory_ga())
+    # run the simulation
+    #-------------------
     cloud, env, schedule = simulator.run()
+    cloud.reset_to_initial()
     evaluator.print_history(cloud, env, schedule)
     # cloud utilisation
     #------------------
     util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
     print(util)
-    ax = plt.subplot(nplots, 1, 1)
-    util.plot(ax=ax)
+    # ax = plt.subplot(nplots, 1, 1)
+    # ax.set_title('Utilisation (%)')
+    # util.plot(ax=ax)
     # cloud power consumption
+    #------------------
     power = evaluator.generate_cloud_power(util)
-    ax = plt.subplot(nplots, 1, 2)
+    ax = plt.subplot(nplots, 1, 1)
+    ax.set_title('Computational power (W)')
     power.plot(ax=ax)
     energy = ph.joul2kwh(ph.calculate_energy(power))
     print('Energy (kWh)')
@@ -267,7 +300,8 @@ def run():
     #-----------------
     temperature = inputgen.simple_temperature()
     power_total = evaluator.calculate_cloud_cooling(power, temperature)
-    ax = plt.subplot(nplots, 1, 3)
+    ax = plt.subplot(nplots, 1, 2)
+    ax.set_title('Total power (W)')
     power_total.plot(ax=ax)
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
     print('Energy with cooling (kWh)')
@@ -281,6 +315,11 @@ def run():
     cost_total = evaluator.calculate_cloud_cost(power_total, el_prices)
     print('Electricity prices with cooling ($)')
     print(cost_total)
+    # QoS aspects
+    #------------------
+    # Capacity constraints
+    #---------------------
+    # TODO: these two
     plt.show()
 
 if __name__ == "__main__":

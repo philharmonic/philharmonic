@@ -15,6 +15,7 @@ class ScheduleUnit(Schedule):
         #TODO: set start, end
         w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
         el_prices = self.environment.current_data()
+        #TODO: add temperatures
         cost = evaluator.normalised_combined_cost(
             self.cloud, self.environment, self, el_prices
         )
@@ -38,16 +39,17 @@ class ScheduleUnit(Schedule):
             i = random.randint(0, len(self.actions)-1)
             new_unit.actions = new_unit.actions.drop(self.actions.index[i])
         # add new random action
-        # - pick random moment
-        start = self.environment.t
-        end = self.environment.forecast_end
-        t = random_time(start, end)
-        # - pick random VM (among union of all allocs at t and VMRequests)
-        vm = random.sample(self.cloud.vms, 1)[0]
-        # - pick random server
-        server = random.sample(self.cloud.servers, 1)[0]
-        new_action = Migration(vm, server)
-        new_unit.add(new_action, t)
+        if len(self.cloud.vms) > 0:
+            # - pick random moment
+            start = self.environment.t
+            end = self.environment.forecast_end
+            t = random_time(start, end)
+            # - pick random VM (among union of all allocs at t and VMRequests)
+            vm = random.sample(self.cloud.vms, 1)[0]
+            # - pick random server
+            server = random.sample(self.cloud.servers, 1)[0]
+            new_action = Migration(vm, server)
+            new_unit.add(new_action, t)
         return new_unit
 
     def crossover(self, other, t=None):
@@ -96,7 +98,7 @@ def create_random(environment, cloud):
     min_migrations = 0
     plan_duration = (end - start).total_seconds()
     plan_duration = int(plan_duration / 3600) # in hours
-    max_migrations = plan_duration * len(cloud.vms)
+    max_migrations = plan_duration * len(cloud.vms) // 3
     migration_number = random.randint(min_migrations, max_migrations)
     # generate migration_number of migrations
     for i in range(migration_number):

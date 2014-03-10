@@ -23,7 +23,7 @@ manager = "Simulator"
 #=================
 
 # won't have to be function once I kick out conf from PeakPauser
-def get_factory():
+def get_factory_fbf():
     # these schedulers are available:
     from philharmonic.scheduler import PeakPauser, NoScheduler, FBFScheduler
 
@@ -42,6 +42,32 @@ def get_factory():
         "times": inputgen.two_days,
         "requests": inputgen.normal_vmreqs,
         "servers": inputgen.small_infrastructure,
+    }
+
+    return factory
+
+def get_factory_ga():
+    # these schedulers are available:
+    from philharmonic.scheduler import GAScheduler
+
+    # environments
+    from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
+
+    from philharmonic.simulator import inputgen
+    from philharmonic.cloud.driver import simdriver
+
+    factory = {
+        "scheduler": GAScheduler,
+        "environment": GASimpleSimulatedEnvironment,
+        "cloud": inputgen.small_infrastructure,
+        "driver": simdriver,
+
+        "times": inputgen.two_days,
+        "requests": inputgen.simple_vmreqs,
+        "servers": inputgen.small_infrastructure,
+
+        "el_prices": inputgen.simple_el,
+        "temperature": inputgen.simple_temperature,
     }
 
     return factory

@@ -11,6 +11,7 @@ from philharmonic.simulator import inputgen
 def test_fitness():
     unit = ScheduleUnit()
 
+    #import ipdb; ipdb.set_trace()
     # cloud
     vm1 = VM(4,2)
     server1 = Server(8,4, location="A")
@@ -31,6 +32,7 @@ def test_fitness():
     env.el_prices = inputgen.simple_el()
     unit.environment = env
 
+    #import ipdb; ipdb.set_trace()
     fitness = unit.calculate_fitness()
     assert_is_instance(fitness, float)
 
