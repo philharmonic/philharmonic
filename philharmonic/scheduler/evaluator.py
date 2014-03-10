@@ -193,7 +193,8 @@ def calculate_constraint_penalties(cloud, environment, schedule,
         sched_penalty = 1 - int(state.all_allocated())
         penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
         penalties[t] = penalty
-    penalties[end] = penalty # last penalty holds 'til end
+    if len(schedule.actions) > 0:
+        penalties[end] = penalty # last penalty holds 'til end
 
     penalties = pd.Series(penalties)
     constraint_penalty = ph.weighted_mean(penalties)

@@ -6,17 +6,29 @@ import numpy as np
 
 from philharmonic import Schedule, Migration
 from philharmonic.scheduler.ischeduler import IScheduler
-from philharmonic.scheduler.evaluator import normalised_combined_cost
+from philharmonic.scheduler import evaluator
 from philharmonic import random_time
 
 class ScheduleUnit(Schedule):
     def calculate_fitness(self):
         #TODO: maybe move this method to the Scheduler
+        #TODO: set start, end
+        w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
         el_prices = self.environment.current_data()
-        normalised_cost = normalised_combined_cost(self.cloud, self.environment,
-                                                   self, el_prices)
-        # TODO: add constraint and SLA penalties
-        return normalised_cost
+        cost = evaluator.normalised_combined_cost(
+            self.cloud, self.environment, self, el_prices
+        )
+        sla_penalty = evaluator.calculate_sla_penalties(
+            self.cloud, self.environment, self
+        )
+        constraint_penalty = evaluator.calculate_constraint_penalties(
+            self.cloud, self.environment, self
+        )
+        weighted_sum = (
+            w_cost * cost + w_sla * sla_penalty
+            + w_constraint * constraint_penalty
+        )
+        return weighted_sum
 
     def mutation(self):
         # copy the ScheduleUnit

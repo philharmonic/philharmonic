@@ -21,6 +21,8 @@ def weighted_mean(data):
     """Data mean weighted on the time durations.
 
     """
+    if len(data) == 1:
+        return data[0]
     mean = np.average(data[:-1], weights=np.diff(data.index.asi8), axis=0)
     try:
         mean = pd.Series(mean, data.columns)
