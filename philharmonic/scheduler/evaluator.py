@@ -81,7 +81,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
 # - make sure it's called only when necessary
 # - maybe pregenerate a power signal for the whole simulation and
 #   slice it and scale it
-def generate_cloud_power(util):
+def generate_cloud_power(util, start=None, end=None):
     """Create power signals from varying utilisation rates."""
     P_peak = 200
     P_idle = 100
@@ -89,19 +89,19 @@ def generate_cloud_power(util):
     P_std = 1.26 # P_delta * 0.05
     power_freq = '5min'
 
-    power = pd.DataFrame()
-    for server in util.columns:
+    if start is None:
         start = util.index[0]
+    if end is None:
         end = util.index[-1]
-        index = pd.date_range(start, end, freq=power_freq)
-        synth_data = P_delta + P_std * np.random.randn(len(index))
-        P_synth = pd.TimeSeries(data=synth_data, index=index)
 
-        server_util = util[server]
-        # reindex especially slow - scaling existing signal better
-        server_util = server_util.reindex(index, method='pad')
-
-        power[server] = P_synth * server_util
+    power = pd.DataFrame()
+    index = pd.date_range(start, end, freq=power_freq)
+    # reindex especially slow - scaling existing signal better
+    server_util = util.reindex(index, method='pad')
+    synth_data = P_delta + P_std * np.random.randn(len(index),
+                                                   len(util.columns))
+    P_synth = pd.DataFrame(synth_data, index=index, columns=util.columns)
+    power = P_synth * server_util
     power[power>0] += P_idle # a server with no load is suspended
     return power
 
