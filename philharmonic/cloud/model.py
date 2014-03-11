@@ -85,6 +85,14 @@ class Server(Machine):
     location = property(get_location, set_location, doc="geographical location")
     loc = property(get_location, set_location, doc="geographical location")
 
+    def __repr__(self):
+        s = "{}:{}".format(self.machine_type, str(id(self))[-3:])
+        try:
+            s += '@{}'.format(self.location)
+        except AttributeError:
+            pass
+        return s
+
 # Schedule
 # ==========
 

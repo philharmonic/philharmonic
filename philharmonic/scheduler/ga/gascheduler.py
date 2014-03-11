@@ -8,6 +8,7 @@ from philharmonic import Schedule, Migration
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.scheduler import evaluator
 from philharmonic import random_time
+from philharmonic.logger import *
 
 class ScheduleUnit(Schedule):
 
@@ -139,7 +140,7 @@ class GAScheduler(IScheduler):
         population_size = 20
         recombination_rate = 0.15
         mutation_rate = 0.05
-        generation_num = 3
+        generation_num = 100
 
         num_children = int(round(population_size * recombination_rate))
         num_mutation = int(round(population_size *mutation_rate))
@@ -164,11 +165,13 @@ class GAScheduler(IScheduler):
         # main loop TODO: split into smaller functions
         i = 0
         while True: # get new generation
+            debug('- generation {}'.format(i))
             # calculate fitness
             for unit in self.population:
                 unit.calculate_fitness()
 
             self.population.sort(key=lambda u : u.fitness, reverse=False)
+            debug('  - best fitness: {}'.format(self.population[0].fitness))
 
             # check termination condition
             if i == generation_num:
@@ -178,7 +181,7 @@ class GAScheduler(IScheduler):
             # recombination
             parents = self.population[:num_children]
             children = []
-            for j in range(num_children): # TODO: choose parents weighted among all
+            for j in range(num_children):#TODO: choose parents weight. among all
                 parent1, parent2 = random.sample(parents, 2)
                 child = parent1.crossover(parent2)
                 children.append(child)
@@ -192,4 +195,5 @@ class GAScheduler(IScheduler):
         return self.population[0]
 
     def reevaluate(self):
+        debug('\nREEVALUATE (t={})\n---------------'.format(self.environment.t))
         return self.genetic_algorithm()

@@ -272,7 +272,7 @@ def run():
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
 
-    nplots = 3
+    nplots = 4
     # create necessary objects
     #-------------------------
     from philharmonic import conf
@@ -282,6 +282,14 @@ def run():
     cloud, env, schedule = simulator.run()
     cloud.reset_to_initial()
     evaluator.print_history(cloud, env, schedule)
+    # geotemporal inputs
+    #-------------------
+    ax = plt.subplot(nplots, 1, 1)
+    ax.set_title('Electricity prices ($/kWh)')
+    env.el_prices.plot(ax=ax)
+    ax = plt.subplot(nplots, 1, 2)
+    ax.set_title('Temperature (C)')
+    env.temperature.plot(ax=ax)
     # cloud utilisation
     #------------------
     util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
@@ -292,7 +300,7 @@ def run():
     # cloud power consumption
     #------------------
     power = evaluator.generate_cloud_power(util)
-    ax = plt.subplot(nplots, 1, 1)
+    ax = plt.subplot(nplots, 1, 3)
     ax.set_title('Computational power (W)')
     power.plot(ax=ax)
     energy = ph.joul2kwh(ph.calculate_energy(power))
@@ -302,7 +310,7 @@ def run():
     #-----------------
     temperature = inputgen.simple_temperature()
     power_total = evaluator.calculate_cloud_cooling(power, temperature)
-    ax = plt.subplot(nplots, 1, 2)
+    ax = plt.subplot(nplots, 1, 4)
     ax.set_title('Total power (W)')
     power_total.plot(ax=ax)
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
