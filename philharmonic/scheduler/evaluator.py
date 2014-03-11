@@ -215,22 +215,12 @@ def calculate_constraint_penalties(cloud, environment, schedule,
     constraint_penalty = ph.weighted_mean(penalties)
     return constraint_penalty
 
-def inc_migrations(migrations_num, vm):
-    try:
-        migrations_num[vm] += 1
-    except KeyError:
-        migrations_num[vm] = 1
-
-def migr_rate_penalty(migr_rate):
-    """Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0"""
-    migr_rate
-
 def calculate_sla_penalties(cloud, environment, schedule,
                             start=None, end=None):
     """1 migration per VM: 0.0; more migrations - closer to 1.0"""
     # count migrations
     cloud.reset_to_initial() # TODO: rethink this
-    migrations_num = {}
+    migrations_num = {vm: 0 for vm in cloud.vms}
     if not start:
         start = environment.start
     if not end:
@@ -239,14 +229,17 @@ def calculate_sla_penalties(cloud, environment, schedule,
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
-                inc_migrations(migrations_num, action.vm)
+                migrations_num[action.vm] += 1
         else:
             action = schedule.actions[t]
-            inc_migrations(migrations_num, action.vm)
+            migrations_num[action.vm] += 1
     migrations_num = pd.Series(migrations_num)
+    if len(migrations_num) == 0:
+        return 0. # no migrations - awesome!
     # average migration rate per hour
     duration = (environment.end - environment.start).total_seconds() / 3600
     migrations_rate = migrations_num / duration
+    # Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0
     penalty =  (migrations_rate - 1) / 3.
     penalty[penalty<0] = 0
     penalty[penalty>1] = 1

@@ -156,7 +156,7 @@ def test_calculate_sla_penalties():
     # some VMs
     vm1 = VM(2000, 2);
     vm2 = VM(2000, 2);
-    VMs = [vm1, vm2]
+    VMs = set([vm1, vm2])
     cloud = Cloud(servers, VMs, auto_allocate=False)
 
     env = FBFSimpleSimulatedEnvironment()
@@ -187,4 +187,4 @@ def test_calculate_sla_penalties():
         schedule.add(action, t1)
         t1 += pd.offsets.Minute(30)
     sla_penalty = calculate_sla_penalties(cloud, env, schedule)
-    assert_almost_equals(sla_penalty, 0.33333333333333331)
+    assert_almost_equals(sla_penalty, 0.16666666666666666)

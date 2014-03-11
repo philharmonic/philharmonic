@@ -18,7 +18,7 @@ def test_fitness():
     server1 = Server(8,4, location="A")
     server2 = Server(8,4, location="B")
     servers = [server1, server2]
-    unit.cloud = Cloud(servers)
+    unit.cloud = Cloud(servers, set([vm1]))
 
     # actions
     t1 = pd.Timestamp('2013-02-25 00:00')
