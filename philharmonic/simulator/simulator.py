@@ -207,7 +207,9 @@ class Simulator(IManager):
 
 
 class PeakPauserSimulator(Simulator):
-    def __init__(self):
+    def __init__(self, factory=None):
+        if factory is not None:
+            self.factory = factory
         self.factory["scheduler"] = PeakPauser
         self.factory["environment"] = PPSimulatedEnvironment
         super(PeakPauserSimulator, self).__init__()

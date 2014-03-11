@@ -60,6 +60,7 @@ def test_generate_cloud_power():
     num = len(index)/2
     util = pd.Series([0]*num + [0.5]*num, index)
     util = pd.DataFrame({'s1': util})
+    precreate_synth_power(index[0], index[-1], ['s1'])
     power = generate_cloud_power(util)
 
 def test_calculate_cost():
@@ -101,6 +102,8 @@ def test_calculate_cost_combined():
     env.end = pd.Timestamp('2013-02-25 16:00')
 
     el_prices = inputgen.simple_el()
+
+    precreate_synth_power(env.start, env.end, servers)
 
     cost = combined_cost(cloud, env, schedule, el_prices)
     assert_is_instance(cost, float)

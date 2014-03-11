@@ -45,7 +45,6 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
-        #import ipdb; ipdb.set_trace()
         new_utilisations = state.calculate_utilisations()
         times.append(t)
         for server, utilisation in new_utilisations.iteritems():
@@ -76,33 +75,39 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
     #df_all = df_util.join(schedule.actions)
     return df_util
 
+def precreate_synth_power(start, end, servers):
+    P_peak = 200
+    P_idle = 100
+    globals()['P_idle'] = P_idle
+    P_delta = P_peak - P_idle
+    power_freq = '5min'
+
+    index = pd.date_range(start, end, freq=power_freq)
+    P_synth_flat = pd.DataFrame({s: P_delta for s in servers}, index)
+    globals()['P_synth_flat'] = P_synth_flat
+
 #TODO: this function uses most of the simulation time
 # - improve it
 # - make sure it's called only when necessary
 # - maybe pregenerate a power signal for the whole simulation and
 #   slice it and scale it
+# USE PRECREATED POWER
+# TODO: get rid of this globals nonsense and create a Class (or a generator)
 def generate_cloud_power(util, start=None, end=None):
     """Create power signals from varying utilisation rates."""
-    P_peak = 200
-    P_idle = 100
-    P_delta = P_peak - P_idle
-    P_std = 1.26 # P_delta * 0.05
-    power_freq = '5min'
+    P_std = 5 # 1.26 # P_delta * 0.05
 
     if start is None:
         start = util.index[0]
     if end is None:
         end = util.index[-1]
 
-    power = pd.DataFrame()
-    index = pd.date_range(start, end, freq=power_freq)
-    # reindex especially slow - scaling existing signal better
-    server_util = util.reindex(index, method='pad')
-    synth_data = P_delta + P_std * np.random.randn(len(index),
-                                                   len(util.columns))
-    P_synth = pd.DataFrame(synth_data, index=index, columns=util.columns)
-    power = P_synth * server_util
-    power[power>0] += P_idle # a server with no load is suspended
+    P_synth_overlap = P_synth_flat[start:end]
+    power = (P_synth_overlap * util).fillna(method='pad')
+    P_idle = globals()['P_idle']
+    # a server with no load is suspended
+    power[power > 0] += P_idle + P_std * np.random.randn(len(power),
+                                                         len(util.columns))
     return power
 
 def calculate_cloud_cost(power, el_prices):

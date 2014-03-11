@@ -65,3 +65,20 @@ def test_simulator_pp_nodriver():
     #simulator.arm()
     simulator.run()
     assert_true(simulator.driver.apply_action.called)
+
+from philharmonic.scheduler import GAScheduler
+from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
+
+def test_gasimulator_empty_environment():
+    """test ga scheduler; empty environmentp"""
+    factory = Simulator.factory_copy()
+    factory['scheduler'] = GAScheduler
+    simulator = Simulator(factory)
+    env = GASimpleSimulatedEnvironment()
+    simulator.environment = env
+    env.start = pd.Timestamp('2010-01-01')
+    env.end = pd.Timestamp('2010-01-02')
+    env._times = []
+    simulator.arm()
+    #import ipdb; ipdb.set_trace()
+    simulator.run()

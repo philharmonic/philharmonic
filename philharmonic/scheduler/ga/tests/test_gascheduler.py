@@ -7,6 +7,7 @@ from ..gascheduler import ScheduleUnit, create_random, GAScheduler
 from philharmonic import VM, Server, Cloud, Migration
 from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
 from philharmonic.simulator import inputgen
+from philharmonic.scheduler import evaluator
 
 def test_fitness():
     unit = ScheduleUnit()
@@ -16,7 +17,8 @@ def test_fitness():
     vm1 = VM(4,2)
     server1 = Server(8,4, location="A")
     server2 = Server(8,4, location="B")
-    unit.cloud = Cloud([server1, server2])
+    servers = [server1, server2]
+    unit.cloud = Cloud(servers)
 
     # actions
     t1 = pd.Timestamp('2013-02-25 00:00')
@@ -33,6 +35,7 @@ def test_fitness():
     unit.environment = env
 
     #import ipdb; ipdb.set_trace()
+    evaluator.precreate_synth_power(env.start, env.end, servers)
     fitness = unit.calculate_fitness()
     assert_is_instance(fitness, float)
 
@@ -153,6 +156,7 @@ def test_gascheduler():
     scheduler = GAScheduler()
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
+    scheduler.initialize()
     scheduler.reevaluate()
 
 def test_gascheduler_two_times(): # multiple reevaluation calls
@@ -177,6 +181,7 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
     scheduler = GAScheduler()
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
+    scheduler.initialize()
     scheduler.reevaluate()
 
     #TODO: apply actions, propagate time

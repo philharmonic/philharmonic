@@ -129,6 +129,11 @@ class GAScheduler(IScheduler):
     def __init__(self, cloud=None, driver=None):
         IScheduler.__init__(self, cloud, driver)
 
+    def initialize(self):
+        evaluator.precreate_synth_power( # need this for efficient schedule eval
+            self.environment.start, self.environment.end, self.cloud.servers
+        )
+
     def genetic_algorithm(self):
         # TODO: parameters in conf
         population_size = 20
