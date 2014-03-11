@@ -140,7 +140,7 @@ class GAScheduler(IScheduler):
         population_size = 20
         recombination_rate = 0.15
         mutation_rate = 0.05
-        generation_num = 100
+        generation_num = 3
 
         num_children = int(round(population_size * recombination_rate))
         num_mutation = int(round(population_size *mutation_rate))

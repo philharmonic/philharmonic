@@ -12,9 +12,9 @@ from philharmonic.simulator.inputgen import small_infrastructure
 
 def test_server_locations():#TODO: refactor
     servers = small_infrastructure().servers
-    server_locations(servers, ['location_'+str(s) for s in servers])
-    assert_equals(servers[0].loc, 'location_'+str(servers[0]))
-    assert_equals(servers[-1].loc, 'location_'+str(servers[-1]))
+    server_locations(servers, ['location_'+str(id(s)) for s in servers])
+    assert_equals(servers[0].loc, 'location_'+str(id(servers[0])))
+    assert_equals(servers[-1].loc, 'location_'+str(id(servers[-1])))
 
 def test_prepare_known_data():
     n = 10
