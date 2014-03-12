@@ -72,6 +72,7 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
             else:
                 self._requests = inputgen.normal_vmreqs(self.start, self.end)
 
+    # TODO: better to make the environment immutable
     def itertimes(self):
         """Generator that iterates over times. To be called by the simulator."""
         for t in self._times:

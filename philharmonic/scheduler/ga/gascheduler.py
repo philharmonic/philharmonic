@@ -19,7 +19,7 @@ class ScheduleUnit(Schedule):
     def calculate_fitness(self):
         if self.changed:
             #TODO: maybe move this method to the Scheduler
-            #TODO: set start, end
+            #TODO: set start, end for sla, constraint
             w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
             start, end = self.environment.t, self.environment.forecast_end
             el_prices, temperature = self.environment.current_data()
@@ -28,10 +28,10 @@ class ScheduleUnit(Schedule):
                 start, end
             )
             sla_penalty = evaluator.calculate_sla_penalties(
-                self.cloud, self.environment, self
+                self.cloud, self.environment, self, start, end
             )
             constraint_penalty = evaluator.calculate_constraint_penalties(
-                self.cloud, self.environment, self
+                self.cloud, self.environment, self, start, end
             )
             weighted_sum = (
                 w_cost * cost + w_sla * sla_penalty

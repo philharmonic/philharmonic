@@ -30,8 +30,20 @@ def print_history(cloud, environment, schedule):
 
 def calculate_cloud_utilisation(cloud, environment, schedule,
                                 start=None, end=None):
-    """Calculate utilisations of all servers based on the given schedule."""
-    cloud.reset_to_initial()
+    """Calculate utilisations of all servers based on the given schedule.
+
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
+    """
+    if start is None:
+        start = environment.start
+        cloud.reset_to_initial() # TODO: timestamp states and be smarter
+    else:
+        cloud.reset_to_real()
+    if end is None:
+        end = environment.end
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: see where schedule window should be propagated - here or Scheduler?
     utilisations = {server : [] for server in cloud.servers}
@@ -50,10 +62,6 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
         for server, utilisation in new_utilisations.iteritems():
             utilisations[server].append(utilisation)
 
-    if start is None:
-        start = environment.start
-    if end is None:
-        end = environment.end
     #TODO: use pandas methods
     try:
         if times[0] != start:
@@ -143,12 +151,15 @@ def _worst_case_power(cloud, environment, start, end): # TODO: use this
 def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
                   start=None, end=None):
     """calculate costs in one function"""
+
+    # we first calculate utilisation with start, end = None / some timestamp
+    # this way it knows which state to start from
+    # (this is a temp. hack until cloud states get timestamped)
+    util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
     if start is None:
         start = environment.start
     if end is None:
         end = environment.end
-
-    util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
     power = generate_cloud_power(util)
     if temperature is not None:
         power = calculate_cloud_cooling(power, temperature[start:end])
@@ -195,6 +206,10 @@ def calculate_constraint_penalties(cloud, environment, schedule,
     """Find all violated hard constraints for the given schedule
     and calculate appropriate penalties.
 
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
     no constraints violated: 0.0
 
     the more constraintes valuated: closer to 1.0
@@ -202,16 +217,18 @@ def calculate_constraint_penalties(cloud, environment, schedule,
     """
     cap_weight, sched_weight = 0.6, 0.5
 
-    cloud.reset_to_initial()
     utilisations = {server : [] for server in cloud.servers}
     penalties = {}
-    if not start:
+    if start is None:
         start = environment.start
-    if not end:
+        cloud.reset_to_initial() # TODO: timestamp states and be smarter
+    else:
+        cloud.reset_to_real()
+    if end is None:
         end = environment.end
     # if no actions - scheduling penalty for >0 VMs
     penalties[start] = sched_weight * np.sign(len(cloud.vms))
-    for t in schedule.actions.index.unique():
+    for t in schedule.actions[start:end].index.unique():
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
@@ -235,15 +252,23 @@ def calculate_constraint_penalties(cloud, environment, schedule,
 
 def calculate_sla_penalties(cloud, environment, schedule,
                             start=None, end=None):
-    """1 migration per VM: 0.0; more migrations - closer to 1.0"""
+    """1 migration per VM: 0.0; more migrations - closer to 1.0.
+
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
+    """
     # count migrations
-    cloud.reset_to_initial() # TODO: rethink this
     migrations_num = {vm: 0 for vm in cloud.vms}
-    if not start:
+    if start is None:
         start = environment.start
-    if not end:
+        cloud.reset_to_initial() # TODO: timestamp states and be smarter
+    else:
+        cloud.reset_to_real()
+    if end is None:
         end = environment.end
-    for t in schedule.actions.index.unique():
+    for t in schedule.actions[start:end].index.unique():
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
@@ -255,7 +280,7 @@ def calculate_sla_penalties(cloud, environment, schedule,
     if len(migrations_num) == 0:
         return 0. # no migrations - awesome!
     # average migration rate per hour
-    duration = (environment.end - environment.start).total_seconds() / 3600
+    duration = (end - start).total_seconds() / 3600
     migrations_rate = migrations_num / duration
     # Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0
     penalty =  (migrations_rate - 1) / 3.
