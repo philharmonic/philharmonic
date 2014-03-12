@@ -48,7 +48,9 @@ class SimulatedEnvironment(Environment):
         """return el. prices from now to forecast_end"""
         # TODO: use panel and return el. prices and temperatures
         # add forecasting error
-        return self.el_prices[self.t:self.forecast_end]
+        el_prices = self.el_prices[self.t:self.forecast_end]
+        temperature = self.temperature[self.t:self.forecast_end]
+        return el_prices, temperature
 
 class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""
@@ -62,6 +64,7 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
         if not times is None:
             self._times = times
             self._period = times[1] - times[0]
+            self._t = self._times[0]
             self.start = self._times[0]
             self.end = self._times[-1]
             if requests is not None:

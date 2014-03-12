@@ -18,7 +18,7 @@ def test_fitness():
     server1 = Server(8,4, location="A")
     server2 = Server(8,4, location="B")
     servers = [server1, server2]
-    unit.cloud = Cloud(servers, set([vm1]))
+    unit.cloud = Cloud(servers, [vm1])
 
     # actions
     t1 = pd.Timestamp('2013-02-25 00:00')
@@ -32,6 +32,7 @@ def test_fitness():
     env = GASimpleSimulatedEnvironment(times)
     env.t = t1
     env.el_prices = inputgen.simple_el()
+    env.temperature = inputgen.simple_temperature()
     unit.environment = env
 
     #import ipdb; ipdb.set_trace()
@@ -152,8 +153,13 @@ def test_gascheduler():
     env = GASimpleSimulatedEnvironment(times)
     env.t = t1
     env.el_prices = inputgen.simple_el()
+    env.temperature = inputgen.simple_temperature()
 
     scheduler = GAScheduler()
+    scheduler.generation_num = 2
+    scheduler.population_size = 6
+    scheduler.recombination_rate = 0.4
+    scheduler.mutation_rate = 0.18
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
     scheduler.initialize()
@@ -177,8 +183,13 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
     env = GASimpleSimulatedEnvironment(times)
     env.t = t1
     env.el_prices = inputgen.simple_el()
+    env.temperature = inputgen.simple_temperature()
 
     scheduler = GAScheduler()
+    scheduler.generation_num = 2
+    scheduler.population_size = 6
+    scheduler.recombination_rate = 0.4
+    scheduler.mutation_rate = 0.18
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
     scheduler.initialize()

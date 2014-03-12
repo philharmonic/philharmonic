@@ -21,10 +21,11 @@ class ScheduleUnit(Schedule):
             #TODO: maybe move this method to the Scheduler
             #TODO: set start, end
             w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
-            el_prices = self.environment.current_data()
-            #TODO: add temperatures
+            start, end = self.environment.t, self.environment.forecast_end
+            el_prices, temperature = self.environment.current_data()
             cost = evaluator.normalised_combined_cost(
-                self.cloud, self.environment, self, el_prices
+                self.cloud, self.environment, self, el_prices, temperature,
+                start, end
             )
             sla_penalty = evaluator.calculate_sla_penalties(
                 self.cloud, self.environment, self
@@ -129,6 +130,10 @@ class GAScheduler(IScheduler):
 
     def __init__(self, cloud=None, driver=None):
         IScheduler.__init__(self, cloud, driver)
+        self.population_size = 20
+        self.recombination_rate = 0.15
+        self.mutation_rate = 0.05
+        self.generation_num = 3
 
     def initialize(self):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
@@ -137,13 +142,10 @@ class GAScheduler(IScheduler):
 
     def genetic_algorithm(self):
         # TODO: parameters in conf
-        population_size = 20
-        recombination_rate = 0.15
-        mutation_rate = 0.05
-        generation_num = 3
 
-        num_children = int(round(population_size * recombination_rate))
-        num_mutation = int(round(population_size *mutation_rate))
+
+        num_children = int(round(self.population_size * self.recombination_rate))
+        num_mutation = int(round(self.population_size *self.mutation_rate))
 
         start = self.environment.t
         end = self.environment.forecast_end
@@ -153,7 +155,7 @@ class GAScheduler(IScheduler):
             # TODO: if reusing old population, move window
         except AttributeError: # initial population generation
             self.population = []
-            for i in range(population_size):
+            for i in range(self.population_size):
                 unit = create_random(self.environment, self.cloud)
                 self.population.append(unit)
         else:
@@ -174,7 +176,7 @@ class GAScheduler(IScheduler):
             debug('  - best fitness: {}'.format(self.population[0].fitness))
 
             # check termination condition
-            if i == generation_num:
+            if i == self.generation_num:
                 break
             i += 1
 

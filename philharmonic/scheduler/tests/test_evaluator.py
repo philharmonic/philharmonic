@@ -17,9 +17,9 @@ def test_calculate_cloud_utilisation():
     vm2 = VM(2000, 2);
     VMs = [vm1, vm2]
 
-    env = FBFSimpleSimulatedEnvironment()
-    env.period = pd.offsets.Hour(1)
-    env.start = pd.Timestamp('2010-02-26 8:00')
+    times = pd.date_range('2010-02-26 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times)
+    env.t = times[0]
     schedule = Schedule()
     a1 = Migration(vm1, s1)
     t1 = pd.Timestamp('2010-02-26 11:00')
@@ -27,7 +27,6 @@ def test_calculate_cloud_utilisation():
     a2 = Migration(vm2, s2)
     t2 = pd.Timestamp('2010-02-26 13:00')
     schedule.add(a2, t2)
-    env.end = pd.Timestamp('2010-02-26 16:00')
 
     df_util = calculate_cloud_utilisation(cloud, env, schedule)
     assert_true((df_util[s1] == [0., 0.5, 0.5, 0.5]).all())
@@ -64,7 +63,6 @@ def test_generate_cloud_power():
     power = generate_cloud_power(util)
 
 def test_calculate_cost():
-    #import ipdb; ipdb.set_trace()
     s1 = Server(4000, 2, location='A')
     s2 = Server(8000, 4, location='B')
 
@@ -89,26 +87,27 @@ def test_calculate_cost_combined():
     vm2 = VM(2000, 2);
     VMs = [vm1, vm2]
 
-    env = FBFSimpleSimulatedEnvironment()
-    env.period = pd.offsets.Hour(1)
-    env.start = pd.Timestamp('2013-02-25 8:00')
+    times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times)
     schedule = Schedule()
     a1 = Migration(vm1, s1)
-    t1 = pd.Timestamp('2013-02-25 11:00')
+    t1 = pd.Timestamp('2010-02-25 11:00')
     schedule.add(a1, t1)
     a2 = Migration(vm2, s2)
-    t2 = pd.Timestamp('2013-02-25 13:00')
+    t2 = pd.Timestamp('2010-02-25 13:00')
     schedule.add(a2, t2)
-    env.end = pd.Timestamp('2013-02-25 16:00')
 
-    el_prices = inputgen.simple_el()
+    el_prices = inputgen.simple_el(start=env.t)
+    temperature = inputgen.simple_temperature(start=env.t)
 
     precreate_synth_power(env.start, env.end, servers)
 
-    cost = combined_cost(cloud, env, schedule, el_prices)
+    cost = combined_cost(cloud, env, schedule, el_prices,
+                         temperature, env.t, env.forecast_end)
     assert_is_instance(cost, float)
 
-    normalised = normalised_combined_cost(cloud, env, schedule, el_prices)
+    normalised = normalised_combined_cost(cloud, env, schedule, el_prices,
+                                          temperature, env.t, env.forecast_end)
     assert_true(0 <= normalised <= 1.)
 
 def test_calculate_constraint_penalties():

@@ -129,22 +129,24 @@ def no_requests(start, end):
 
 # time range (for the simulation)
 #------------
-def two_days():
-    return pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+def two_days(start=None):
+    if start is None:
+        start = '2013-02-25 00:00'
+    return pd.date_range(start, periods=48, freq='H')
 
 # geotemporal inputs
 #------------
 
-def simple_el():
-    idx = two_days()
+def simple_el(start=None):
+    idx = two_days(start)
     halflen = len(idx)/2
     a = [0.05] * halflen + [0.13] * halflen
     b = [0.012] * halflen + [0.06] * halflen
     el_prices = pd.DataFrame({'A': a, 'B': b}, idx)
     return el_prices
 
-def simple_temperature():
-    idx = two_days()
+def simple_temperature(start=None):
+    idx = two_days(start)
     n = len(idx)
     a = 3 * n / 4 * [23] + n / 4 * [0.13]
     b = 3 * n / 4 * [-3] + n / 4 * [1]

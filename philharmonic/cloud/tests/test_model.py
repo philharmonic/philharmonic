@@ -139,7 +139,7 @@ def test_cloud():
     # some VMs
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
-    VMs = [vm1, vm2]
+    VMs = set([vm1, vm2])
     cloud = Cloud(servers, VMs)
     #TODO: test that auto_allocate doesn't break constraints
     assert_equals(cloud.vms, VMs)

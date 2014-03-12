@@ -133,34 +133,52 @@ def calculate_cloud_cooling(power, temperature):
                                                        temperature_server)
     return power_with_cooling
 
-def combined_cost(cloud, environment, schedule, el_prices, temperature=None):
-    """calculate costs in one method"""
-    util = calculate_cloud_utilisation(cloud, environment, schedule)
+def _worst_case_power(cloud, environment, start, end): # TODO: use this
+    """ the power if all the servers were fully utilised"""
+    utilisations = {server : [1.0, 1.0] for server in cloud.servers}
+    full_util = pd.DataFrame(utilisations,
+                           index=[start, end])
+    full_power = generate_cloud_power(full_util)
+
+def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
+                  start=None, end=None):
+    """calculate costs in one function"""
+    if start is None:
+        start = environment.start
+    if end is None:
+        end = environment.end
+
+    util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
     power = generate_cloud_power(util)
     if temperature is not None:
-        power = calculate_cloud_cooling(power, temperature)
-    cost = calculate_cloud_cost(power, el_prices)
+        power = calculate_cloud_cooling(power, temperature[start:end])
+    cost = calculate_cloud_cost(power, el_prices[start:end])
     total_cost = cost.sum() # for the whole cloud
     return total_cost
 
 def normalised_combined_cost(cloud, environment, schedule,
-                             el_prices, temperature=None):
-    """calculates combined costs and normalises them from 0. to 1.0 relative to
+                             el_prices, temperature=None, start=None, end=None):
+    """Calculates combined costs and normalises them from 0. to 1.0 relative to
     a theoretical worst and best case.
 
     """
+    if start is None:
+        start = environment.start
+    if end is None:
+        end = environment.end
+
     actual_cost = combined_cost(cloud, environment, schedule,
-                         el_prices, temperature=None)
+                                el_prices, temperature, start, end)
     best_cost = 0.
 
-    # worst cost (full utilisation)
+    # worst case (full utilisation)
     utilisations = {server : [1.0, 1.0] for server in cloud.servers}
     full_util = pd.DataFrame(utilisations,
-                           index=[environment.start, environment.end])
-    power = generate_cloud_power(full_util)
+                             index=[start, end])
+    full_power = generate_cloud_power(full_util)
     if temperature is not None:
-        power = calculate_cloud_cooling(power, temperature)
-    cost = calculate_cloud_cost(power, el_prices)
+        full_power = calculate_cloud_cooling(full_power, temperature[start:end])
+    cost = calculate_cloud_cost(full_power, el_prices[start:end])
     worst_cost = cost.sum() # worst cost for the whole cloud
 
     # worst = 1.0, best = 0.0

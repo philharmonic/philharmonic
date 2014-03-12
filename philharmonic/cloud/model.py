@@ -337,7 +337,7 @@ class Cloud():
     """
     def __init__(self, servers, initial_vms=set(), auto_allocate=False):
         self._servers = servers
-        self._initial = State(servers, initial_vms, auto_allocate)
+        self._initial = State(servers, set(initial_vms), auto_allocate)
         for machine in servers + list(initial_vms): # know thy parent
             machine.cloud = self
         self._real = self._initial
