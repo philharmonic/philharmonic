@@ -300,7 +300,12 @@ def run():
     # cloud utilisation
     #------------------
     util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
-    print(util)
+    print('Utilisation (%)')
+    print(util*100)
+    #print('- weighted mean per no')
+    # weighted_mean(util[util>0])
+    #util[util>0].mean().dropna().mean() * 100
+    # TODO: maybe weighted mean for non-zero util
     # ax = plt.subplot(nplots, 1, 1)
     # ax.set_title('Utilisation (%)')
     # util.plot(ax=ax)
@@ -313,6 +318,8 @@ def run():
     energy = ph.joul2kwh(ph.calculate_energy(power))
     print('Energy (kWh)')
     print(energy)
+    print(' - total:')
+    print(energy.sum())
     # cooling overhead
     #-----------------
     #temperature = inputgen.simple_temperature()
@@ -324,6 +331,8 @@ def run():
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
     print('Energy with cooling (kWh)')
     print(energy_total)
+    print(' - total:')
+    print(energy_total.sum())
     # electricity costs
     #------------------
     #el_prices = inputgen.simple_el()
@@ -331,14 +340,29 @@ def run():
     cost = evaluator.calculate_cloud_cost(power, el_prices)
     print('Electricity prices ($)')
     print(cost)
+    print(' - total:')
+    print(cost.sum())
     cost_total = evaluator.calculate_cloud_cost(power_total, el_prices)
     print('Electricity prices with cooling ($)')
     print(cost_total)
+    print(' - total:')
+    print(cost_total.sum())
     # QoS aspects
     #------------------
     # Capacity constraints
     #---------------------
     # TODO: these two
+    #import ipdb; ipdb.set_trace()
+
+    # aggregated results
+    aggregated = [energy.sum(), cost.sum(), energy_total.sum(), cost_total.sum()]
+    aggr_names = ['IT energy (kWh)', 'IT cost ($)',
+                  'Total energy (kWh)', 'Total cost ($)']
+    aggregated_results = pd.Series(aggregated, aggr_names)
+    aggregated_results.to_pickle('results.pkl')
+    #aggregated_results.plot(kind='bar')
+    print(aggregated_results)
+
     plt.show()
 
 if __name__ == "__main__":
