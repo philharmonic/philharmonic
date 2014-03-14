@@ -112,9 +112,13 @@ def calculate_energy(power, estimate=False):
     if isinstance(power, pd.Series):
         return _calculate_series_energy(power, estimate)
 
-def calculate_cooling_overhead(power, temperature):
-    """Use a model of overhead model and real-time temperatures
+def calculate_cooling_overhead_old(power, temperature):
+    """Use a model of cooling overhead and real-time temperatures
     to calculate real-time PUE values and calculate the resulting power.
+
+    source:
+    Guler H. (2013). Energy Cost Optimization in Large Scale Distributed Systems
+    by Resource Allocation Techniques. Master's thesis.
 
     """
     # cooling model (Guler)
@@ -123,6 +127,21 @@ def calculate_cooling_overhead(power, temperature):
     CoP = CoP.reindex(power.index, method='ffill')
     return power * CoP
     #return power * CoP
+
+def calculate_cooling_overhead(power, temperature):
+    """Use a model of cooling overhead and real-time temperatures
+    to calculate real-time PUE values and calculate the resulting power.
+
+    source:
+    Xu, H., Feng, C., and Li, B. (2013). Temperature aware workload management
+    in geo-distributed datacenters. In Proc. USENIX ICAC, 2013.
+    """
+    # partial PUE
+    pPUE = 7.1705e-5 * temperature**2 + 0.0041 * temperature + 1.0743
+    pPUE = pPUE.reindex(power.index, method='ffill')
+    return power * pPUE
+
+# 
 
 def joul2kwh(jouls):
     """@Return: equivalent kWh """

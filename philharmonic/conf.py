@@ -59,15 +59,19 @@ def get_factory_ga():
     factory = {
         "scheduler": GAScheduler,
         "environment": GASimpleSimulatedEnvironment,
-        "cloud": inputgen.small_infrastructure,
+        #"cloud": inputgen.small_infrastructure,
+        "cloud": inputgen.usa_small_infrastructure,
         "driver": simdriver,
 
-        "times": inputgen.two_days,
+        #"times": inputgen.two_days,
+        "times": inputgen.usa_two_days,
         "requests": inputgen.simple_vmreqs,
         "servers": inputgen.small_infrastructure,
 
-        "el_prices": inputgen.simple_el,
-        "temperature": inputgen.simple_temperature,
+        #"el_prices": inputgen.simple_el,
+        "el_prices": inputgen.usa_el,
+        #"temperature": inputgen.simple_temperature,
+        "temperature": inputgen.usa_temperature,
     }
 
     return factory

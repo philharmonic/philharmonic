@@ -32,7 +32,7 @@ def normal_population(num, bottom, top, ceil=True):
 # DC description
 #---------------
 
-def small_infrastructure():
+def small_infrastructure(locations = ['A', 'B']):
     """return a list of Servers with determined resource capacities"""
     num_servers = 5
     Machine.resource_types = ['RAM', '#CPUs']
@@ -41,9 +41,9 @@ def small_infrastructure():
     servers = []
     for i in range(num_servers):
         if i < 3:
-            location = 'A' # TODO: real codes
+            location = locations[0]
         else:
-            location = 'B'
+            location = locations[1]
         s = Server(RAM[i], numCPUs[i], location=location)
         servers.append(s)
     return Cloud(servers=servers)
@@ -100,7 +100,7 @@ def normal_vmreqs(start, end=None, round_to_hour=True):
     events = pd.TimeSeries(data=requests, index=moments)
     return events.sort_index()
 
-def simple_vmreqs(start, end):
+def simple_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
     """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
@@ -112,11 +112,11 @@ def simple_vmreqs(start, end):
     server2 = Server(8,4, location="B")
 
     # environment
-    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    t1 = pd.Timestamp('2013-02-25 00:00')
-    t2 = pd.Timestamp('2013-02-25 00:00')
-    t3 = pd.Timestamp('2013-02-25 03:00')
-    t4 = pd.Timestamp('2013-02-26 06:00')
+    times = pd.date_range(start, periods=48, freq='H')
+    t1 = pd.Timestamp(start)
+    t2 = pd.Timestamp(start)
+    t3 = pd.Timestamp(start) + pd.offsets.Hour(3)
+    t4 = pd.Timestamp(start) + pd.offsets.Hour(6)
 
     requests = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
                 VMRequest(vm2, 'delete'), VMRequest(vm1, 'delete')]
@@ -152,3 +152,26 @@ def simple_temperature(start=None):
     b = 3 * n / 4 * [-3] + n / 4 * [1]
     temperature = pd.DataFrame({'A': a, 'B': b}, idx)
     return temperature
+
+
+# USA data
+#-----------
+import os
+DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
+DATA_LOC = os.path.join(DATA_LOC, 'data/geotemporal')
+
+def usa_el(start=None):
+    el_prices = pd.read_csv(os.path.join(DATA_LOC, 'prices.csv'),
+                            index_col=0, parse_dates=[0])
+    return el_prices
+
+def usa_temperature(start=None):
+    temperature = pd.read_csv(os.path.join(DATA_LOC, 'temperatures.csv'),
+                              index_col=0, parse_dates=[0])
+    return temperature
+
+def usa_small_infrastructure():
+    return small_infrastructure(['MI-Detroit', 'IN-Indianapolis'])
+
+def usa_two_days():
+    return two_days('2010-01-12 00:00')

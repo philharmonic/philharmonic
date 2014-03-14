@@ -72,7 +72,7 @@ class TestCalculator(unittest.TestCase):
     def test_calculate_cooling_overhead_df(self):
         n = 32
         power_samples1 = [100] * n
-        power_samples2 = [110] * n
+        power_samples2 = [105] * n
         temperature_samples1 = [15] * (n/2) + [27] * (n/2)
         temperature_samples2 = [-3] * (n/2) + [2] * (n/2)
         idx = pd.date_range('2013-01-23', periods=n, freq='s')

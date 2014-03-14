@@ -120,10 +120,12 @@ def generate_cloud_power(util, start=None, end=None):
 
 def calculate_cloud_cost(power, el_prices):
     """Take power and el. prices DataFrames & calc. the el. cost."""
+    start = power.index[0]
+    end= power.index[-1]
     el_prices_loc = pd.DataFrame()
     for server in power.columns: # this might be very inefficient
         loc = server.loc
-        el_prices_loc[server] = el_prices[loc]
+        el_prices_loc[server] = el_prices[loc][start:end]
     cost = ph.calculate_price(power, el_prices_loc)
     return cost
 
@@ -132,10 +134,12 @@ def calculate_cloud_cooling(power, temperature):
     cooling overhead.
 
     """
+    start = power.index[0]
+    end= power.index[-1]
     temperature_server = pd.DataFrame()
     for server in power.columns: # this might be very inefficient
         loc = server.loc
-        temperature_server[server] = temperature[loc]
+        temperature_server[server] = temperature[loc][start:end]
     #cost = ph.calculate_price(power, el_prices_loc)
     power_with_cooling = ph.calculate_cooling_overhead(power,
                                                        temperature_server)

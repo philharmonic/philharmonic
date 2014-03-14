@@ -308,7 +308,8 @@ def run():
     print(energy)
     # cooling overhead
     #-----------------
-    temperature = inputgen.simple_temperature()
+    #temperature = inputgen.simple_temperature()
+    temperature = env.temperature
     power_total = evaluator.calculate_cloud_cooling(power, temperature)
     ax = plt.subplot(nplots, 1, 4)
     ax.set_title('Total power (W)')
@@ -318,7 +319,8 @@ def run():
     print(energy_total)
     # electricity costs
     #------------------
-    el_prices = inputgen.simple_el()
+    #el_prices = inputgen.simple_el()
+    el_prices = env.el_prices
     cost = evaluator.calculate_cloud_cost(power, el_prices)
     print('Electricity prices ($)')
     print(cost)
