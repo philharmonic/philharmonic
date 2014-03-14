@@ -202,7 +202,6 @@ class Simulator(IManager):
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(t, period)
             self.apply_actions(actions)
-        events = self.cloud.driver.events
         return self.cloud, self.environment, self.real_schedule
 
 
@@ -233,7 +232,8 @@ class PeakPauserSimulator(Simulator):
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(timestamp, period)
             self.apply_actions(actions)
-        events = self.cloud.driver.events
+        # TODO: use schedule instance
+        #events = self.cloud.driver.events
 
 from philharmonic.scheduler import FBFScheduler
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
@@ -253,7 +253,7 @@ class FBFSimulator(Simulator):
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(t, period)
             self.apply_actions(actions)
-        events = self.cloud.driver.events
+        #events = self.cloud.driver.events
         return self.cloud, self.environment, self.real_schedule
 
 class NoSchedulerSimulator(Simulator):
@@ -267,6 +267,12 @@ class NoSchedulerSimulator(Simulator):
 # TODO: route to here straight from schedule.py
 
 import matplotlib.pyplot as plt
+import pickle
+
+def pickle_results(schedule):
+    schedule.actions.to_pickle('schedule.pkl')
+    #with open('schedule.pkl', 'w') as pkl_schedule:
+    #    pickle.dump(schedule.actions, pkl_schedule)
 
 def run():
     fig = plt.figure(1)#, figsize=(10, 15))
@@ -280,6 +286,7 @@ def run():
     # run the simulation
     #-------------------
     cloud, env, schedule = simulator.run()
+    pickle_results(schedule)
     cloud.reset_to_initial()
     evaluator.print_history(cloud, env, schedule)
     # geotemporal inputs

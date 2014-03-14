@@ -30,9 +30,7 @@ class IManager(object):
 
     def arm(self):
         """Take assembled components and inter-connect them."""
-        # arm driver
-        if self.cloud:
-            self.cloud.driver = self.driver
+        # arm driver - TODO if necessary
         # arm scheduler
         if self.scheduler:
             self.scheduler.cloud = self.cloud

@@ -60,7 +60,7 @@ def get_factory_ga():
         "population_size": 20,
         "recombination_rate": 0.15,
         "mutation_rate": 0.05,
-        "max_generations": 5,
+        "max_generations": 1,
     }
 
     factory = {
