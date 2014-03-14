@@ -69,7 +69,6 @@ def test_mutation():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     env = GASimpleSimulatedEnvironment(times)
     env.t = t1
-    env.VMs = set([vm1, vm2]) # represents all VM requests
     env.el_prices = inputgen.simple_el()
     unit.environment = env
 

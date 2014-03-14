@@ -56,8 +56,16 @@ def get_factory_ga():
     from philharmonic.simulator import inputgen
     from philharmonic.cloud.driver import simdriver
 
+    gaconf = {
+        "population_size": 20,
+        "recombination_rate": 0.15,
+        "mutation_rate": 0.05,
+        "max_generations": 5,
+    }
+
     factory = {
         "scheduler": GAScheduler,
+        "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
         #"cloud": inputgen.small_infrastructure,
         "cloud": inputgen.usa_small_infrastructure,

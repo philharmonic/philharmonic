@@ -133,7 +133,7 @@ class GAScheduler(IScheduler):
         self.population_size = 20
         self.recombination_rate = 0.15
         self.mutation_rate = 0.05
-        self.generation_num = 3
+        self.max_generations = 3
 
     def initialize(self):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
@@ -167,7 +167,6 @@ class GAScheduler(IScheduler):
         # main loop TODO: split into smaller functions
         i = 0
         while True: # get new generation
-            debug('- generation {}'.format(i))
             # calculate fitness
             for unit in self.population:
                 unit.calculate_fitness()
@@ -175,10 +174,11 @@ class GAScheduler(IScheduler):
             self.population.sort(key=lambda u : u.fitness, reverse=False)
             debug('  - best fitness: {}'.format(self.population[0].fitness))
 
-            # check termination condition
-            if i == self.generation_num:
-                break
             i += 1
+            debug('- generation {}'.format(i))
+            # check termination condition
+            if i == self.max_generations:
+                break
 
             # recombination
             parents = self.population[:num_children]

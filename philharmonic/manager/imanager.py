@@ -39,6 +39,11 @@ class IManager(object):
             self.scheduler.environment = self.environment
         # arm cloud.driver
         #self.cloud.driver.environment = self.environment
+        try:
+            for key, value in self.scheduler_conf.iteritems():
+                setattr(self.scheduler, key, value)
+        except AttributeError:
+            pass
 
 
     def __init__(self, factory=None):
@@ -49,6 +54,10 @@ class IManager(object):
         if not factory:
             factory = self.factory
         self.scheduler = self._create(factory['scheduler'])
+        try:
+            self.scheduler_conf = factory['scheduler_conf']
+        except KeyError:
+            pass
         self.cloud = self._create(factory['cloud'])
         self.driver = factory['driver']
 

@@ -138,10 +138,10 @@ def calculate_cooling_overhead(power, temperature):
     """
     # partial PUE
     pPUE = 7.1705e-5 * temperature**2 + 0.0041 * temperature + 1.0743
+    #TODO: maybe interpolate values
     pPUE = pPUE.reindex(power.index, method='ffill')
     return power * pPUE
 
-# 
 
 def joul2kwh(jouls):
     """@Return: equivalent kWh """
