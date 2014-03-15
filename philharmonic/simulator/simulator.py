@@ -282,6 +282,7 @@ def run():
     # create necessary objects
     #-------------------------
     from philharmonic import conf
+    #import ipdb; ipdb.set_trace()
     simulator = Simulator(conf.get_factory_ga())
     # run the simulation
     #-------------------

@@ -1,5 +1,8 @@
 """generate artificial input"""
 
+import random
+import pickle
+
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -55,9 +58,35 @@ def peak_pauser_infrastructure():
     cloud = Cloud([server], set([vm]))
     return cloud
 
+# cloud's servers
+server_num = 5
+min_server_cpu = 4
+max_server_cpu = 8
+#locations
+
+def normal_infrastructure(locations=['A', 'B'],
+                          round_to_hour=True):
+    """Generate the cloud's servers with random specs and
+    uniformly distributed over all the locations
+
+    """
+    # array of server sizes
+    cpu_sizes = normal_population(server_num, min_server_cpu,
+                                  max_server_cpu)
+    ram_sizes = normal_population(server_num, min_server_cpu,
+                                  max_server_cpu)
+
+    servers = []
+    for cpu_size, ram_size in zip(cpu_sizes, ram_sizes):
+        location = random.sample(locations, 1)[0]
+        server = Server(ram_size, cpu_size, location=location)
+        servers.append(server)
+    return servers
+
 # VM requests
 #------------
 # - global settings TODO: config file
+# VM requests
 VM_num = 3
 # e.g. CPUs
 min_cpu = 1
@@ -69,12 +98,13 @@ min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
 
-def normal_vmreqs(start, end=None, round_to_hour=True):
+def normal_vmreqs(start, end, round_to_hour=True):
     """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
 
     """
+    start, end = pd.Timestamp(start), pd.Timestamp(end)
     delta = end - start
     # array of VM sizes
     cpu_sizes = normal_population(VM_num, min_cpu, max_cpu)
@@ -175,3 +205,35 @@ def usa_small_infrastructure():
 
 def usa_two_days():
     return two_days('2010-01-12 00:00')
+
+def usa_whole_period():
+    temperature = usa_temperature()
+    start, end = temperature.index[0], temperature.index[-1]
+    return pd.date_range(start, end, freq='H')
+
+def generate_fixed_input():
+    from philharmonic import conf
+    # override module settings with the config file
+    for key, value in conf.inputgen_settings.iteritems():
+        globals()[key] = value
+    temperature = usa_temperature()
+    start, end = temperature.index[0], temperature.index[-26]
+    locations = temperature.columns.values
+    servers = normal_infrastructure(locations)
+    requests = normal_vmreqs(start, end)
+    with open('servers.pkl', 'w') as pkl_srv:
+        pickle.dump(servers, pkl_srv)
+    with open('requests.pkl', 'w') as pkl_req:
+        pickle.dump(requests, pkl_req)
+    print(servers, requests)
+
+def servers_from_pickle():
+    with open('servers.pkl') as pkl_srv:
+        return pickle.load(pkl_req)
+
+def requests_from_pickle(*args, **kwargs): # TODO: don't need input
+    with open('requests.pkl') as pkl_req:
+        return pickle.load(pkl_req)
+
+if __name__ == '__main__':
+    generate_fixed_input()
