@@ -87,8 +87,11 @@ def get_factory_ga():
 
     return factory
 
-# Input generation settings
+# Simulator settings
 #===========================
+
+#liveplot = True
+liveplot = False
 
 inputgen_settings = {
     # cloud's servers

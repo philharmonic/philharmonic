@@ -364,7 +364,9 @@ def run():
     #aggregated_results.plot(kind='bar')
     print(aggregated_results)
 
-    plt.show()
+    plt.savefig('results-graph.pdf')
+    if conf.liveplot:
+        plt.show()
 
 if __name__ == "__main__":
     run()
