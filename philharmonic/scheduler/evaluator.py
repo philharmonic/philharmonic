@@ -336,6 +336,16 @@ def evaluate(cloud, environment, schedule,
     initial_utilisations = cloud.get_current().calculate_utilisations()
     utilisations_list = [initial_utilisations]
     times = [start]
+
+    # CONSTRAINTS
+    cap_weight, sched_weight = 0.6, 0.5
+    penalties = {}
+    # if no actions - scheduling penalty for >0 VMs
+    penalties[start] = sched_weight * np.sign(len(cloud.vms))
+
+    # SLA
+    migrations_num = {vm: 0 for vm in cloud.vms}
+
     for t in schedule.actions.index.unique():
         if t == start: # we change the initial utilisation right away
             utilisations_list = []
@@ -344,18 +354,52 @@ def evaluate(cloud, environment, schedule,
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
                 cloud.apply(action)
+                migrations_num[action.vm] += 1
         else:
             action = schedule.actions[t]
+            migrations_num[action.vm] += 1
             cloud.apply(action)
         state = cloud.get_current()
         new_utilisations = state.calculate_utilisations()
         utilisations_list.append(new_utilisations)
         times.append(t)
+
+        # CONSTRAINTS
+        # find violated server capacity constraints TODO: find by how much
+        cap_penalty = 1 - int(state.all_within_capacity())
+        # find unscheduled VMs TODO: find how many are not allocated
+        sched_penalty = 1 - int(state.all_allocated())
+        penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
+        penalties[t] = penalty
+
     if times[-1] < end:
         # the last utilisation values hold until the end - duplicate last
         times.append(end)
         utilisations_list.append(utilisations_list[-1])
+
     util = pd.DataFrame(utilisations_list, times)
+
+    # CONSTRAINTS
+    if len(schedule.actions) > 0:
+        penalties[end] = penalty # last penalty holds 'til end
+    # CONSTRAINTS
+    penalties = pd.Series(penalties)
+    constraint_penalty = ph.weighted_mean(penalties)
+
+    # SLA
+    migrations_num = pd.Series(migrations_num)
+    if len(migrations_num) == 0:
+        sla_penalty = 0. # no migrations - awesome!
+    else:
+        # average migration rate per hour
+        duration = (end - start).total_seconds() / 3600
+        migrations_rate = migrations_num / duration
+        # Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0
+        penalty =  (migrations_rate - 1) / 3.
+        penalty[penalty<0] = 0
+        penalty[penalty>1] = 1
+        # 1/hour - tolerated, >1/hour - bad
+        sla_penalty = penalty.mean()
 
     # COST GOAL
     #----------
@@ -398,6 +442,6 @@ def evaluate(cloud, environment, schedule,
     # goal: high utilisation -> 0.0 good, high utilisation; 1.0 low utilisation
     utilisation_fitness = (1 - nonzero_utilisation_avg)
 
-    cost_penalty = 0.5 * utilisation_fitness + 0.5 * utilprice_penalty
+    cost_penalty = 0.2 * utilisation_fitness + 0.8 * utilprice_penalty
 
-    return cost_penalty
+    return cost_penalty, constraint_penalty, sla_penalty

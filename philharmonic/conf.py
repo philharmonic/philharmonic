@@ -73,11 +73,11 @@ def get_factory_ga():
         "cloud": inputgen.servers_from_pickle,
 
         #"times": inputgen.two_days,
-        #"times": inputgen.usa_two_days,
-        "times": inputgen.usa_two_hours,
+        "times": inputgen.usa_two_days,
+        #"times": inputgen.usa_two_hours,
         #"times": inputgen.usa_whole_period,
-        #"requests": inputgen.simple_vmreqs,
-        "requests": inputgen.requests_from_pickle,
+        "requests": inputgen.simple_vmreqs,
+        #"requests": inputgen.requests_from_pickle,
 
         #"el_prices": inputgen.simple_el,
         "el_prices": inputgen.usa_el,
@@ -96,6 +96,8 @@ def get_factory_ga():
 liveplot = False
 
 inputgen_settings = {
+    'simulation_start': '2010-01-01 00:00',
+    'simulation_duration': 2, # days
     # cloud's servers
     'server_num': 50,
     'min_server_cpu': 4,
@@ -110,8 +112,8 @@ inputgen_settings = {
     'max_ram': 2,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
-    #'max_duration': 60 * 60 * 3, # 3 hours
-    'max_duration': 60 * 60 * 24 * 10, # 10 days
+    'max_duration': 60 * 60 * 3, # 3 hours
+    #'max_duration': 60 * 60 * 24 * 10, # 10 days
 }
 
 # Benchmark

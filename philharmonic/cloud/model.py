@@ -130,12 +130,15 @@ class State():
 
 
     def place(self, vm, s):
-        """change current state to have vm in s"""
+        """change current state to have vm on server s"""
         self.alloc[s].add(vm)
 
     def remove(self, vm, s):
-        """change current state to not have vm in s"""
+        """change current state to not have vm on server s"""
         self.alloc[s].remove(vm)
+
+    # action effects (consequence of applying Action to State)
+    #---------------
 
     def migrate(self, vm, s):
         """change current state to have vm in s instead of the old location"""
@@ -148,7 +151,8 @@ class State():
                     # remove from old server
                     vms.remove(vm)
         # add it to the new one
-        self.alloc[s].add(vm)
+        if s is not None: # if s is None, vm is being deleted
+            self.alloc[s].add(vm)
         # TODO: faster reverse-dictionary lookup
         # http://stackoverflow.com/a/2569076/544059
 
@@ -159,10 +163,18 @@ class State():
         self.paused.remove(vm) # remove from paused set
 
     def boot(self, vm):
+        """a VM is requested by the user, but is not yet allocated"""
         self.vms.add(vm)
 
     def delete(self, vm):
-        self.vms.remove(vm)
+        """user requested for a vm to be deleted"""
+        try:
+            self.vms.remove(vm)
+        except KeyError: # the VM wasn't even there (booted outside environment)
+            pass
+        self.migrate(vm, None) # remove vm from its host server
+
+    #---------------
 
     def copy(self):
         """ return a copy of the state with a new alloc instance"""

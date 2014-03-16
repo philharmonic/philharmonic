@@ -195,6 +195,9 @@ class Simulator(IManager):
             # get requests & update model
             requests = self.environment.get_requests()
             self.apply_actions(requests)
+            if len(requests) > 0:
+                #import ipdb; ipdb.set_trace()
+                pass
             #for request in requests:
             #    self.cloud.vms.
             # schedule actions
@@ -285,11 +288,19 @@ def run():
 
     simulator = Simulator(conf.get_factory_ga())
 
+    print('Servers\n----------')
+    print(simulator.cloud.servers)
+    print('Requests\n----------')
+    print(simulator.requests)
+
     # run the simulation
     #-------------------
+    print('\n\nSTARTING SIMULATION')
     cloud, env, schedule = simulator.run()
+    print('SIMULATION COMPLETE\n\n')
     pickle_results(schedule)
     cloud.reset_to_initial()
+    print('Simulation timeline\n--------------')
     evaluator.print_history(cloud, env, schedule)
     # geotemporal inputs
     #-------------------

@@ -209,10 +209,10 @@ def usa_small_infrastructure():
     return small_infrastructure(['MI-Detroit', 'IN-Indianapolis'])
 
 def usa_two_days():
-    return two_days('2010-01-12 00:00')
+    return two_days('2010-01-01 00:00')
 
 def usa_two_hours():
-    return two_hours('2010-01-12 00:00')
+    return two_hours('2010-01-01 00:00')
 
 def usa_whole_period():
     temperature = usa_temperature()
@@ -225,7 +225,9 @@ def generate_fixed_input():
     for key, value in conf.inputgen_settings.iteritems():
         globals()[key] = value
     temperature = usa_temperature()
-    start, end = temperature.index[0], temperature.index[-26]
+    #start, end = temperature.index[0], temperature.index[-26]
+    start = pd.Timestamp(simulation_start)
+    end = start + pd.offsets.Day(simulation_duration)
     locations = temperature.columns.values
     servers = normal_infrastructure(locations)
     requests = normal_vmreqs(start, end)

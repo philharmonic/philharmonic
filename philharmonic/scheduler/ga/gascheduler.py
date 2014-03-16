@@ -48,15 +48,15 @@ class ScheduleUnit(Schedule):
             w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
             start, end = self.environment.t, self.environment.forecast_end
             el_prices, temperature = self.environment.current_data()
-            cost = evaluator.evaluate(
+            cost, constraint_penalty, sla_penalty = evaluator.evaluate(
                 self.cloud, self.environment, self, el_prices, temperature,
                 start, end
             )
-            # weighted_sum = (
-            #     w_cost * cost + w_sla * sla_penalty
-            #     + w_constraint * constraint_penalty
-            # )
-            self.fitness = cost #weighted_sum
+            weighted_sum = (
+                w_cost * cost + w_sla * sla_penalty
+                + w_constraint * constraint_penalty
+            )
+            self.fitness = weighted_sum
             self.changed = False
         return self.fitness
 
