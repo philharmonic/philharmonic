@@ -6,7 +6,7 @@ Created on Oct 15, 2012
 import unittest
 import pandas as pd
 
-from philharmonic.scheduler.energy_predictor import EnergyPredictor
+from philharmonic.scheduler import EnergyPredictor
 #from philharmonic.energy_price.calculator import *
 import philharmonic as ph
 

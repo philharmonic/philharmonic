@@ -81,7 +81,7 @@ def normal_infrastructure(locations=['A', 'B'],
         location = random.sample(locations, 1)[0]
         server = Server(ram_size, cpu_size, location=location)
         servers.append(server)
-    return servers
+    return Cloud(servers=servers)
 
 # VM requests
 #------------
@@ -164,6 +164,11 @@ def two_days(start=None):
         start = '2013-02-25 00:00'
     return pd.date_range(start, periods=48, freq='H')
 
+def two_hours(start=None):
+    if start is None:
+        start = '2013-02-25 00:00'
+    return pd.date_range(start, periods=2, freq='H')
+
 # geotemporal inputs
 #------------
 
@@ -206,6 +211,9 @@ def usa_small_infrastructure():
 def usa_two_days():
     return two_days('2010-01-12 00:00')
 
+def usa_two_hours():
+    return two_hours('2010-01-12 00:00')
+
 def usa_whole_period():
     temperature = usa_temperature()
     start, end = temperature.index[0], temperature.index[-1]
@@ -229,7 +237,7 @@ def generate_fixed_input():
 
 def servers_from_pickle():
     with open('servers.pkl') as pkl_srv:
-        return pickle.load(pkl_req)
+        return pickle.load(pkl_srv)
 
 def requests_from_pickle(*args, **kwargs): # TODO: don't need input
     with open('requests.pkl') as pkl_req:

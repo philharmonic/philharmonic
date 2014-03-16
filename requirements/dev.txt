@@ -2,7 +2,10 @@
 nose
 nose-exclude
 yanc
+ipython
+ipdb
 ipdbplugin
 mock
 coverage
 nose-timer
+nosy

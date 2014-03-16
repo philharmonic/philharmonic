@@ -282,8 +282,9 @@ def run():
     # create necessary objects
     #-------------------------
     from philharmonic import conf
-    #import ipdb; ipdb.set_trace()
+
     simulator = Simulator(conf.get_factory_ga())
+
     # run the simulation
     #-------------------
     cloud, env, schedule = simulator.run()
@@ -353,7 +354,6 @@ def run():
     # Capacity constraints
     #---------------------
     # TODO: these two
-    #import ipdb; ipdb.set_trace()
 
     # aggregated results
     aggregated = [energy.sum(), cost.sum(), energy_total.sum(), cost_total.sum()]

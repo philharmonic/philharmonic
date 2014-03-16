@@ -3,3 +3,5 @@ pandas
 pysnmp
 soappy
 twisted
+scipy
+matplotlib

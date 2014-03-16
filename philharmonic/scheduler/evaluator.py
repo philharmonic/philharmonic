@@ -44,11 +44,16 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
         cloud.reset_to_real()
     if end is None:
         end = environment.end
+    #TODO: use more precise pandas methods for indexing (performance)
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: see where schedule window should be propagated - here or Scheduler?
-    utilisations = {server : [] for server in cloud.servers}
-    times = []
+    initial_utilisations = cloud.get_current().calculate_utilisations()
+    utilisations_list = [initial_utilisations]
+    times = [start]
     for t in schedule.actions.index.unique():
+        if t == start: # we change the initial utilisation right away
+            utilisations_list = []
+            times = []
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
@@ -58,29 +63,13 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
             cloud.apply(action)
         state = cloud.get_current()
         new_utilisations = state.calculate_utilisations()
+        utilisations_list.append(new_utilisations)
         times.append(t)
-        for server, utilisation in new_utilisations.iteritems():
-            utilisations[server].append(utilisation)
-
-    #TODO: use pandas methods
-    try:
-        if times[0] != start:
-            times = [start] + times
-            for server in cloud.servers:
-                utilisations[server] = [0.0] + utilisations[server]
-
-        if times[-1] != end:
-            # the last utilisation values hold until the end - duplicate last
-            times = times + [end]
-            for server, utilisation in new_utilisations.iteritems():
-                utilisations[server].append(utilisation)
-    except IndexError: # no actions
-        times = [start, end]
-        for server in cloud.servers:
-            utilisations[server] = [0.0, 0.0]
-
-    df_util = pd.DataFrame(utilisations, index=times)
-    #df_all = df_util.join(schedule.actions)
+    if times[-1] < end:
+        # the last utilisation values hold until the end - duplicate last
+        times.append(end)
+        utilisations_list.append(utilisations_list[-1])
+    df_util = pd.DataFrame(utilisations_list, times)
     return df_util
 
 def precreate_synth_power(start, end, servers):
@@ -297,3 +286,19 @@ def calculate_sla_penalties(cloud, environment, schedule,
 # calculated in one pass through the states
 
 # TODO: add migration energy overhead into the energy calculation
+
+
+#-------------------------------------
+# simplified evaluator
+#  - used for the GA fitness function
+#-------------------------------------
+
+# - one run from t to forecast_end
+# - apply actions on the cloud model
+#   - calculate utilisation
+#   - count migration rate
+#   - note capacity constraint violations
+#
+# - in the fitness function
+#   - calculate simple measure of utilisation * el_price
+#      - e.g. 

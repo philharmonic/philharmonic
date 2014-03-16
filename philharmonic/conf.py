@@ -73,11 +73,12 @@ def get_factory_ga():
 
         #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
+        #"times": inputgen.usa_two_hours,
         "times": inputgen.usa_whole_period,
         #"requests": inputgen.simple_vmreqs,
         "requests": inputgen.requests_from_pickle,
-        #"servers": inputgen.small_infrastructure,
-        "servers": inputgen.servers_from_pickle,
+        #"cloud": inputgen.small_infrastructure,
+        "cloud": inputgen.servers_from_pickle,
 
         #"el_prices": inputgen.simple_el,
         "el_prices": inputgen.usa_el,
@@ -95,7 +96,7 @@ liveplot = False
 
 inputgen_settings = {
     # cloud's servers
-    'server_num': 100,
+    'server_num': 50,
     'min_server_cpu': 4,
     'max_server_cpu': 8,
 
