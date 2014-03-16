@@ -69,22 +69,22 @@ def get_factory_ga():
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
         #"cloud": inputgen.small_infrastructure,
-        "cloud": inputgen.usa_small_infrastructure,
-        "driver": simdriver,
+        #"cloud": inputgen.usa_small_infrastructure,
+        "cloud": inputgen.servers_from_pickle,
 
         #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
         "times": inputgen.usa_two_hours,
         #"times": inputgen.usa_whole_period,
-        "requests": inputgen.simple_vmreqs,
-        #"requests": inputgen.requests_from_pickle,
-        #"cloud": inputgen.small_infrastructure,
-        "cloud": inputgen.servers_from_pickle,
+        #"requests": inputgen.simple_vmreqs,
+        "requests": inputgen.requests_from_pickle,
 
         #"el_prices": inputgen.simple_el,
         "el_prices": inputgen.usa_el,
         #"temperature": inputgen.simple_temperature,
         "temperature": inputgen.usa_temperature,
+
+        "driver": simdriver,
     }
 
     return factory

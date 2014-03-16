@@ -89,6 +89,8 @@ def precreate_synth_power(start, end, servers):
     full_util = full_util.resample('H', fill_method='pad')
     globals()['full_util'] = full_util
 
+    globals()['cached_end'] = None
+
 #TODO: this function uses most of the simulation time
 # - improve it
 # - make sure it's called only when necessary
@@ -355,27 +357,46 @@ def evaluate(cloud, environment, schedule,
         utilisations_list.append(utilisations_list[-1])
     util = pd.DataFrame(utilisations_list, times)
 
-    # mean nonzero utilisation
-    el_prices_current = el_prices[start:end]
-    util = util.reindex(el_prices_current.index, method='pad')
-    nonzero_utilisation_avg = util[util>0].mean().mean()
-    # goal: high utilisation -> 0.0 good, high utilisation; 1.0 low utilisation
-    utilisation_fitness = (1 - nonzero_utilisation_avg)
-
+    # COST GOAL
+    #----------
     # utility + cooling + el. price penalty
+    # -load some cached data (or create & cache if it's a miss)
+    if globals()['cached_end'] == end:
+        el_prices_server = globals()['el_prices_server']
+        utilprice_worst_avg = globals()['utilprice_worst_avg']
+        el_prices_current = globals()['el_prices_current']
+    else:
+        el_prices_current = el_prices[start:end]
+        if temperature is not None:
+            pPUE = ph.calculate_pue(temperature[start:end])
+            el_prices_current = el_prices_current * pPUE
+        globals()['el_prices_current'] = el_prices_current
+        el_prices_server = pd.DataFrame()
+        # TODO: multiply with pPUE - from the temperature model
+        for server in util.columns: # this might be very inefficient
+            loc = server.loc
+            el_prices_server[server] = el_prices_current[loc]
+        globals()['el_prices_server'] = el_prices_server
+        globals()['cached_end'] = end
+
+        # - worst case util
+        full_util_current = globals()['full_util'][start:end]
+        utilprice_worst = el_prices_server * full_util_current
+        utilprice_worst_avg = utilprice_worst.mean().mean()
+        globals()['utilprice_worst_avg'] = utilprice_worst_avg
+
     # -based on this utility
-    el_prices_server = pd.DataFrame()
-    #TODO: cache
-    # TODO: multiply with pPUE - from the temperature model
-    for server in util.columns: # this might be very inefficient
-        loc = server.loc
-        el_prices_server[server] = el_prices_current[loc]
+    util = util.reindex(el_prices_current.index, method='pad')
     utilprice = el_prices_server * util
     utilprice_avg = utilprice.mean().mean()
-    # - worst case TODO: cache
-    full_util_current = globals()['full_util'][start:end]
-    utilprice_worst_avg = (el_prices_server * full_util_current).mean().mean()
     utilprice_penalty = utilprice_avg / float(utilprice_worst_avg)
+
+    # mean nonzero utilisation
+    nonzero_utilisation_avg = util[util>0].mean().mean()
+    if np.isnan(nonzero_utilisation_avg):
+        nonzero_utilisation_avg = 0
+    # goal: high utilisation -> 0.0 good, high utilisation; 1.0 low utilisation
+    utilisation_fitness = (1 - nonzero_utilisation_avg)
 
     cost_penalty = 0.5 * utilisation_fitness + 0.5 * utilprice_penalty
 

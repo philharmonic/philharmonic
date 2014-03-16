@@ -35,7 +35,6 @@ def test_fitness():
     env.temperature = inputgen.simple_temperature()
     unit.environment = env
 
-    #import ipdb; ipdb.set_trace()
     evaluator.precreate_synth_power(env.start, env.end, servers)
     fitness = unit.calculate_fitness()
     assert_is_instance(fitness, float)

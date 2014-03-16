@@ -1,4 +1,4 @@
-import copy
+import copy                     # 
 import random
 
 import pandas as pd
@@ -16,7 +16,7 @@ class ScheduleUnit(Schedule):
         self.changed = True
         super(ScheduleUnit, self).__init__()
 
-    def calculate_fitness(self):
+    def calculate_fitness_old(self):
         if self.changed:
             #TODO: maybe move this method to the Scheduler
             #TODO: set start, end for sla, constraint
@@ -38,6 +38,25 @@ class ScheduleUnit(Schedule):
                 + w_constraint * constraint_penalty
             )
             self.fitness = weighted_sum
+            self.changed = False
+        return self.fitness
+
+    def calculate_fitness(self):
+        if self.changed:
+            #TODO: maybe move this method to the Scheduler
+            #TODO: set start, end for sla, constraint
+            w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
+            start, end = self.environment.t, self.environment.forecast_end
+            el_prices, temperature = self.environment.current_data()
+            cost = evaluator.evaluate(
+                self.cloud, self.environment, self, el_prices, temperature,
+                start, end
+            )
+            # weighted_sum = (
+            #     w_cost * cost + w_sla * sla_penalty
+            #     + w_constraint * constraint_penalty
+            # )
+            self.fitness = cost #weighted_sum
             self.changed = False
         return self.fitness
 

@@ -204,6 +204,7 @@ def test_evaluate():
     times = inputgen.two_days(start='2010-02-26 00:00')
     env = FBFSimpleSimulatedEnvironment(times)
     el_prices = inputgen.simple_el(start=env.t)
+    temperature = inputgen.simple_temperature(start=env.t)
     schedule = Schedule()
     a1 = Migration(vm1, s1)
     t1 = pd.Timestamp('2010-02-26 11:00')
@@ -213,5 +214,5 @@ def test_evaluate():
     schedule.add(a2, t2)
 
     precreate_synth_power(times[0], times[-1], servers)
-    cost_penalty = evaluate(cloud, env, schedule, el_prices)
+    cost_penalty = evaluate(cloud, env, schedule, el_prices, temperature)
     assert_true(0<=cost_penalty<=1, 'normalised value expected')

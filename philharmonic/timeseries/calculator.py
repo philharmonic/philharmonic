@@ -128,6 +128,10 @@ def calculate_cooling_overhead_old(power, temperature):
     return power * CoP
     #return power * CoP
 
+def calculate_pue(temperature):
+    pPUE = 7.1705e-5 * temperature**2 + 0.0041 * temperature + 1.0743
+    return pPUE
+
 def calculate_cooling_overhead(power, temperature):
     """Use a model of cooling overhead and real-time temperatures
     to calculate real-time PUE values and calculate the resulting power.
@@ -137,7 +141,7 @@ def calculate_cooling_overhead(power, temperature):
     in geo-distributed datacenters. In Proc. USENIX ICAC, 2013.
     """
     # partial PUE
-    pPUE = 7.1705e-5 * temperature**2 + 0.0041 * temperature + 1.0743
+    pPUE = calculate_pue(temperature)
     #TODO: maybe interpolate values
     pPUE = pPUE.reindex(power.index, method='ffill')
     return power * pPUE
