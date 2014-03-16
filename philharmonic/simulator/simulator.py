@@ -204,6 +204,10 @@ class Simulator(IManager):
             schedule = self.scheduler.reevaluate()
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(t, period)
+            if len(requests) > 0:
+                debug('Requests:\n{}\n'.format(requests))
+            if len(actions) > 0:
+                debug('Applying:\n{}\n'.format(actions))
             self.apply_actions(actions)
         return self.cloud, self.environment, self.real_schedule
 

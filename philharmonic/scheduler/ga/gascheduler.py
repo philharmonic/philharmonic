@@ -153,25 +153,39 @@ class GAScheduler(IScheduler):
         self.recombination_rate = 0.15
         self.mutation_rate = 0.05
         self.max_generations = 3
+        self.artificial_boot_ratio = 0.15
 
     def initialize(self):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
             self.environment.start, self.environment.end, self.cloud.servers
         )
 
+    def _artificially_add_boots(self, num_units):
+        """Artificially add Migration actions to satisfy Boot requests to
+        random units.
+
+        """
+        requests = self.environment.get_requests()
+        for request in requests:
+            if request.what == 'boot':
+                for unit in random.sample(self.population, num_units):
+                    # TODO: maybe smarter server selection
+                    server = random.sample(self.cloud.servers, 1)[0]
+                    action = Migration(request.vm, server)
+                    unit.add(action, self.environment.t)
+
     def genetic_algorithm(self):
-        # TODO: parameters in conf
-
-
-        num_children = int(round(self.population_size * self.recombination_rate))
+        num_children = int(round(self.population_size *
+                                 self.recombination_rate))
         num_mutation = int(round(self.population_size *self.mutation_rate))
+        num_artificial_boot = int(round(self.population_size *
+                                        self.artificial_boot_ratio))
 
         start = self.environment.t
         end = self.environment.forecast_end
 
         try: # prepare old population for the new environment
             existing_population = self.population
-            # TODO: if reusing old population, move window
         except AttributeError: # initial population generation
             self.population = []
             for i in range(self.population_size):
@@ -179,7 +193,10 @@ class GAScheduler(IScheduler):
                 self.population.append(unit)
         else:
             for unit in existing_population:
-                unit.update()
+                unit.update() # reusing old population, so "move window"
+
+        # if there are any new boot requests, artificially add them
+        self._artificially_add_boots(num_artificial_boot)
 
         # TODO: check for deleted VMs and remove these actions
 
