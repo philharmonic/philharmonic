@@ -44,6 +44,7 @@ def get_factory_fbf():
         "servers": inputgen.small_infrastructure,
     }
 
+
     return factory
 
 def get_factory_ga():
@@ -73,10 +74,10 @@ def get_factory_ga():
 
         #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
-        #"times": inputgen.usa_two_hours,
-        "times": inputgen.usa_whole_period,
-        #"requests": inputgen.simple_vmreqs,
-        "requests": inputgen.requests_from_pickle,
+        "times": inputgen.usa_two_hours,
+        #"times": inputgen.usa_whole_period,
+        "requests": inputgen.simple_vmreqs,
+        #"requests": inputgen.requests_from_pickle,
         #"cloud": inputgen.small_infrastructure,
         "cloud": inputgen.servers_from_pickle,
 
@@ -101,7 +102,7 @@ inputgen_settings = {
     'max_server_cpu': 8,
 
     # VM requests
-    'VM_num': 30,
+    'VM_num': 100,
     # e.g. CPUs
     'min_cpu': 1,
     'max_cpu': 2,

@@ -83,6 +83,12 @@ def precreate_synth_power(start, end, servers):
     P_synth_flat = pd.DataFrame({s: P_delta for s in servers}, index)
     globals()['P_synth_flat'] = P_synth_flat
 
+    full_util = {server : [1.0, 1.0] for server in servers}
+    full_util = pd.DataFrame(full_util,
+                             index=[start, end])
+    full_util = full_util.resample('H', fill_method='pad')
+    globals()['full_util'] = full_util
+
 #TODO: this function uses most of the simulation time
 # - improve it
 # - make sure it's called only when necessary
@@ -301,4 +307,76 @@ def calculate_sla_penalties(cloud, environment, schedule,
 #
 # - in the fitness function
 #   - calculate simple measure of utilisation * el_price
-#      - e.g. 
+#      - e.g. utilprice = tot_util * el_price
+
+
+def evaluate(cloud, environment, schedule,
+             el_prices, temperature=None,
+             start=None, end=None):
+    """Calculate utilprice, sla and contstraint penalties
+    of all servers based on the given schedule.
+
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
+    """
+    if start is None:
+        start = environment.start
+        cloud.reset_to_initial() # TODO: timestamp states and be smarter
+    else:
+        cloud.reset_to_real()
+    if end is None:
+        end = environment.end
+    #TODO: use more precise pandas methods for indexing (performance)
+    #TODO: maybe move some of this state iteration functionality into Cloud
+    #TODO: see where schedule window should be propagated - here or Scheduler?
+    initial_utilisations = cloud.get_current().calculate_utilisations()
+    utilisations_list = [initial_utilisations]
+    times = [start]
+    for t in schedule.actions.index.unique():
+        if t == start: # we change the initial utilisation right away
+            utilisations_list = []
+            times = []
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            for action in schedule.actions[t].values:
+                cloud.apply(action)
+        else:
+            action = schedule.actions[t]
+            cloud.apply(action)
+        state = cloud.get_current()
+        new_utilisations = state.calculate_utilisations()
+        utilisations_list.append(new_utilisations)
+        times.append(t)
+    if times[-1] < end:
+        # the last utilisation values hold until the end - duplicate last
+        times.append(end)
+        utilisations_list.append(utilisations_list[-1])
+    util = pd.DataFrame(utilisations_list, times)
+
+    # mean nonzero utilisation
+    el_prices_current = el_prices[start:end]
+    util = util.reindex(el_prices_current.index, method='pad')
+    nonzero_utilisation_avg = util[util>0].mean().mean()
+    # goal: high utilisation -> 0.0 good, high utilisation; 1.0 low utilisation
+    utilisation_fitness = (1 - nonzero_utilisation_avg)
+
+    # utility + cooling + el. price penalty
+    # -based on this utility
+    el_prices_server = pd.DataFrame()
+    #TODO: cache
+    # TODO: multiply with pPUE - from the temperature model
+    for server in util.columns: # this might be very inefficient
+        loc = server.loc
+        el_prices_server[server] = el_prices_current[loc]
+    utilprice = el_prices_server * util
+    utilprice_avg = utilprice.mean().mean()
+    # - worst case TODO: cache
+    full_util_current = globals()['full_util'][start:end]
+    utilprice_worst_avg = (el_prices_server * full_util_current).mean().mean()
+    utilprice_penalty = utilprice_avg / float(utilprice_worst_avg)
+
+    cost_penalty = 0.5 * utilisation_fitness + 0.5 * utilprice_penalty
+
+    return cost_penalty

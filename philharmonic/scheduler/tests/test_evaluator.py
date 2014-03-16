@@ -187,3 +187,31 @@ def test_calculate_sla_penalties():
         t1 += pd.offsets.Minute(30)
     sla_penalty = calculate_sla_penalties(cloud, env, schedule)
     assert_almost_equals(sla_penalty, 0.16666666666666666)
+
+
+def test_evaluate():
+    # some servers
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+    s3 = Server(4000, 2, location='B')
+    servers = [s1, s2, s3]
+    cloud = Cloud(servers)
+    # some VMs
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = [vm1, vm2]
+
+    times = inputgen.two_days(start='2010-02-26 00:00')
+    env = FBFSimpleSimulatedEnvironment(times)
+    el_prices = inputgen.simple_el(start=env.t)
+    schedule = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2010-02-26 11:00')
+    schedule.add(a1, t1)
+    a2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2010-02-26 13:00')
+    schedule.add(a2, t2)
+
+    precreate_synth_power(times[0], times[-1], servers)
+    cost_penalty = evaluate(cloud, env, schedule, el_prices)
+    assert_true(0<=cost_penalty<=1, 'normalised value expected')
