@@ -126,7 +126,10 @@ def normal_vmreqs(start, end, round_to_hour=True):
         offset += pd.offsets.Second(duration)
         if start + offset <= end: # event is relevant
             requests.append(VMRequest(vm, 'delete'))
-            moments.append(start + offset)
+            t = start + offset
+            if round_to_hour:
+                t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
+            moments.append(t)
     events = pd.TimeSeries(data=requests, index=moments)
     return events.sort_index()
 
@@ -216,7 +219,7 @@ def usa_two_hours():
 
 def usa_whole_period():
     temperature = usa_temperature()
-    start, end = temperature.index[0], temperature.index[-1]
+    start, end = temperature.index[0], temperature.index[-26]
     return pd.date_range(start, end, freq='H')
 
 def generate_fixed_input():
@@ -227,7 +230,10 @@ def generate_fixed_input():
     temperature = usa_temperature()
     #start, end = temperature.index[0], temperature.index[-26]
     start = pd.Timestamp(simulation_start)
-    end = start + pd.offsets.Day(simulation_duration)
+    try:
+        end = pd.Timestamp(simulation_end)
+    except NameError:
+        end = start + pd.offsets.Day(simulation_duration)
     locations = temperature.columns.values
     servers = normal_infrastructure(locations)
     requests = normal_vmreqs(start, end)

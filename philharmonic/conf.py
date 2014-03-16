@@ -58,10 +58,10 @@ def get_factory_ga():
     from philharmonic.cloud.driver import simdriver
 
     gaconf = {
-        "population_size": 30,
+        "population_size": 100,
         "recombination_rate": 0.15,
         "mutation_rate": 0.05,
-        "max_generations": 20,
+        "max_generations": 100,
     }
 
     factory = {
@@ -73,11 +73,11 @@ def get_factory_ga():
         "cloud": inputgen.servers_from_pickle,
 
         #"times": inputgen.two_days,
-        "times": inputgen.usa_two_days,
+        #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
-        #"times": inputgen.usa_whole_period,
-        "requests": inputgen.simple_vmreqs,
-        #"requests": inputgen.requests_from_pickle,
+        "times": inputgen.usa_whole_period,
+        #"requests": inputgen.simple_vmreqs,
+        "requests": inputgen.requests_from_pickle,
 
         #"el_prices": inputgen.simple_el,
         "el_prices": inputgen.usa_el,
@@ -97,6 +97,8 @@ liveplot = False
 
 inputgen_settings = {
     'simulation_start': '2010-01-01 00:00',
+    'simulation_end': '2010-05-03 23:00',
+    # not considered if simulation_end specified
     'simulation_duration': 2, # days
     # cloud's servers
     'server_num': 50,
@@ -104,7 +106,7 @@ inputgen_settings = {
     'max_server_cpu': 8,
 
     # VM requests
-    'VM_num': 100,
+    'VM_num': 1000,
     # e.g. CPUs
     'min_cpu': 1,
     'max_cpu': 2,
@@ -112,8 +114,8 @@ inputgen_settings = {
     'max_ram': 2,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
-    'max_duration': 60 * 60 * 3, # 3 hours
-    #'max_duration': 60 * 60 * 24 * 10, # 10 days
+    #'max_duration': 60 * 60 * 3, # 3 hours
+    'max_duration': 60 * 60 * 24 * 10, # 10 days
 }
 
 # Benchmark

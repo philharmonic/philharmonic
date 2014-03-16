@@ -153,12 +153,26 @@ class GAScheduler(IScheduler):
         self.recombination_rate = 0.15
         self.mutation_rate = 0.05
         self.max_generations = 3
+        self.random_recreate_ratio = 0.05
         self.artificial_boot_ratio = 0.15
 
     def initialize(self):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
             self.environment.start, self.environment.end, self.cloud.servers
         )
+
+    def _create_or_update_population(self):
+        try: # prepare old population for the new environment if it exists
+            existing_population = self.population
+        except AttributeError: # doesn't exist -> initial population generation
+            self.population = []
+            for i in range(self.population_size):
+                unit = create_random(self.environment, self.cloud)
+                self.population.append(unit)
+        else:
+            for unit in existing_population:
+                unit.update() # reusing old population, so "move window"
+            #TODO: randomly create self.num_random_recreate new units
 
     def _artificially_add_boots(self, num_units):
         """Artificially add Migration actions to satisfy Boot requests to
@@ -175,25 +189,22 @@ class GAScheduler(IScheduler):
                     unit.add(action, self.environment.t)
 
     def genetic_algorithm(self):
+        """Propagate through generations, evolve ScheduleUnits and find
+        the fittest one.
+
+        """
         num_children = int(round(self.population_size *
                                  self.recombination_rate))
         num_mutation = int(round(self.population_size *self.mutation_rate))
+        self.num_random_recreate = int(round(self.population_size *
+                                             self.random_recreate_ratio))
         num_artificial_boot = int(round(self.population_size *
                                         self.artificial_boot_ratio))
 
         start = self.environment.t
         end = self.environment.forecast_end
 
-        try: # prepare old population for the new environment
-            existing_population = self.population
-        except AttributeError: # initial population generation
-            self.population = []
-            for i in range(self.population_size):
-                unit = create_random(self.environment, self.cloud)
-                self.population.append(unit)
-        else:
-            for unit in existing_population:
-                unit.update() # reusing old population, so "move window"
+        self._create_or_update_population()
 
         # if there are any new boot requests, artificially add them
         self._artificially_add_boots(num_artificial_boot)
