@@ -70,25 +70,25 @@ def get_factory_ga():
         "scheduler": FBFScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
-        "cloud": inputgen.small_infrastructure,
+        #"cloud": inputgen.small_infrastructure,
         #"cloud": inputgen.usa_small_infrastructure,
-        #"cloud": inputgen.servers_from_pickle,
+        "cloud": inputgen.servers_from_pickle,
 
         "forecast_periods": 12,
-        "times": inputgen.two_days,
+        #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
-        #"times": inputgen.usa_whole_period,
+        "times": inputgen.usa_whole_period,
         #"requests": inputgen.simple_vmreqs,
-        "requests": inputgen.medium_vmreqs,
-        #"requests": inputgen.requests_from_pickle,
+        #"requests": inputgen.medium_vmreqs,
+        "requests": inputgen.requests_from_pickle,
 
         #"el_prices": inputgen.simple_el,
-        "el_prices": inputgen.medium_el,
-        #"el_prices": inputgen.usa_el,
+        #"el_prices": inputgen.medium_el,
+        "el_prices": inputgen.usa_el,
         #"temperature": inputgen.simple_temperature,
-        "temperature": inputgen.medium_temperature,
-        #"temperature": inputgen.usa_temperature,
+        #"temperature": inputgen.medium_temperature,
+        "temperature": inputgen.usa_temperature,
 
         "driver": simdriver,
     }
@@ -101,8 +101,9 @@ def get_factory():
 # Simulator settings
 #===========================
 
-liveplot = True
-#liveplot = False
+plotserver = True
+#liveplot = True
+liveplot = False
 
 inputgen_settings = {
     # cloud's servers
@@ -111,7 +112,7 @@ inputgen_settings = {
     'max_server_cpu': 8,
 
     # VM requests
-    'VM_num': 100,
+    'VM_num': 2000,
     # e.g. CPUs
     'min_cpu': 1,
     'max_cpu': 2,
@@ -120,7 +121,8 @@ inputgen_settings = {
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
-    'max_duration': 60 * 60 * 24 * 10, # 10 days
+    #'max_duration': 60 * 60 * 24 * 10, # 10 days
+    'max_duration': 60 * 60 * 24 * 90, # 90 days
 }
 
 # Benchmark

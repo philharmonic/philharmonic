@@ -17,13 +17,31 @@ and simulates the outcome of the schedule.
 
 """
 
+import pickle
+
+from philharmonic import conf
+if conf.plotserver:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+else:
+    import matplotlib.pyplot as plt
 import pandas as pd
 
 import philharmonic as ph
 from philharmonic.logger import *
 import inputgen
+from philharmonic import Schedule
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
 from philharmonic.scheduler import evaluator
+from philharmonic.manager.imanager import IManager
+from philharmonic.cloud.driver import simdriver
+from philharmonic.scheduler import PeakPauser, NoScheduler
+from environment import SimulatedEnvironment, PPSimulatedEnvironment
+
+
+# old scheduler design...
+#-------------------------
 
 # inputs (probably separate modules in the future, but we'll see)
 # -------
@@ -146,11 +164,7 @@ def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel fo
 # new simulator design
 #----------------------
 
-from philharmonic.manager.imanager import IManager
-from philharmonic import conf, Schedule
-from philharmonic.cloud.driver import simdriver
-from philharmonic.scheduler import PeakPauser, NoScheduler
-from environment import SimulatedEnvironment, PPSimulatedEnvironment
+
 
 class Simulator(IManager):
     """simulates the passage of time and prepares all the data for
@@ -273,9 +287,6 @@ class NoSchedulerSimulator(Simulator):
 
 # TODO: route to here straight from schedule.py
 
-import matplotlib.pyplot as plt
-import pickle
-
 def pickle_results(schedule):
     schedule.actions.to_pickle('schedule.pkl')
     #with open('schedule.pkl', 'w') as pkl_schedule:
@@ -288,7 +299,6 @@ def run():
     nplots = 4
     # create necessary objects
     #-------------------------
-    from philharmonic import conf
 
     simulator = Simulator(conf.get_factory())
 
