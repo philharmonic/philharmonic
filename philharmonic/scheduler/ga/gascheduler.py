@@ -60,6 +60,7 @@ class ScheduleUnit(Schedule):
                 + w_constraint * self.constraint
             )
             self.fitness = weighted_sum
+            self.rfitness = 1 - self.fitness
             if np.isnan(self.fitness):
                 import ipdb; ipdb.set_trace()
             self.changed = False
@@ -148,6 +149,38 @@ def create_random(environment, cloud):
         action = Migration(vm, server)
         unit.add(action, t)
     return unit
+
+def roulette_selection(individuals, k):
+    """Select *k* individuals from the input *individuals* using *k*
+    spins of a roulette. The selection is made by at the rfitness attributes,
+    assuming that rfitness approaches 1.0 for the best units
+    and 0.0 for the worst. Modified from the DEAP source code.
+
+    @param individuals: A list of individuals to select from by rfitness.
+    @param k: The number of individuals to select.
+    @returns: A list of selected individuals.
+
+    This function uses the :func:`~random.random` function from the python base
+    :mod:`random` module.
+
+    .. warning::
+       The roulette selection by definition cannot be used for minimization 
+       or when the fitness can be smaller or equal to 0.
+    """
+    s_inds = sorted(individuals, key=lambda u : u.rfitness, reverse=True)
+    sum_fits = sum(ind.rfitness for ind in individuals)
+
+    chosen = []
+    for i in range(k):
+        u = random.random() * sum_fits
+        sum_ = 0
+        for ind in s_inds:
+            sum_ += ind.rfitness
+            if sum_ > u:
+                chosen.append(ind)
+                break
+
+    return chosen
 
 
 class GAScheduler(IScheduler):
@@ -250,10 +283,12 @@ class GAScheduler(IScheduler):
             #import ipdb; ipdb.set_trace()
 
             # recombination
-            parents = self.population[:num_children]
+            # TODO: generate two children from one pair
+            # choose parents weight. among all
+            parents = roulette_selection(self.population, num_children*2)
             children = []
-            for j in range(num_children):#TODO: choose parents weight. among all
-                parent1, parent2 = random.sample(parents, 2)
+            for j in range(num_children):
+                parent1, parent2 = parents[j], parents[j + 1]
                 child = parent1.crossover(parent2)
                 children.append(child)
             # new generation
