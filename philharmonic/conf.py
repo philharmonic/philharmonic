@@ -58,32 +58,32 @@ def get_factory_ga():
     from philharmonic.cloud.driver import simdriver
 
     gaconf = {
-        "population_size": 50,
+        "population_size": 100,
         "recombination_rate": 0.15,
         "mutation_rate": 0.05,
-        "max_generations": 20,
+        "max_generations": 100,
     }
 
     factory = {
         "scheduler": GAScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
-        "cloud": inputgen.small_infrastructure,
-        #"cloud": inputgen.usa_small_infrastructure,
+        #"cloud": inputgen.small_infrastructure,
+        "cloud": inputgen.usa_small_infrastructure,
         #"cloud": inputgen.servers_from_pickle,
 
-        "times": inputgen.two_days,
-        "forecast_periods": 4,
-        #"times": inputgen.usa_two_days,
+        "forecast_periods": 12,
+        #"times": inputgen.two_days,
+        "times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
         #"times": inputgen.usa_whole_period,
         "requests": inputgen.simple_vmreqs,
         #"requests": inputgen.requests_from_pickle,
 
-        "el_prices": inputgen.simple_el,
-        #"el_prices": inputgen.usa_el,
-        "temperature": inputgen.simple_temperature,
-        #"temperature": inputgen.usa_temperature,
+        #"el_prices": inputgen.simple_el,
+        "el_prices": inputgen.usa_el,
+        #"temperature": inputgen.simple_temperature,
+        "temperature": inputgen.usa_temperature,
 
         "driver": simdriver,
     }

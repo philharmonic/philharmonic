@@ -1,4 +1,4 @@
-import copy                     # 
+import copy
 import random
 
 import pandas as pd
@@ -42,6 +42,7 @@ class ScheduleUnit(Schedule):
         return self.fitness
 
     def calculate_fitness(self):
+        """0.0 is best, 1.0 is worst."""
         if self.changed:
             #TODO: maybe move this method to the Scheduler
             #TODO: set start, end for sla, constraint
@@ -50,15 +51,17 @@ class ScheduleUnit(Schedule):
             el_prices, temperature = self.environment.current_data()
             #if len(self.environment.get_requests()) > 0:
             #    import ipdb; ipdb.set_trace()
-            cost, constraint_penalty, sla_penalty = evaluator.evaluate(
+            self.cost, self.constraint, self.sla = evaluator.evaluate(
                 self.cloud, self.environment, self, el_prices, temperature,
                 start, end
             )
             weighted_sum = (
-                w_cost * cost + w_sla * sla_penalty
-                + w_constraint * constraint_penalty
+                w_cost * self.cost + w_sla * self.sla
+                + w_constraint * self.constraint
             )
             self.fitness = weighted_sum
+            if np.isnan(self.fitness):
+                import ipdb; ipdb.set_trace()
             self.changed = False
         return self.fitness
 
@@ -222,12 +225,16 @@ class GAScheduler(IScheduler):
 
             self.population.sort(key=lambda u : u.fitness, reverse=False)
             debug('  - best fitness: {}'.format(self.population[0].fitness))
+            #if self.population[0].fitness == 0.06:
+            #    import ipdb; ipdb.set_trace()
 
             i += 1
             debug('- generation {}'.format(i))
             # check termination condition
             if i == self.max_generations:
                 break
+
+            #import ipdb; ipdb.set_trace()
 
             # recombination
             parents = self.population[:num_children]
@@ -243,8 +250,20 @@ class GAScheduler(IScheduler):
                 unit = unit.mutation()
 
         # TODO: return best that satisfies hard constraints
+        #import ipdb; ipdb.set_trace()
         return self.population[0]
 
     def reevaluate(self):
         debug('\nREEVALUATE (t={})\n---------------'.format(self.environment.t))
         return self.genetic_algorithm()
+
+    def debug_population(self):
+        self.population.reverse()
+        for unit in self.population:
+            fitness_descr = 'fit:{:.2}, cost:{}, constr:{}, sla:{}'.format(
+                unit.fitness, unit.cost, unit.constraint, unit.sla)
+            unit_descr = 'unit - {}\n-----\n{}\n\n'.format(
+                fitness_descr, unit.actions)
+            debug(unit_descr)
+        self.population.reverse()
+        #TODO: print cloud's real state and the requests
