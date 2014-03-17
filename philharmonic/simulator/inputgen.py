@@ -229,11 +229,8 @@ def generate_fixed_input():
         globals()[key] = value
     temperature = usa_temperature()
     #start, end = temperature.index[0], temperature.index[-26]
-    start = pd.Timestamp(simulation_start)
-    try:
-        end = pd.Timestamp(simulation_end)
-    except NameError:
-        end = start + pd.offsets.Day(simulation_duration)
+    factory = conf.get_factory()
+    start, end = factory['times']()[[0, -1]]
     locations = temperature.columns.values
     servers = normal_infrastructure(locations)
     requests = normal_vmreqs(start, end)

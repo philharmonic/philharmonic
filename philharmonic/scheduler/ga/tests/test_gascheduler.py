@@ -29,7 +29,7 @@ def test_fitness():
 
     # environment
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    env = GASimpleSimulatedEnvironment(times)
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     env.t = t1
     env.el_prices = inputgen.simple_el()
     env.temperature = inputgen.simple_temperature()
@@ -66,7 +66,7 @@ def test_mutation():
 
     # environment
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    env = GASimpleSimulatedEnvironment(times)
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     env.t = t1
     env.el_prices = inputgen.simple_el()
     unit.environment = env
@@ -89,7 +89,7 @@ def test_crossover():
     t1 = pd.Timestamp('2013-02-25 00:00')
     t2 = pd.Timestamp('2013-02-25 13:00')
     t3 = pd.Timestamp('2013-02-25 20:00')
-    env = GASimpleSimulatedEnvironment(times)
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     env.t = t1
     env.el_prices = inputgen.simple_el()
 
@@ -120,7 +120,7 @@ def test_crossover():
 
 def test_create_random():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    env = GASimpleSimulatedEnvironment(times)
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     t1 = pd.Timestamp('2013-02-25 00:00')
     env.t = t1
     vm1 = VM(4,2)
@@ -148,7 +148,7 @@ def test_gascheduler():
 
     # environment
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    env = GASimpleSimulatedEnvironment(times)
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     env.t = t1
     env.el_prices = inputgen.simple_el()
     env.temperature = inputgen.simple_temperature()
@@ -178,7 +178,7 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
 
     # environment
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    env = GASimpleSimulatedEnvironment(times)
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=20)
     env.t = t1
     env.el_prices = inputgen.simple_el()
     env.temperature = inputgen.simple_temperature()

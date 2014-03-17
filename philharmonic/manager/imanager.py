@@ -66,8 +66,15 @@ class IManager(object):
                                          end=self.times[-1])
         else:
             self.requests = None
-        self.environment = self._create(factory['environment'],
-                                        self.times, self.requests)
+        try:
+            periods = factory['forecast_periods']
+        except:
+            self.environment = self._create(factory['environment'],
+                                            self.times, self.requests)
+        else:
+            self.environment = self._create(factory['environment'],
+                                            self.times, self.requests,
+                                            forecast_periods=periods)
         self.arm()
 
     def run(self):

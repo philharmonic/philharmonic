@@ -39,8 +39,17 @@ class SimulatedEnvironment(Environment):
 
     period = property(get_period, set_period, doc="period between time steps")
 
+    def set_forecast_periods(self, num_periods):
+        self._forecast_periods = num_periods
+
+    def get_forecast_periods(self, num_periods):
+        return self._forecast_periods
+
+    forecast_periods = property(get_forecast_periods, set_forecast_periods,
+                                doc="number of periods we get forecasts for")
+
     def get_forecast_end(self): # TODO: parametrize
-        return self._t + 24 * self._period
+        return self._t + self._forecast_periods * self._period
 
     forecast_end = property(get_forecast_end, doc="time by which we forecast")
 
@@ -56,9 +65,10 @@ class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""
     pass
 
+# TODO: merge these two with SimulatedEnvironment
 class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
     """Couple of requests in a day."""
-    def __init__(self, times=None, requests=None):
+    def __init__(self, times=None, requests=None, forecast_periods=24):
         """@param times: list of time ticks"""
         super(SimulatedEnvironment, self).__init__()
         if not times is None:
@@ -71,6 +81,7 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
                 self._requests = requests
             else:
                 self._requests = inputgen.normal_vmreqs(self.start, self.end)
+        self._forecast_periods = forecast_periods
 
     # TODO: better to make the environment immutable
     def itertimes(self):

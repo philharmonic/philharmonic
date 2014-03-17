@@ -58,55 +58,55 @@ def get_factory_ga():
     from philharmonic.cloud.driver import simdriver
 
     gaconf = {
-        "population_size": 100,
+        "population_size": 50,
         "recombination_rate": 0.15,
         "mutation_rate": 0.05,
-        "max_generations": 100,
+        "max_generations": 20,
     }
 
     factory = {
         "scheduler": GAScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
-        #"cloud": inputgen.small_infrastructure,
+        "cloud": inputgen.small_infrastructure,
         #"cloud": inputgen.usa_small_infrastructure,
-        "cloud": inputgen.servers_from_pickle,
+        #"cloud": inputgen.servers_from_pickle,
 
-        #"times": inputgen.two_days,
+        "times": inputgen.two_days,
+        "forecast_periods": 4,
         #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
-        "times": inputgen.usa_whole_period,
-        #"requests": inputgen.simple_vmreqs,
-        "requests": inputgen.requests_from_pickle,
+        #"times": inputgen.usa_whole_period,
+        "requests": inputgen.simple_vmreqs,
+        #"requests": inputgen.requests_from_pickle,
 
-        #"el_prices": inputgen.simple_el,
-        "el_prices": inputgen.usa_el,
-        #"temperature": inputgen.simple_temperature,
-        "temperature": inputgen.usa_temperature,
+        "el_prices": inputgen.simple_el,
+        #"el_prices": inputgen.usa_el,
+        "temperature": inputgen.simple_temperature,
+        #"temperature": inputgen.usa_temperature,
 
         "driver": simdriver,
     }
 
     return factory
 
+def get_factory():
+    return get_factory_ga()
+
 # Simulator settings
 #===========================
 
-#liveplot = True
-liveplot = False
+liveplot = True
+#liveplot = False
 
 inputgen_settings = {
-    'simulation_start': '2010-01-01 00:00',
-    'simulation_end': '2010-05-03 23:00',
-    # not considered if simulation_end specified
-    'simulation_duration': 2, # days
     # cloud's servers
     'server_num': 50,
     'min_server_cpu': 4,
     'max_server_cpu': 8,
 
     # VM requests
-    'VM_num': 1000,
+    'VM_num': 100,
     # e.g. CPUs
     'min_cpu': 1,
     'max_cpu': 2,

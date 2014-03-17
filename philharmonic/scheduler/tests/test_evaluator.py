@@ -18,7 +18,7 @@ def test_calculate_cloud_utilisation():
     VMs = [vm1, vm2]
 
     times = pd.date_range('2010-02-26 8:00', '2010-02-26 16:00', freq='H')
-    env = FBFSimpleSimulatedEnvironment(times)
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
     env.t = times[0]
     schedule = Schedule()
     a1 = Migration(vm1, s1)
@@ -41,6 +41,7 @@ def test_calculate_cloud_simultaneous_actions():
 
     env = FBFSimpleSimulatedEnvironment()
     env.period = pd.offsets.Hour(1)
+    env.forecast_periods = 24
     env.start = pd.Timestamp('2011-02-26 8:00')
     schedule = Schedule()
     a1 = Migration(vm1, s1)
@@ -88,7 +89,7 @@ def test_calculate_cost_combined():
     VMs = [vm1, vm2]
 
     times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
-    env = FBFSimpleSimulatedEnvironment(times)
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
     schedule = Schedule()
     a1 = Migration(vm1, s1)
     t1 = pd.Timestamp('2010-02-25 11:00')
@@ -124,6 +125,7 @@ def test_calculate_constraint_penalties():
 
     env = FBFSimpleSimulatedEnvironment()
     env.period = pd.offsets.Hour(1)
+    env.forecast_periods=24
     env.start = pd.Timestamp('2010-02-26 8:00')
     env.end = pd.Timestamp('2010-02-27 8:00')
 
@@ -162,6 +164,7 @@ def test_calculate_sla_penalties():
 
     env = FBFSimpleSimulatedEnvironment()
     env.period = pd.offsets.Hour(1)
+    env.forecast_periods = 24
     env.start = pd.Timestamp('2010-02-26 8:00')
     env.end = pd.Timestamp('2010-02-27 8:00')
 
@@ -204,7 +207,7 @@ def test_evaluate():
     cloud = Cloud(servers, initial_vms=set(VMs))
 
     times = inputgen.two_days(start='2010-02-26 00:00')
-    env = FBFSimpleSimulatedEnvironment(times)
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
     el_prices = inputgen.simple_el(start=env.t)
     temperature = inputgen.simple_temperature(start=env.t)
     schedule = Schedule()

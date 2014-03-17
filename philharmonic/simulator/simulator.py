@@ -290,7 +290,7 @@ def run():
     #-------------------------
     from philharmonic import conf
 
-    simulator = Simulator(conf.get_factory_ga())
+    simulator = Simulator(conf.get_factory())
 
     print('Servers\n----------')
     print(simulator.cloud.servers)

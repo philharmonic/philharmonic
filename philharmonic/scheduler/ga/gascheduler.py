@@ -48,6 +48,8 @@ class ScheduleUnit(Schedule):
             w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
             start, end = self.environment.t, self.environment.forecast_end
             el_prices, temperature = self.environment.current_data()
+            #if len(self.environment.get_requests()) > 0:
+            #    import ipdb; ipdb.set_trace()
             cost, constraint_penalty, sla_penalty = evaluator.evaluate(
                 self.cloud, self.environment, self, el_prices, temperature,
                 start, end

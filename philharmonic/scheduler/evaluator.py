@@ -216,7 +216,7 @@ def calculate_constraint_penalties(cloud, environment, schedule,
     the more constraintes valuated: closer to 1.0
 
     """
-    cap_weight, sched_weight = 0.6, 0.5
+    cap_weight, sched_weight = 0.6, 0.4
 
     utilisations = {server : [] for server in cloud.servers}
     penalties = {}
@@ -311,6 +311,13 @@ def calculate_sla_penalties(cloud, environment, schedule,
 #   - calculate simple measure of utilisation * el_price
 #      - e.g. utilprice = tot_util * el_price
 
+def _calculate_constraint_penalty(state):
+    # find violated server capacity constraints TODO: find by how much
+    cap_penalty = 1 - int(state.all_within_capacity())
+    # find unscheduled VMs TODO: find how many are not allocated
+    sched_penalty = 1 - int(state.all_allocated())
+    return cap_penalty, sched_penalty
+
 
 def evaluate(cloud, environment, schedule,
              el_prices, temperature=None,
@@ -340,8 +347,11 @@ def evaluate(cloud, environment, schedule,
     # CONSTRAINTS
     cap_weight, sched_weight = 0.6, 0.5
     penalties = {}
-    # if no actions - scheduling penalty for >0 VMs
-    penalties[start] = sched_weight * np.sign(len(cloud.vms))
+    # if no actions - penalty for the current state
+    cap_penalty, sched_penalty = _calculate_constraint_penalty(
+        cloud.get_current())
+    penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
+    penalties[start] = penalty
 
     # SLA
     migrations_num = {vm: 0 for vm in cloud.vms}
@@ -365,10 +375,7 @@ def evaluate(cloud, environment, schedule,
         times.append(t)
 
         # CONSTRAINTS
-        # find violated server capacity constraints TODO: find by how much
-        cap_penalty = 1 - int(state.all_within_capacity())
-        # find unscheduled VMs TODO: find how many are not allocated
-        sched_penalty = 1 - int(state.all_allocated())
+        cap_penalty, sched_penalty = _calculate_constraint_penalty(state)
         penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
         penalties[t] = penalty
 
@@ -391,14 +398,14 @@ def evaluate(cloud, environment, schedule,
     if len(migrations_num) == 0:
         sla_penalty = 0. # no migrations - awesome!
     else:
-        # average migration rate per hour
-        duration = (end - start).total_seconds() / 3600
-        migrations_rate = migrations_num / duration
-        # Migration rate penalty - linear 1-4 migr/hour -> 0.0-1.0
+        # average migration rate per 4 hours
+        duration = (end - start).total_seconds() / 3600 # hours
+        migrations_rate = 4 * migrations_num / duration
+        # Migration rate penalty - linear 1-4 migr/4 hours -> 0.0-1.0
         penalty =  (migrations_rate - 1) / 3.
         penalty[penalty<0] = 0
         penalty[penalty>1] = 1
-        # 1/hour - tolerated, >1/hour - bad
+        # 1 / 4 hours - tolerated, >1 / 4 hours - bad
         sla_penalty = penalty.mean()
 
     # COST GOAL
