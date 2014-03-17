@@ -232,6 +232,8 @@ class State():
     def ratio_allocated(self):
         to_check = set(copy.copy(self.vms))
         total = len(to_check)
+        if total == 0:
+            return 1.0
         for s in self.servers:
             to_check = to_check.difference(self.alloc[s])
         allocated = total - len(to_check)
@@ -261,6 +263,8 @@ class State():
         for s in self.servers:
             if self.within_capacity(s):
                 num_ok += 1
+        if len(self.servers) == 0:
+            return 1.0
         ratio = float(num_ok) / len(self.servers)
         return ratio
 
