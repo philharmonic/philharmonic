@@ -238,10 +238,10 @@ def calculate_constraint_penalties(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
-        # find violated server capacity constraints TODO: find by how much
-        cap_penalty = 1 - int(state.all_within_capacity())
-        # find unscheduled VMs TODO: find how many are not allocated
-        sched_penalty = 1 - int(state.all_allocated())
+        # find violated server capacity constraints - how many violations
+        cap_penalty = 1 - state.ratio_within_capacity()
+        # find unscheduled VMs - how many are not allocated
+        sched_penalty = 1 - state.ratio_allocated()
         penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
         penalties[t] = penalty
     if len(schedule.actions) > 0:
@@ -312,10 +312,10 @@ def calculate_sla_penalties(cloud, environment, schedule,
 #      - e.g. utilprice = tot_util * el_price
 
 def _calculate_constraint_penalty(state):
-    # find violated server capacity constraints TODO: find by how much
-    cap_penalty = 1 - int(state.all_within_capacity())
-    # find unscheduled VMs TODO: find how many are not allocated
-    sched_penalty = 1 - int(state.all_allocated())
+    # find violated server capacity constraints - how many violations
+    cap_penalty = 1 - state.ratio_within_capacity()
+    # find unscheduled VMs - how many are not allocated
+    sched_penalty = 1 - state.ratio_allocated()
     return cap_penalty, sched_penalty
 
 
@@ -367,7 +367,10 @@ def evaluate(cloud, environment, schedule,
                 migrations_num[action.vm] += 1
         else:
             action = schedule.actions[t]
-            migrations_num[action.vm] += 1
+            try:
+                migrations_num[action.vm] += 1
+            except KeyError:
+                import ipdb; ipdb.set_trace()
             cloud.apply(action)
         state = cloud.get_current()
         new_utilisations = state.calculate_utilisations()

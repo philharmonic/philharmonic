@@ -24,16 +24,24 @@ def test_constraints():
     # allocate and check capacity and allocation
     a.place(vm1,s1)
     assert_equals(a.all_within_capacity(), True, 'all servers within capacity')
+    assert_almost_equals(a.ratio_within_capacity(), 1.0)
     assert_equals(a.all_allocated(), False, 'not all VMs are allocated')
+    #import ipdb; ipdb.set_trace()
+    assert_almost_equals(a.ratio_allocated(), 0.5)
 
     a.place(vm2, s1)
-    assert_equals(a.all_within_capacity(), False, 'not all servers within capacity')
+    assert_equals(a.all_within_capacity(), False,
+                  'not all servers within capacity')
+    assert_almost_equals(a.ratio_within_capacity(), 0.5)
     assert_equals(a.all_allocated(), True, 'all VMs are allocated')
+    assert_almost_equals(a.ratio_allocated(), 1.0)
 
     a.remove(vm2, s1)
     a.place(vm2, s2)
     assert_equals(a.all_within_capacity(), True, 'all servers within capacity')
+    assert_almost_equals(a.ratio_within_capacity(), 1.0)
     assert_equals(a.all_allocated(), True, 'all VMs are allocated')
+    assert_almost_equals(a.ratio_allocated(), 1.0)
 
 def test_state():
     import copy

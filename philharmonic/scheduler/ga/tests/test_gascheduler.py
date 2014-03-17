@@ -197,6 +197,7 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
     env.t = pd.Timestamp('2013-02-25 17:00')
     vm3 = VM(4,2)
     cloud.vms.remove(vm2)
+    scheduler._create_or_update_population()
     schedule = scheduler.reevaluate()
     assert_true(len(schedule.actions[:'2013-02-25 16:00']) == 0)
 

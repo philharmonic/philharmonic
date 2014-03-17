@@ -229,6 +229,15 @@ class State():
             to_check = to_check.difference(self.alloc[s])
         return len(to_check) == 0
 
+    def ratio_allocated(self):
+        to_check = set(copy.copy(self.vms))
+        total = len(to_check)
+        for s in self.servers:
+            to_check = to_check.difference(self.alloc[s])
+        allocated = total - len(to_check)
+        ratio = float(allocated) / total
+        return ratio
+
     #C2
     def within_capacity(self, s):
         for i in s.resource_types:
@@ -244,7 +253,16 @@ class State():
         for s in self.servers:
             if not self.within_capacity(s):
                 return False
-        return True # TODO: return how much over capacity
+        return True
+
+    def ratio_within_capacity(self): # TODO: by resource overflows
+        """ratio of servers that are within capacity"""
+        num_ok = 0
+        for s in self.servers:
+            if self.within_capacity(s):
+                num_ok += 1
+        ratio = float(num_ok) / len(self.servers)
+        return ratio
 
 class Action(object):
     """A static representation of an action on the cloud."""
