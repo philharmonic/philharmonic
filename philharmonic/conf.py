@@ -62,28 +62,32 @@ def get_factory_ga():
         "recombination_rate": 0.15,
         "mutation_rate": 0.05,
         "max_generations": 100,
+        "random_recreate_ratio": 0.3,
     }
 
     factory = {
         "scheduler": GAScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
-        #"cloud": inputgen.small_infrastructure,
-        "cloud": inputgen.usa_small_infrastructure,
+        "cloud": inputgen.small_infrastructure,
+        #"cloud": inputgen.usa_small_infrastructure,
         #"cloud": inputgen.servers_from_pickle,
 
         "forecast_periods": 12,
-        #"times": inputgen.two_days,
-        "times": inputgen.usa_two_days,
+        "times": inputgen.two_days,
+        #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
         #"times": inputgen.usa_whole_period,
-        "requests": inputgen.simple_vmreqs,
+        #"requests": inputgen.simple_vmreqs,
+        "requests": inputgen.medium_vmreqs,
         #"requests": inputgen.requests_from_pickle,
 
         #"el_prices": inputgen.simple_el,
-        "el_prices": inputgen.usa_el,
+        "el_prices": inputgen.medium_el,
+        #"el_prices": inputgen.usa_el,
         #"temperature": inputgen.simple_temperature,
-        "temperature": inputgen.usa_temperature,
+        "temperature": inputgen.medium_temperature,
+        #"temperature": inputgen.usa_temperature,
 
         "driver": simdriver,
     }
@@ -101,7 +105,7 @@ liveplot = True
 
 inputgen_settings = {
     # cloud's servers
-    'server_num': 50,
+    'server_num': 20,
     'min_server_cpu': 4,
     'max_server_cpu': 8,
 

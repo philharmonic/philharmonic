@@ -102,6 +102,7 @@ class ScheduleUnit(Schedule):
         return child
 
     def update(self):
+        self.changed = True
         if len(self.actions) == 0:
             return
         # throw away old actions
@@ -158,7 +159,7 @@ class GAScheduler(IScheduler):
         self.recombination_rate = 0.15
         self.mutation_rate = 0.05
         self.max_generations = 3
-        self.random_recreate_ratio = 0.05
+        self.random_recreate_ratio = 0.3
         self.artificial_boot_ratio = 0.15
 
     def initialize(self):
@@ -167,6 +168,11 @@ class GAScheduler(IScheduler):
         )
 
     def _create_or_update_population(self):
+        """Initialise population or bring the old one to the new generation
+        by updating old units and switching the worst units with randomly
+        generated ones.
+
+        """
         try: # prepare old population for the new environment if it exists
             existing_population = self.population
         except AttributeError: # doesn't exist -> initial population generation
@@ -175,6 +181,13 @@ class GAScheduler(IScheduler):
                 unit = create_random(self.environment, self.cloud)
                 self.population.append(unit)
         else:
+            new_random_units = []
+            for i in range(self.num_random_recreate):
+                unit = create_random(self.environment, self.cloud)
+                new_random_units.append(unit)
+            len_new = len(new_random_units)
+            existing_population = existing_population[:-len_new]
+            self.population = existing_population + new_random_units
             for unit in existing_population:
                 unit.update() # reusing old population, so "move window"
             #TODO: randomly create self.num_random_recreate new units

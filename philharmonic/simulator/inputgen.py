@@ -157,6 +157,30 @@ def simple_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
     events = pd.TimeSeries(data=requests, index=moments)
     return events
 
+def medium_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
+    """Generate the VM creation and deletion events in.
+    Normally distributed arrays - VM sizes and durations.
+    @param start, end - time interval (events within it)
+
+    """
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+
+    # environment
+    times = pd.date_range(start, periods=48, freq='H')
+    t1 = pd.Timestamp(start)
+    t2 = pd.Timestamp(start) + pd.offsets.Hour(1)
+    t3 = pd.Timestamp(start) + pd.offsets.Hour(46)
+    t4 = pd.Timestamp(start) + pd.offsets.Hour(47)
+
+    requests = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
+                VMRequest(vm2, 'delete'), VMRequest(vm1, 'delete')]
+    moments = [t1, t2, t3, t4]
+    events = pd.TimeSeries(data=requests, index=moments)
+    return events
+
 def no_requests(start, end):
     return pd.TimeSeries()
 
@@ -183,11 +207,28 @@ def simple_el(start=None):
     el_prices = pd.DataFrame({'A': a, 'B': b}, idx)
     return el_prices
 
+def medium_el(start=None):
+    """A and B 'switch sides'"""
+    idx = two_days(start)
+    halflen = len(idx)/2
+    a = [0.05] * halflen + [0.013] * halflen
+    b = [0.012] * halflen + [0.06] * halflen
+    el_prices = pd.DataFrame({'A': a, 'B': b}, idx)
+    return el_prices
+
 def simple_temperature(start=None):
     idx = two_days(start)
     n = len(idx)
     a = 3 * n / 4 * [23] + n / 4 * [0.13]
     b = 3 * n / 4 * [-3] + n / 4 * [1]
+    temperature = pd.DataFrame({'A': a, 'B': b}, idx)
+    return temperature
+
+def medium_temperature(start=None):
+    idx = two_days(start)
+    n = len(idx)
+    a = 3 * n / 4 * [23] + n / 4 * [4]
+    b = 3 * n / 4 * [-3] + n / 4 * [19]
     temperature = pd.DataFrame({'A': a, 'B': b}, idx)
     return temperature
 
