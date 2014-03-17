@@ -450,8 +450,8 @@ def evaluate(cloud, environment, schedule,
     if np.isnan(nonzero_utilisation_avg):
         nonzero_utilisation_avg = 0
     # goal: high utilisation -> 0.0 good, high utilisation; 1.0 low utilisation
-    utilisation_fitness = (1 - nonzero_utilisation_avg)
+    util_penalty = (1 - nonzero_utilisation_avg)
 
-    cost_penalty = 0.2 * utilisation_fitness + 0.8 * utilprice_penalty
+    #cost_penalty = 0.2 * util_penalty + 0.8 * utilprice_penalty
 
-    return cost_penalty, constraint_penalty, sla_penalty
+    return util_penalty, utilprice_penalty, constraint_penalty, sla_penalty

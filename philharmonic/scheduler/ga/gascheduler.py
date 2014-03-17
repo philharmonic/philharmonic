@@ -14,48 +14,33 @@ class ScheduleUnit(Schedule):
 
     def __init__(self):
         self.changed = True
+        self.no_temperature = False
+        self.no_el_price = False
         super(ScheduleUnit, self).__init__()
 
-    def calculate_fitness_old(self):
-        if self.changed:
-            #TODO: maybe move this method to the Scheduler
-            #TODO: set start, end for sla, constraint
-            w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
-            start, end = self.environment.t, self.environment.forecast_end
-            el_prices, temperature = self.environment.current_data()
-            cost = evaluator.normalised_combined_cost(
-                self.cloud, self.environment, self, el_prices, temperature,
-                start, end
-            )
-            sla_penalty = evaluator.calculate_sla_penalties(
-                self.cloud, self.environment, self, start, end
-            )
-            constraint_penalty = evaluator.calculate_constraint_penalties(
-                self.cloud, self.environment, self, start, end
-            )
-            weighted_sum = (
-                w_cost * cost + w_sla * sla_penalty
-                + w_constraint * constraint_penalty
-            )
-            self.fitness = weighted_sum
-            self.changed = False
-        return self.fitness
-
+    #TODO: make operators functions, not methods
+    # - they should not have no_temperature and no_el_price references
     def calculate_fitness(self):
         """0.0 is best, 1.0 is worst."""
         if self.changed:
             #TODO: maybe move this method to the Scheduler
             #TODO: set start, end for sla, constraint
-            w_cost, w_sla, w_constraint = 0.3, 0.3, 0.4
+            w_util, w_cost, w_sla, w_constraint = 0.1, 0.2, 0.3, 0.4
             start, end = self.environment.t, self.environment.forecast_end
             el_prices, temperature = self.environment.current_data()
             #if len(self.environment.get_requests()) > 0:
             #    import ipdb; ipdb.set_trace()
-            self.cost, self.constraint, self.sla = evaluator.evaluate(
+            if self.no_temperature:
+                temperature = None # we don't consider the temp. factor
+            if self.no_el_price:
+                w_util = w_cost + w_util
+                w_cost = 0.0 # we don't consider the cost factor
+            self.util, self.cost, self.constraint, self.sla = evaluator.evaluate(
                 self.cloud, self.environment, self, el_prices, temperature,
                 start, end
             )
             weighted_sum = (
+                w_util * self.util +
                 w_cost * self.cost + w_sla * self.sla
                 + w_constraint * self.constraint
             )
@@ -126,11 +111,13 @@ class ScheduleUnit(Schedule):
             #s += super(ScheduleUnit, self).__repr__()
         return s
 
-def create_random(environment, cloud):
+def create_random(environment, cloud, no_el_price=False, no_temperature=False):
     # TODO: maybe kick out migrations that make no sense
     unit = ScheduleUnit() # empty schedule unit
     unit.environment = environment
     unit.cloud = cloud
+    unit.no_el_price = no_el_price
+    unit.no_temperature = no_temperature
     start = environment.t
     end = environment.forecast_end
     min_migrations = 0
@@ -194,6 +181,8 @@ class GAScheduler(IScheduler):
         self.max_generations = 3
         self.random_recreate_ratio = 0.3
         self.artificial_boot_ratio = 0.15
+        self.no_temperature = False
+        self.no_el_price = False
 
     def initialize(self):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
@@ -211,12 +200,14 @@ class GAScheduler(IScheduler):
         except AttributeError: # doesn't exist -> initial population generation
             self.population = []
             for i in range(self.population_size):
-                unit = create_random(self.environment, self.cloud)
+                unit = create_random(self.environment, self.cloud,
+                                     self.no_el_price, self.no_temperature)
                 self.population.append(unit)
         else:
             new_random_units = []
             for i in range(self.num_random_recreate):
-                unit = create_random(self.environment, self.cloud)
+                unit = create_random(self.environment, self.cloud,
+                    self.no_el_price, self.no_temperature)
                 new_random_units.append(unit)
             len_new = len(new_random_units)
             existing_population = existing_population[:-len_new]
@@ -308,8 +299,8 @@ class GAScheduler(IScheduler):
     def debug_population(self):
         self.population.reverse()
         for unit in self.population:
-            fitness_descr = 'fit:{:.2}, cost:{}, constr:{}, sla:{}'.format(
-                unit.fitness, unit.cost, unit.constraint, unit.sla)
+            fitness_descr = 'fit:{:.2}, util: {}, cost:{}, constr:{}, sla:{}'.format(
+                unit.fitness, unit.util, unit.cost, unit.constraint, unit.sla)
             unit_descr = 'unit - {}\n-----\n{}\n\n'.format(
                 fitness_descr, unit.actions)
             debug(unit_descr)

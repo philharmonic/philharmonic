@@ -219,9 +219,10 @@ def test_evaluate():
     schedule.add(a2, t2)
 
     precreate_synth_power(times[0], times[-1], servers)
-    cost_penalty, constraint_penalty, sla_penalty = evaluate(
+    util_penalty, cost_penalty, constraint_penalty, sla_penalty = evaluate(
         cloud, env, schedule, el_prices, temperature
     )
-    assert_true(0 <=cost_penalty <= 1, 'normalised value expected')
+    assert_true(0 <= util_penalty <= 1, 'normalised value expected')
+    assert_true(0 <= cost_penalty <= 1, 'normalised value expected')
     assert_true(0 <= constraint_penalty <= 1, 'normalised value expected')
     assert_true(0 <= sla_penalty <= 1, 'normalised value expected')

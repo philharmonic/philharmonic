@@ -63,11 +63,13 @@ def get_factory_ga():
         "mutation_rate": 0.05,
         "max_generations": 100,
         "random_recreate_ratio": 0.3,
+        "no_temperature": True,
+        "no_el_price": True,
     }
 
     factory = {
-        #"scheduler": GAScheduler,
-        "scheduler": FBFScheduler,
+        "scheduler": GAScheduler,
+        #"scheduler": FBFScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
         #"cloud": inputgen.small_infrastructure,
