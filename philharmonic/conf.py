@@ -49,7 +49,7 @@ def get_factory_fbf():
 
 def get_factory_ga():
     # these schedulers are available:
-    from philharmonic.scheduler import GAScheduler
+    from philharmonic.scheduler import FBFScheduler, GAScheduler
 
     # environments
     from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
@@ -66,7 +66,8 @@ def get_factory_ga():
     }
 
     factory = {
-        "scheduler": GAScheduler,
+        #"scheduler": GAScheduler,
+        "scheduler": FBFScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
         "cloud": inputgen.small_infrastructure,

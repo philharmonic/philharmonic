@@ -316,6 +316,7 @@ def run():
     env.temperature.plot(ax=ax)
     # cloud utilisation
     #------------------
+    evaluator.precreate_synth_power(env.start, env.end, cloud.servers)
     util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
     print('Utilisation (%)')
     print(util*100)
