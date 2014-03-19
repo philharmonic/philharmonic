@@ -105,7 +105,7 @@ class State():
         """create a random state"""
         return State([Server(2,2), Server(4,4)], [VM(1,1), VM(1,1)])
 
-    def __init__(self, servers=[], vms=set(), auto_allocate=True):
+    def __init__(self, servers=[], vms=set(), auto_allocate=False):
         self.servers = servers
         self.vms = vms
         self.alloc = {} # servers -> allocated machines
@@ -256,6 +256,23 @@ class State():
             if not self.within_capacity(s):
                 return False
         return True
+
+    def capacity_penalty(self):
+        max_overcap = {res: 0. for res in Machine.resource_types}
+        ratio_overcap = {res: 0. for res in Machine.resource_types}
+        for s in self.servers:
+            for r in Machine.resource_types:
+                used = 0
+                for vm in self.alloc[s]:
+                    used += vm.res[r]
+                overcap = used - s.cap[r]
+                if overcap > max_overcap[r]:
+                    max_overcap[r] = overcap
+                    ratio_overcap[r] = float(overcap) / s.cap[r]
+        penalty = pd.Series(ratio_overcap).mean()
+        if penalty > 1.:
+            penalty = 1.
+        return penalty
 
     def ratio_within_capacity(self): # TODO: by resource overflows
         """ratio of servers that are within capacity"""

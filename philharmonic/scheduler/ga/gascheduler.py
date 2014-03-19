@@ -47,7 +47,8 @@ class ScheduleUnit(Schedule):
             self.fitness = weighted_sum
             self.rfitness = 1 - self.fitness
             if np.isnan(self.fitness):
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
+                pass
             self.changed = False
         return self.fitness
 
