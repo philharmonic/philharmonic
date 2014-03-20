@@ -25,7 +25,7 @@ class ScheduleUnit(Schedule):
         if self.changed:
             #TODO: maybe move this method to the Scheduler
             #TODO: set start, end for sla, constraint
-            w_util, w_cost, w_sla, w_constraint = 0.1, 0.2, 0.3, 0.4
+            w_util, w_cost, w_sla, w_constraint = 0.18, 0.17, 0.25, 0.4
             start, end = self.environment.t, self.environment.forecast_end
             el_prices, temperature = self.environment.current_data()
             #if len(self.environment.get_requests()) > 0:
