@@ -63,8 +63,8 @@ def get_factory_ga():
         "mutation_rate": 0.05,
         "max_generations": 100,
         "random_recreate_ratio": 0.3,
-        "no_temperature": True,
-        "no_el_price": True,
+        "no_temperature": False,
+        "no_el_price": False,
     }
 
     factory = {
@@ -80,7 +80,8 @@ def get_factory_ga():
         #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
-        "times": inputgen.usa_whole_period,
+        "times": inputgen.usa_three_months,
+        #"times": inputgen.usa_whole_period,
         #"requests": inputgen.simple_vmreqs,
         #"requests": inputgen.medium_vmreqs,
         "requests": inputgen.requests_from_pickle,
@@ -114,7 +115,8 @@ inputgen_settings = {
     'max_server_cpu': 8,
 
     # VM requests
-    'VM_num': 2000,
+    'VM_num': 80,
+    #'VM_num': 2000,
     # e.g. CPUs
     'min_cpu': 1,
     'max_cpu': 2,

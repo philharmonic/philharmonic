@@ -258,9 +258,13 @@ def usa_two_days():
 def usa_two_hours():
     return two_hours('2010-01-01 00:00')
 
+def usa_three_months():
+    return pd.date_range('2010-01-01 00:00', '2010-03-30 23:00', freq='H')
+
 def usa_whole_period():
-    temperature = usa_temperature()
-    start, end = temperature.index[0], temperature.index[-26]
+    #return pd.date_range('2010-01-01 00:00', '2010-12-30 23:00', freq='H')
+    el_prices = usa_el()
+    start, end = el_prices.index[0], el_prices.index[-26]
     return pd.date_range(start, end, freq='H')
 
 def generate_fixed_input():
