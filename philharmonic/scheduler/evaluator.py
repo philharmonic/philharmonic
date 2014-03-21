@@ -345,7 +345,7 @@ def evaluate(cloud, environment, schedule,
     times = [start]
 
     # CONSTRAINTS
-    cap_weight, sched_weight = 0.6, 0.5
+    cap_weight, sched_weight = 0.6, 0.4
     penalties = {}
     # if no actions - penalty for the current state
     cap_penalty, sched_penalty = _calculate_constraint_penalty(
