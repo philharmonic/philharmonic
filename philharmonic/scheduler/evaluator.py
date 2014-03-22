@@ -451,7 +451,7 @@ def evaluate(cloud, environment, schedule,
     if np.isnan(nonzero_utilisation_avg):
         nonzero_utilisation_avg = 0
     # goal: high utilisation -> 0.0 good, high utilisation; 1.0 low utilisation
-    util_penalty = (1 - nonzero_utilisation_avg)
+    util_penalty = float(1 - nonzero_utilisation_avg)
 
     #cost_penalty = 0.2 * util_penalty + 0.8 * utilprice_penalty
 

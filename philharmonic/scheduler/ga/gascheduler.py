@@ -272,8 +272,6 @@ class GAScheduler(IScheduler):
             if i == self.max_generations:
                 break
 
-            #import ipdb; ipdb.set_trace()
-
             # recombination
             # TODO: generate two children from one pair
             # choose parents weight. among all
@@ -299,11 +297,11 @@ class GAScheduler(IScheduler):
 
     def debug_population(self):
         self.population.reverse()
-        for unit in self.population:
-            fitness_descr = 'fit:{:.2}, util: {}, cost:{}, constr:{}, sla:{}'.format(
+        for i, unit in enumerate(self.population):
+            fit_descr = 'fit:{:.2} -> util: {:.2}, cost:{:.2}, constr:{:.2}, sla: {:.2}'.format(
                 unit.fitness, unit.util, unit.cost, unit.constraint, unit.sla)
-            unit_descr = 'unit - {}\n-----\n{}\n\n'.format(
-                fitness_descr, unit.actions)
+            unit_descr = 'unit {} - {}\n-------\n{}\n\n'.format(
+                len(self.population) - i - 1, fit_descr, unit.actions)
             debug(unit_descr)
         self.population.reverse()
         #TODO: print cloud's real state and the requests

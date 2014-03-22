@@ -267,6 +267,30 @@ def usa_whole_period():
     start, end = el_prices.index[0], el_prices.index[-26]
     return pd.date_range(start, end, freq='H')
 
+# dynamic visualisation
+#----------------------
+dynamic_cities = ['MI-Detroit', 'IN-Indianapolis']
+def dynamic_usa_times():
+    #start = pd.Timestamp('2010-04-25 00:00')
+    start = pd.Timestamp('2010-10-12 00:00')
+    end = start + pd.offsets.Day(1)
+    #end = start + pd.offsets.Hour(2)
+    return pd.date_range(start, end, freq='H')
+
+def dynamic_usa_el():
+    times = dynamic_usa_times()
+    start, end = times[0], times[-1]
+    return usa_el()[dynamic_cities][start:end]
+
+def dynamic_usa_temp():
+    times = dynamic_usa_times()
+    start, end = times[0], times[-1]
+    return usa_temperature()[dynamic_cities][start:end]
+
+def dynamic_infrastructure():
+    return small_infrastructure(dynamic_cities)
+#----------------------
+
 def generate_fixed_input():
     from philharmonic import conf
     # override module settings with the config file

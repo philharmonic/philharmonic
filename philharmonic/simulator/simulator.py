@@ -356,6 +356,7 @@ def run():
     ax = plt.subplot(nplots, 1, 4)
     ax.set_title('Total power (W)')
     power_total.plot(ax=ax)
+    power_total.to_pickle('power.pkl')
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
     print('Energy with cooling (kWh)')
     print(energy_total)

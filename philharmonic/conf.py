@@ -68,30 +68,35 @@ def get_factory_ga():
     }
 
     factory = {
-        "scheduler": GAScheduler,
-        #"scheduler": FBFScheduler,
+        #"scheduler": GAScheduler,
+        "scheduler": FBFScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
         #"cloud": inputgen.small_infrastructure,
         #"cloud": inputgen.usa_small_infrastructure,
-        "cloud": inputgen.servers_from_pickle,
+        #"cloud": inputgen.servers_from_pickle,
+        #"cloud": inputgen.servers_from_pickle,
+        "cloud": inputgen.dynamic_infrastructure,
 
         "forecast_periods": 12,
         #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
-        "times": inputgen.usa_three_months,
+        #"times": inputgen.usa_three_months,
+        "times": inputgen.dynamic_usa_times,
         #"times": inputgen.usa_whole_period,
         #"requests": inputgen.simple_vmreqs,
-        #"requests": inputgen.medium_vmreqs,
-        "requests": inputgen.requests_from_pickle,
+        "requests": inputgen.medium_vmreqs,
+        #"requests": inputgen.requests_from_pickle,
 
         #"el_prices": inputgen.simple_el,
         #"el_prices": inputgen.medium_el,
-        "el_prices": inputgen.usa_el,
+        #"el_prices": inputgen.usa_el,
+        "el_prices": inputgen.dynamic_usa_el,
         #"temperature": inputgen.simple_temperature,
         #"temperature": inputgen.medium_temperature,
-        "temperature": inputgen.usa_temperature,
+        #"temperature": inputgen.usa_temperature,
+        "temperature": inputgen.dynamic_usa_temp,
 
         "driver": simdriver,
     }
@@ -104,9 +109,10 @@ def get_factory():
 # Simulator settings
 #===========================
 
-plotserver = True
-#liveplot = True
-liveplot = False
+#plotserver = True
+plotserver = False
+liveplot = True
+#liveplot = False
 
 inputgen_settings = {
     # cloud's servers
