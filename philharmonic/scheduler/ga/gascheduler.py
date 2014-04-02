@@ -41,8 +41,8 @@ class ScheduleUnit(Schedule):
             )
             weighted_sum = (
                 w_util * self.util +
-                w_cost * self.cost + w_sla * self.sla
-                + w_constraint * self.constraint
+                w_cost * self.cost + w_sla * self.sla +
+                w_constraint * self.constraint
             )
             self.fitness = weighted_sum
             self.rfitness = 1 - self.fitness

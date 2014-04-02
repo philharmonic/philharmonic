@@ -192,6 +192,9 @@ class Simulator(IManager):
         super(Simulator, self).__init__()
         self.environment.el_prices = self._create(self.factory['el_prices'])
         self.environment.temperature = self._create(self.factory['temperature'])
+        SD_el = self.factory['SD_el'] if 'SD_el' in self.factory  else 0
+        SD_temp = self.factory['SD_temp'] if 'SD_temp' in self.factory  else 0
+        self.environment.model_forecast_errors(SD_el, SD_temp)
         self.real_schedule = Schedule()
 
     def apply_actions(self, actions):
@@ -291,6 +294,8 @@ def pickle_results(schedule):
     schedule.actions.to_pickle('schedule.pkl')
     #with open('schedule.pkl', 'w') as pkl_schedule:
     #    pickle.dump(schedule.actions, pkl_schedule)
+
+# TODO: make run a method on Simulator
 
 def run():
     fig = plt.figure(1)#, figsize=(10, 15))

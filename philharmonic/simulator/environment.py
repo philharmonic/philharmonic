@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 import inputgen
 
@@ -53,13 +54,27 @@ class SimulatedEnvironment(Environment):
 
     forecast_end = property(get_forecast_end, doc="time by which we forecast")
 
-    def current_data(self):
-        """return el. prices from now to forecast_end"""
-        # TODO: use panel and return el. prices and temperatures
-        # add forecasting error
-        el_prices = self.el_prices[self.t:self.forecast_end]
-        temperature = self.temperature[self.t:self.forecast_end]
+    def current_data(self, forecast=True):
+        """Return el. prices and temperatures from now to forecast_end with
+        optional forecasting error (for forecast=True).
+
+        """
+        if forecast and hasattr(self, 'forecast_el'):
+            el_prices = self.forecast_el[self.t:self.forecast_end]
+        else:
+            el_prices = self.el_prices[self.t:self.forecast_end]
+        if forecast and hasattr(self, 'forecast_temp'):
+            temperature = self.forecast_temp[self.t:self.forecast_end]
+        else:
+            temperature = self.temperature[self.t:self.forecast_end]
         return el_prices, temperature
+
+    def _generate_forecast(self, data, SD):
+        return data + SD * np.random.randn(*data.shape)
+
+    def model_forecast_errors(self, SD_el, SD_temp):
+        self.forecast_el = self._generate_forecast(self.el_prices, SD_el)
+        self.forecast_temp = self._generate_forecast(self.temperature, SD_temp)
 
 class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""

@@ -68,8 +68,8 @@ def get_factory_ga():
     }
 
     factory = {
-        #"scheduler": GAScheduler,
-        "scheduler": FBFScheduler,
+        "scheduler": GAScheduler,
+        #"scheduler": FBFScheduler,
         "scheduler_conf": gaconf,
         "environment": GASimpleSimulatedEnvironment,
         #"cloud": inputgen.small_infrastructure,
@@ -79,6 +79,22 @@ def get_factory_ga():
         "cloud": inputgen.dynamic_infrastructure,
 
         "forecast_periods": 12,
+        ### no error
+        "SD_el": 0,
+        "SD_temp": 0,
+
+        ### small error
+        #"SD_el": 0.01,
+        #"SD_temp": 1.41,
+
+        ### medium error
+        #"SD_el": 0.03,
+        #"SD_temp": 3,
+
+        ### large error
+        #"SD_el": 0.05,
+        #"SD_temp": 5,
+
         #"times": inputgen.two_days,
         #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
