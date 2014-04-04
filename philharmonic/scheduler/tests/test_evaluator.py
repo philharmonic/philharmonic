@@ -194,6 +194,52 @@ def test_calculate_sla_penalties():
     assert_almost_equals(sla_penalty, 0.16666666666666666)
 
 
+def test_calculate_migration_overhead():
+    # some servers
+    s1 = Server(4, 2, location='A')
+    s2 = Server(4, 2, location='B')
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2, 2);
+    vm2 = VM(2, 2);
+    VMs = set([vm1, vm2])
+    cloud = Cloud(servers, VMs, auto_allocate=False)
+
+    times = inputgen.two_days(start='2010-02-26 08:00')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+    el_prices = inputgen.simple_el(start=env.t)
+    env.el_prices = el_prices
+
+    # 1 migration per VM -> booting
+    schedule = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2010-02-26 8:00')
+    schedule.add(a1, t1)
+    a2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2010-02-26 10:00')
+    schedule.add(a2, t2)
+
+    migration_energy, migration_cost = calculate_migration_overhead(
+        cloud, env, schedule)
+    assert_equals(migration_energy, 0.)
+    assert_equals(migration_cost, 0.)
+
+    # more migrations per VM -> actual migration actions
+    schedule = Schedule()
+    a2 = Migration(vm1, s2)
+    for i in range(24):
+        if i % 2 == 0:
+            action = a1
+        else:
+            action = a2
+        schedule.add(action, t1)
+        t1 += pd.offsets.Hour(1)
+    migration_energy, migration_cost = calculate_migration_overhead(
+        cloud, env, schedule)
+    assert_greater(migration_energy, 0.)
+    assert_greater(migration_cost, 0.)
+
+
 def test_evaluate():
     # some servers
     s1 = Server(4000, 2, location='A')

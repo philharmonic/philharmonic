@@ -353,6 +353,15 @@ def run():
     print(energy)
     print(' - total:')
     print(energy.sum())
+    # migration overhead
+    #-------------------
+    migration_energy, migration_cost = evaluator.calculate_migration_overhead(
+        cloud, env, schedule
+    )
+    print('Migration energy (kWh)')
+    print(migration_energy)
+    print('Migration cost ($)')
+    print(migration_cost)
     # cooling overhead
     #-----------------
     #temperature = inputgen.simple_temperature()
@@ -367,6 +376,8 @@ def run():
     print(energy_total)
     print(' - total:')
     print(energy_total.sum())
+    print(' - total with migrations:')
+    print(energy_total.sum() + migration_energy)
     # electricity costs
     #------------------
     #el_prices = inputgen.simple_el()
@@ -381,6 +392,8 @@ def run():
     print(cost_total)
     print(' - total:')
     print(cost_total.sum())
+    print(' - total with migrations:')
+    print(cost_total.sum() + migration_cost)
     # QoS aspects
     #------------------
     # Capacity constraints
@@ -388,7 +401,9 @@ def run():
     # TODO: these two
 
     # aggregated results
-    aggregated = [energy.sum(), cost.sum(), energy_total.sum(), cost_total.sum()]
+    aggregated = [energy.sum(), cost.sum(),
+                  energy_total.sum() + migration_energy,
+                  cost_total.sum() + migration_cost]
     aggr_names = ['IT energy (kWh)', 'IT cost ($)',
                   'Total energy (kWh)', 'Total cost ($)']
     aggregated_results = pd.Series(aggregated, aggr_names)

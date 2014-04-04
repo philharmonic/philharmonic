@@ -43,6 +43,14 @@ def test_constraints():
     assert_equals(a.all_allocated(), True, 'all VMs are allocated')
     assert_almost_equals(a.ratio_allocated(), 1.0)
 
+def test_allocation():
+    s1 = Server(4000, 2)
+    vm1 = VM(2000, 1)
+    state = State([s1], [vm1])
+    assert_true(state.allocation() is None)
+    state.place(vm1, s1)
+    assert_true(state.allocation() == s1)
+
 def test_capacity_penalty():
     Machine.resource_types = ['RAM', '#CPUs']
     # some servers

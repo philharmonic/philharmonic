@@ -223,6 +223,12 @@ class State():
                 return True
         return False
 
+    def allocation(self, vm):
+        for s in self.servers:
+            if vm in self.alloc[s]:
+                return s
+        return None
+
     def all_allocated(self):
         to_check = set(copy.copy(self.vms))
         for s in self.servers:

@@ -3,6 +3,8 @@ performed schedule of actions.
 
 """
 
+import math
+
 import pandas as pd
 import numpy as np
 
@@ -289,6 +291,63 @@ def calculate_sla_penalties(cloud, environment, schedule,
     penalty[penalty>1] = 1
     # 1/hour - tolerated, >1/hour - bad
     return penalty.mean()
+
+alpha = 0.512
+beta = 20.165
+E_mig = lambda V_mig : alpha*V_mig + beta
+V_mig = lambda V_mem, R, D, n : V_mem * (1-(D/float(R))**(n+1))/(1-D/float(R))
+T_mig = lambda V_mig, R : V_mig/(R/8.) # R assumed to be in Mb/s
+# constants
+R, D = 1000, 300
+V_thd = 100 # MB; treshold after which post-copying starts
+
+def calculate_migration_overhead(cloud, environment, schedule,
+                                 start=None, end=None):
+    """For every migration, calculate the energy using the  Liu et al. model,
+    take the mean electricity price between the current and target locations,
+    and calculate the resulting cost.
+
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
+    """
+    if start is None:
+        start = environment.start
+        cloud.reset_to_initial() # TODO: timestamp states and be smarter
+    else:
+        cloud.reset_to_real()
+    if end is None:
+        end = environment.end
+
+    total_energy = 0.
+    total_cost = 0.
+    for t in schedule.actions[start:end].index.unique():
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            actions = [action for action in schedule.actions[t].values]
+        else:
+            actions = [schedule.actions[t]]
+        for action in actions:
+            before = cloud.get_current()
+            host_before = before.allocation(action.vm)
+            cloud.apply(action)
+            after = cloud.get_current()
+            host_after = after.allocation(action.vm)
+            if host_before: # if it is None, it was a boot, not a migration
+                price_before = environment.el_prices[host_before.loc][t]
+                price_after = environment.el_prices[host_after.loc][t]
+                mean_el_price = (price_before + price_after) / 2.
+
+                memory = action.vm.res['RAM'] * 1000 # MB
+                n = int(math.ceil(math.log(V_thd/float(memory), D/float(R))))
+                migration_data = V_mig(memory, R, D, n)
+                energy = E_mig(migration_data) # Joules
+                energy = ph.joul2kwh(energy) # kWh
+                total_energy += energy
+                cost = energy * mean_el_price
+                total_cost += cost
+    return total_energy, total_cost
 
 # TODO: utilisation, constraint and sla penalties could all be
 # calculated in one pass through the states
