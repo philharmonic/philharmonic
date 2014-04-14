@@ -62,6 +62,8 @@ def peak_pauser_infrastructure():
 server_num = 5
 min_server_cpu = 4
 max_server_cpu = 8
+min_server_ram = 4
+max_server_ram = 8
 #locations
 
 def normal_infrastructure(locations=['A', 'B'],
@@ -73,8 +75,8 @@ def normal_infrastructure(locations=['A', 'B'],
     # array of server sizes
     cpu_sizes = normal_population(server_num, min_server_cpu,
                                   max_server_cpu)
-    ram_sizes = normal_population(server_num, min_server_cpu,
-                                  max_server_cpu)
+    ram_sizes = normal_population(server_num, min_server_ram,
+                                  max_server_ram)
 
     servers = []
     for cpu_size, ram_size in zip(cpu_sizes, ram_sizes):
@@ -244,8 +246,13 @@ def usa_el(start=None):
                             index_col=0, parse_dates=[0])
     return el_prices
 
-def usa_temperature(start=None):
-    temperature = pd.read_csv(os.path.join(DATA_LOC, 'temperatures.csv'),
+def world_el(start=None):
+    el_prices = pd.read_csv(os.path.join(DATA_LOC, 'world/prices.csv'),
+                            index_col=0, parse_dates=[0])
+    return el_prices
+
+def world_temperature(start=None):
+    temperature = pd.read_csv(os.path.join(DATA_LOC, 'world/temperatures.csv'),
                               index_col=0, parse_dates=[0])
     return temperature
 
@@ -260,6 +267,9 @@ def usa_two_hours():
 
 def usa_three_months():
     return pd.date_range('2010-01-01 00:00', '2010-03-30 23:00', freq='H')
+
+def world_three_months():
+    return pd.date_range('2010-01-02 00:00', '2010-03-30 23:00', freq='H')
 
 def usa_whole_period():
     #return pd.date_range('2010-01-01 00:00', '2010-12-30 23:00', freq='H')
@@ -291,23 +301,26 @@ def dynamic_infrastructure():
     return small_infrastructure(dynamic_cities)
 #----------------------
 
+location_dataset = usa_el
+
 def generate_fixed_input():
     from philharmonic import conf
     # override module settings with the config file
     for key, value in conf.inputgen_settings.iteritems():
         globals()[key] = value
-    temperature = usa_temperature()
-    #start, end = temperature.index[0], temperature.index[-26]
+    df = globals()[location_dataset]()
+    #start, end = temperature.index[0], temperature.index[-26]temperatuer
     factory = conf.get_factory()
     start, end = factory['times']()[[0, -1]]
-    locations = temperature.columns.values
-    servers = normal_infrastructure(locations)
+    locations = df.columns.values
+    cloud = normal_infrastructure(locations)
     requests = normal_vmreqs(start, end)
     with open('servers.pkl', 'w') as pkl_srv:
-        pickle.dump(servers, pkl_srv)
+        pickle.dump(cloud, pkl_srv)
     with open('requests.pkl', 'w') as pkl_req:
         pickle.dump(requests, pkl_req)
-    print(servers, requests)
+    print(cloud.servers)
+    print(requests)
 
 def servers_from_pickle():
     with open('servers.pkl') as pkl_srv:
