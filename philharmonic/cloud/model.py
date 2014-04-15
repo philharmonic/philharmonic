@@ -7,6 +7,7 @@ Created on Jul 11, 2013
 
 '''
 import copy
+import itertools
 
 from philharmonic.utils import deprecated
 
@@ -21,8 +22,8 @@ def format_spec(spec):
 # some non-semantic functionality common for VMs and servers
 class Machine(object):
     resource_types = ['RAM', '#CPUs'] # to be overridden with actual values
-
     def __init__(self, *args):
+        self.id = type(self)._new_id()
         self.spec = {}
         for (i, arg) in enumerate(args):
             self.spec[self.resource_types[i]] = arg
@@ -33,7 +34,11 @@ class Machine(object):
         #                               self.machine_type)
         return self.__repr__()
     def __repr__(self):
-        return "{}:{}".format(self.machine_type, str(id(self))[-3:])
+        return "{}:{}".format(self.machine_type, str(self.id))
+    def __eq__(self, other):
+        return (self.id, self.machine_type) == (other.id, other.machine_type)
+    def __hash__(self):
+        return hash((self.id, self.machine_type))
 
 def _delegate_to_obj(obj, method_name, *args):
     method = getattr(obj, method_name)
@@ -46,6 +51,7 @@ def _delegate_to_obj(obj, method_name, *args):
 class VM(Machine):
 
     machine_type = 'VM'
+    _new_id = itertools.count(start=1).next
 
     def __init__(self, *args):
         super(VM, self).__init__(*args)
@@ -68,6 +74,7 @@ class Server(Machine):
     """A physical server."""
 
     machine_type = 'PM'
+    _new_id = itertools.count(start=1).next
 
     def __init__(self, *args, **kwargs):
         """@param location: server's geographical location"""
@@ -86,7 +93,7 @@ class Server(Machine):
     loc = property(get_location, set_location, doc="geographical location")
 
     def __repr__(self):
-        s = "{}:{}".format(self.machine_type, str(id(self))[-3:])
+        s = "{}:{}".format(self.machine_type, str(self.id))
         try:
             s += '@{}'.format(self.location)
         except AttributeError:

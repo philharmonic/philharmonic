@@ -9,6 +9,21 @@ from nose.tools import *
 from philharmonic import *
 import pandas as pd
 
+def test_machine_id():
+    s1 = Server(4000, 2)
+    vm1 = VM(2000, 1);
+    s2 = Server(8000, 4)
+    vm2 = VM(2000, 2);
+    assert_equals(s1.id, 1)
+    assert_equals(s2.id, 2)
+    assert_equals(vm1.id, 1)
+    assert_equals(vm2.id, 2)
+    s1_copy = Server(4000, 2)
+    s1_copy.id = s1.id
+    assert_equals(s1, s1_copy)
+    d = {s1: 'bla'}
+    assert_true(s1_copy in d)
+
 def test_constraints():
     Machine.resource_types = ['RAM', '#CPUs']
     # some servers
