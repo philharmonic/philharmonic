@@ -334,7 +334,9 @@ def calculate_migration_overhead(cloud, environment, schedule,
             cloud.apply(action)
             after = cloud.get_current()
             host_after = after.allocation(action.vm)
-            if host_before: # if it is None, it was a boot, not a migration
+            #if host_before or host_after is None, it's a boot/delete
+            if (action.name == 'migrate' and host_before and
+                host_after and host_before != host_after):
                 price_before = environment.el_prices[host_before.loc][t]
                 price_after = environment.el_prices[host_after.loc][t]
                 mean_el_price = (price_before + price_after) / 2.

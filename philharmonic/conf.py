@@ -95,9 +95,11 @@ def get_factory_ga():
         #"SD_temp": 5,
 
         #"times": inputgen.two_days,
-        #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_two_hours,
+        #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_three_months,
+        #"times": inputgen.world_two_hours,
+        #"times": inputgen.world_two_days,
         "times": inputgen.world_three_months,
         #"times": inputgen.dynamic_usa_times,
         #"times": inputgen.usa_whole_period,
@@ -143,6 +145,7 @@ inputgen_settings = {
 
     # VM requests
     'VM_num': 80,
+    #'VM_num': 5,
     #'VM_num': 2000,
     # e.g. CPUs
     'min_cpu': 1,
@@ -152,6 +155,7 @@ inputgen_settings = {
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
+    #'max_duration': 60 * 60 * 24 * 2, # 2 days
     #'max_duration': 60 * 60 * 24 * 10, # 10 days
     'max_duration': 60 * 60 * 24 * 90, # 90 days
 }

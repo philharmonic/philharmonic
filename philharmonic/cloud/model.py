@@ -33,12 +33,22 @@ class Machine(object):
         #                               format_spec(self.spec),
         #                               self.machine_type)
         return self.__repr__()
+
     def __repr__(self):
         return "{}:{}".format(self.machine_type, str(self.id))
+
     def __eq__(self, other):
-        return (self.id, self.machine_type) == (other.id, other.machine_type)
+        try:
+            eq = (self.id, self.machine_type) == (other.id, other.machine_type)
+        except AttributeError:
+            eq = id(self) == id(other)
+        return eq
+
     def __hash__(self):
-        return hash((self.id, self.machine_type))
+        try:
+            return hash((self.id, self.machine_type))
+        except AttributeError:
+            return hash(id(self))
 
 def _delegate_to_obj(obj, method_name, *args):
     method = getattr(obj, method_name)

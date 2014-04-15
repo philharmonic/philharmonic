@@ -345,6 +345,7 @@ def run():
     # cloud power consumption
     #------------------
     power = evaluator.generate_cloud_power(util)
+    power.to_pickle('power.pkl')
     ax = plt.subplot(nplots, 1, 3)
     ax.set_title('Computational power (W)')
     power.plot(ax=ax)
@@ -353,6 +354,20 @@ def run():
     print(energy)
     print(' - total:')
     print(energy.sum())
+    # cooling overhead
+    #-----------------
+    #temperature = inputgen.simple_temperature()
+    temperature = env.temperature
+    power_total = evaluator.calculate_cloud_cooling(power, temperature)
+    ax = plt.subplot(nplots, 1, 4)
+    ax.set_title('Total power (W)')
+    power_total.plot(ax=ax)
+    power_total.to_pickle('power_total.pkl')
+    energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
+    print('Energy with cooling (kWh)')
+    print(energy_total)
+    print(' - total:')
+    print(energy_total.sum())
     # migration overhead
     #-------------------
     migration_energy, migration_cost = evaluator.calculate_migration_overhead(
@@ -362,20 +377,6 @@ def run():
     print(migration_energy)
     print('Migration cost ($)')
     print(migration_cost)
-    # cooling overhead
-    #-----------------
-    #temperature = inputgen.simple_temperature()
-    temperature = env.temperature
-    power_total = evaluator.calculate_cloud_cooling(power, temperature)
-    ax = plt.subplot(nplots, 1, 4)
-    ax.set_title('Total power (W)')
-    power_total.plot(ax=ax)
-    power_total.to_pickle('power.pkl')
-    energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
-    print('Energy with cooling (kWh)')
-    print(energy_total)
-    print(' - total:')
-    print(energy_total.sum())
     print(' - total with migrations:')
     print(energy_total.sum() + migration_energy)
     # electricity costs

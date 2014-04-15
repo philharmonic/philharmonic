@@ -262,8 +262,14 @@ def usa_small_infrastructure():
 def usa_two_days():
     return two_days('2010-01-01 00:00')
 
+def world_two_days():
+    return two_days('2010-01-02 00:00')
+
 def usa_two_hours():
     return two_hours('2010-01-01 00:00')
+
+def world_two_hours():
+    return two_hours('2010-01-02 00:00')
 
 def usa_three_months():
     return pd.date_range('2010-01-01 00:00', '2010-03-30 23:00', freq='H')
