@@ -298,6 +298,7 @@ def pickle_results(schedule):
 # TODO: make run a method on Simulator
 
 def run():
+    logging.debug('started')
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
 
@@ -350,10 +351,10 @@ def run():
     ax.set_title('Computational power (W)')
     power.plot(ax=ax)
     energy = ph.joul2kwh(ph.calculate_energy(power))
-    print('Energy (kWh)')
-    print(energy)
-    print(' - total:')
-    print(energy.sum())
+    info('Energy (kWh)')
+    info(energy)
+    info(' - total:')
+    info(energy.sum())
     # cooling overhead
     #-----------------
     #temperature = inputgen.simple_temperature()
@@ -364,37 +365,37 @@ def run():
     power_total.plot(ax=ax)
     power_total.to_pickle('power_total.pkl')
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
-    print('Energy with cooling (kWh)')
-    print(energy_total)
-    print(' - total:')
-    print(energy_total.sum())
+    info('Energy with cooling (kWh)')
+    info(energy_total)
+    info(' - total:')
+    info(energy_total.sum())
     # migration overhead
     #-------------------
     migration_energy, migration_cost = evaluator.calculate_migration_overhead(
         cloud, env, schedule
     )
-    print('Migration energy (kWh)')
-    print(migration_energy)
-    print('Migration cost ($)')
-    print(migration_cost)
-    print(' - total with migrations:')
-    print(energy_total.sum() + migration_energy)
+    info('Migration energy (kWh)')
+    info(migration_energy)
+    info('Migration cost ($)')
+    info(migration_cost)
+    info(' - total with migrations:')
+    info(energy_total.sum() + migration_energy)
     # electricity costs
     #------------------
     #el_prices = inputgen.simple_el()
     el_prices = env.el_prices
     cost = evaluator.calculate_cloud_cost(power, el_prices)
-    print('Electricity prices ($)')
-    print(cost)
-    print(' - total:')
-    print(cost.sum())
+    info('Electricity prices ($)')
+    info(cost)
+    info(' - total:')
+    info(cost.sum())
     cost_total = evaluator.calculate_cloud_cost(power_total, el_prices)
-    print('Electricity prices with cooling ($)')
-    print(cost_total)
-    print(' - total:')
-    print(cost_total.sum())
-    print(' - total with migrations:')
-    print(cost_total.sum() + migration_cost)
+    info('Electricity prices with cooling ($)')
+    info(cost_total)
+    info(' - total:')
+    info(cost_total.sum())
+    info(' - total with migrations:')
+    info(cost_total.sum() + migration_cost)
     # QoS aspects
     #------------------
     # Capacity constraints
@@ -410,7 +411,7 @@ def run():
     aggregated_results = pd.Series(aggregated, aggr_names)
     aggregated_results.to_pickle('results.pkl')
     #aggregated_results.plot(kind='bar')
-    print(aggregated_results)
+    info(aggregated_results)
 
     plt.savefig('results-graph.pdf')
     if conf.liveplot:

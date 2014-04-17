@@ -28,8 +28,6 @@ class ScheduleUnit(Schedule):
             w_util, w_cost, w_sla, w_constraint = 0.18, 0.17, 0.25, 0.4
             start, end = self.environment.t, self.environment.forecast_end
             el_prices, temperature = self.environment.current_data()
-            #if len(self.environment.get_requests()) > 0:
-            #    import ipdb; ipdb.set_trace()
             if self.no_temperature:
                 temperature = None # we don't consider the temp. factor
             if self.no_el_price:
@@ -46,6 +44,8 @@ class ScheduleUnit(Schedule):
             )
             self.fitness = weighted_sum
             self.rfitness = 1 - self.fitness
+            #if len(self.environment.get_requests()) > 0:
+            #   import ipdb; ipdb.set_trace()
             if np.isnan(self.fitness):
                 #import ipdb; ipdb.set_trace()
                 pass
@@ -105,10 +105,16 @@ class ScheduleUnit(Schedule):
 
 
     def __repr__(self):
+        if self.changed:
+            change_mark = '*'
+        else:
+            change_mark = ''
         try:
-            s = 'unit ({:.2})'.format(self.fitness)
+            s = 'unit ({:.2}: ut={:.2}, c={:.2}, cns={:.2}, sla={:.2}){}'
+            s = s.format(self.fitness, self.util, self.cost,
+                         self.constraint, self.sla, change_mark)
         except:
-            s = 'unit (fit: ?)'
+            s = 'unit (fit: ?){}'.format(change_mark)
             #s += super(ScheduleUnit, self).__repr__()
         return s
 
@@ -263,6 +269,7 @@ class GAScheduler(IScheduler):
 
             self.population.sort(key=lambda u : u.fitness, reverse=False)
             debug('  - best fitness: {}'.format(self.population[0].fitness))
+            debug('  - {}'.format(repr(self.population[0])))
             #if self.population[0].fitness == 0.06:
             #    import ipdb; ipdb.set_trace()
 
@@ -288,7 +295,6 @@ class GAScheduler(IScheduler):
                 unit = unit.mutation()
 
         # TODO: return best that satisfies hard constraints
-        #import ipdb; ipdb.set_trace()
         return self.population[0]
 
     def reevaluate(self):

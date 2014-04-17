@@ -517,3 +517,9 @@ def evaluate(cloud, environment, schedule,
     #cost_penalty = 0.2 * util_penalty + 0.8 * utilprice_penalty
 
     return util_penalty, utilprice_penalty, constraint_penalty, sla_penalty
+
+# TODO: move all the functions as methods in here, make global caches attributes
+# and have it automatically recognise when geotemp. inputs have changed to
+# cache the new results.
+class Evaluator(object):
+    pass

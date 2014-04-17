@@ -58,10 +58,10 @@ def get_factory_ga():
     from philharmonic.cloud.driver import simdriver
 
     gaconf = {
-        "population_size": 100,
+        "population_size": 4,
         "recombination_rate": 0.15,
         "mutation_rate": 0.05,
-        "max_generations": 100,
+        "max_generations": 2,
         "random_recreate_ratio": 0.3,
         "no_temperature": False,
         "no_el_price": False,
@@ -99,8 +99,8 @@ def get_factory_ga():
         #"times": inputgen.usa_two_days,
         #"times": inputgen.usa_three_months,
         #"times": inputgen.world_two_hours,
-        #"times": inputgen.world_two_days,
-        "times": inputgen.world_three_months,
+        "times": inputgen.world_two_days,
+        #"times": inputgen.world_three_months,
         #"times": inputgen.dynamic_usa_times,
         #"times": inputgen.usa_whole_period,
         #"requests": inputgen.simple_vmreqs,
@@ -144,8 +144,8 @@ inputgen_settings = {
     'max_server_ram': 8,
 
     # VM requests
-    'VM_num': 80,
-    #'VM_num': 5,
+    #'VM_num': 80,
+    'VM_num': 5,
     #'VM_num': 2000,
     # e.g. CPUs
     'min_cpu': 1,
@@ -155,9 +155,9 @@ inputgen_settings = {
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
-    #'max_duration': 60 * 60 * 24 * 2, # 2 days
+    'max_duration': 60 * 60 * 24 * 2, # 2 days
     #'max_duration': 60 * 60 * 24 * 10, # 10 days
-    'max_duration': 60 * 60 * 24 * 90, # 90 days
+    #'max_duration': 60 * 60 * 24 * 90, # 90 days
 }
 
 # Benchmark
