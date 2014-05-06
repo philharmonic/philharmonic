@@ -4,7 +4,6 @@ import os
 LOG_PATH, LOG_FILENAME = '.', 'philharmonic.log'
 LOG_LEVEL = logging.DEBUG
 
-import ipdb; ipdb.set_trace()
 logging.basicConfig(
     level=LOG_LEVEL,
     #format='%(asctime)s  %(message)s',

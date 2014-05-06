@@ -47,10 +47,10 @@ def parse_prices(where):
         #print(str(int(hour)-1)+':00')
         return str(int(hour)-1)+':00'
     where = os.path.expanduser(where)
-    df = pd.read_csv(where, converters={'HOUR':format_hour}, 
-        parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
+    df = pd.read_csv(where, converters={'HOUR':format_hour},
+                     parse_dates=[['DATE', 'HOUR']], index_col='DATE_HOUR')
     #df.index = df.index - pd.DateOffset(hours=1)
-    s = df['PRICE'].asfreq('H')
+    s = df['PRICE'].resample('H', fill_method='ffill')
     s.index.name = 'Time'
     s.name = 'Price'
     return s
