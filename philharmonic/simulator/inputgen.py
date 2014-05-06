@@ -245,6 +245,11 @@ def usa_el(start=None, filepath=os.path.join(DATA_LOC, 'prices.csv')):
                             index_col=0, parse_dates=[0])
     return el_prices
 
+def usa_temperature(start=None,
+                    filepath=os.path.join(DATA_LOC, 'temperatures.csv')):
+    temperature = pd.read_csv(filepath, index_col=0, parse_dates=[0])
+    return temperature
+
 def world_el(start=None, filepath=os.path.join(DATA_LOC, 'world/prices.csv')):
     el_prices = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return el_prices
