@@ -4,6 +4,8 @@ Created on Oct 9, 2012
 @author: kermit
 '''
 
+import os
+
 # I/O
 #======
 
@@ -133,6 +135,9 @@ plotserver = True
 #plotserver = False
 #liveplot = True
 liveplot = False
+
+DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
+DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')
 
 inputgen_settings = {
     # cloud's servers

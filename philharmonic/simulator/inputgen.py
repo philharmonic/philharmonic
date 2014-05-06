@@ -238,22 +238,21 @@ def medium_temperature(start=None):
 # USA data
 #-----------
 import os
-DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
-DATA_LOC = os.path.join(DATA_LOC, 'data/geotemporal')
+from philharmonic.conf import DATA_LOC
 
-def usa_el(start=None):
-    el_prices = pd.read_csv(os.path.join(DATA_LOC, 'prices.csv'),
+def usa_el(start=None, filepath=os.path.join(DATA_LOC, 'prices.csv')):
+    el_prices = pd.read_csv(filepath,
                             index_col=0, parse_dates=[0])
     return el_prices
 
-def world_el(start=None):
-    el_prices = pd.read_csv(os.path.join(DATA_LOC, 'world/prices.csv'),
-                            index_col=0, parse_dates=[0])
+def world_el(start=None, filepath=os.path.join(DATA_LOC, 'world/prices.csv')):
+    el_prices = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return el_prices
 
-def world_temperature(start=None):
-    temperature = pd.read_csv(os.path.join(DATA_LOC, 'world/temperatures.csv'),
-                              index_col=0, parse_dates=[0])
+def world_temperature(start=None,
+                      filepath=os.path.join(DATA_LOC,
+                                            'world/temperatures.csv')):
+    temperature = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return temperature
 
 def usa_small_infrastructure():
