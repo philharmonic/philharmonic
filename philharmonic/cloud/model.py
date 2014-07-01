@@ -103,7 +103,10 @@ class Server(Machine):
     loc = property(get_location, set_location, doc="geographical location")
 
     def __repr__(self):
-        s = "{}:{}".format(self.machine_type, str(self.id))
+        try:
+            s = "{}:{}".format(self.machine_type, str(self.id))
+        except AttributeError: # bug I noticed on some old pickled data
+            s = "{}:{}".format(self.machine_type, id(self))
         try:
             s += '@{}'.format(self.location)
         except AttributeError:
