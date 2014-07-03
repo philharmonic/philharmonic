@@ -19,12 +19,11 @@ def test_bfd_returns_schedule():
     assert_is_instance(schedule, Schedule)
 
 def test_bfd_reevaluate_initial_placement():
-    # TODO: similar test for FBF - it seems to fail it
     scheduler = BFDScheduler()
     scheduler.environment = FBFSimpleSimulatedEnvironment()
     s1, s2 = Server(8000, 4), Server(4000, 2)
     vm1 = VM(2000, 1)
-    vm2 = VM(2000, 2)
+    vm2 = VM(1000, 2)
     vm3 = VM(2000, 2)
     cloud = Cloud([s1, s2], [vm1, vm2, vm3])
     scheduler.cloud = cloud

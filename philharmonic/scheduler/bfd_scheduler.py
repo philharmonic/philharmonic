@@ -24,7 +24,8 @@ class BFDScheduler(IScheduler):
         or -1 in case some resource's capacity is exceeded.
 
         """
-        #TODO: this method should probably be a part of Cloud
+        # TODO: reuse free_cap data
+        # TODO: this method should probably be a part of Cloud
         current = self.cloud._current
         total_utilisation = 0.
         utilisations = {}
@@ -57,24 +58,23 @@ class BFDScheduler(IScheduler):
         #  - select VMs on underutilised PMs
         #  TODO
 
-        # sort VMs decreasing
+        VMs = sort_vms_decreasing(VMs)
 
-        # if len(requests) > 0:
-        #    import ipdb; ipdb.set_trace()
-        for request in requests:
-            if request.what == 'boot':
-                for server in self.cloud.servers:
-                    utilisation = self._fits(request.vm, server)
-                    #TODO: compare utilisations of different potential hosts
-                    if utilisation != -1:
-                        #import ipdb; ipdb.set_trace()
-                        action = Migration(request.vm, server)
+        if len(VMs) == 0:
+            return self.schedule
+
+        current = self.cloud.get_current()
+        hosts = sort_pms_increasing(self.cloud.servers, current)
+
+        for vm in VMs:
+            mapped = False
+            while not mapped:
+                for host in hosts:
+                    if self._fits(vm, host) != -1:
+                        action = Migration(vm, host)
                         self.cloud.apply(action)
                         self.schedule.add(action, t)
+                        mapped = True
                         break
-        # for each boot request:
-        # find the best server
-        #  - find server that can host this VM
-        #  - make sure the server's resources are now reserved
-        # add new migration to the schedule
+
         return self.schedule
