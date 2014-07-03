@@ -129,6 +129,8 @@ class State():
         self.servers = servers
         self.vms = vms
         self.alloc = {} # servers -> allocated machines
+        # servers -> remaining free capacity
+        self.free_cap = {s : copy.copy(s.cap) for s in servers}
         self.paused = set() # those VMs that are paused
         self.suspended = set() # those VMs that are paused
         for s in self.servers:
@@ -152,10 +154,14 @@ class State():
     def place(self, vm, s):
         """change current state to have vm on server s"""
         self.alloc[s].add(vm)
+        for r in s.resource_types: # update free capacity
+            self.free_cap[s][r] -= vm.res[r]
 
     def remove(self, vm, s):
         """change current state to not have vm on server s"""
         self.alloc[s].remove(vm)
+        for r in s.resource_types: # update free capacity
+            self.free_cap[s][r] += vm.res[r]
 
     # action effects (consequence of applying Action to State)
     #---------------
@@ -169,10 +175,10 @@ class State():
                     return
                 else: # VM was elsewhere - removing
                     # remove from old server
-                    vms.remove(vm)
+                    self.remove(vm, server)
         # add it to the new one
         if s is not None: # if s is None, vm is being deleted
-            self.alloc[s].add(vm)
+            self.place(vm, s)
         # TODO: faster reverse-dictionary lookup
         # http://stackoverflow.com/a/2569076/544059
 
@@ -205,6 +211,10 @@ class State():
         new_state.alloc = {}
         for s, vms in self.alloc.iteritems():
             new_state.alloc[s] = set(vms) # create a new set
+        new_state.free_cap = {}
+        for s in self.servers:
+            # copy the cap dictionary
+            new_state.free_cap[s] = copy.copy(self.free_cap[s])
         #TODO: copy.copy - probably faster
         return new_state
 

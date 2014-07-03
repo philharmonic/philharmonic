@@ -198,7 +198,7 @@ class Simulator(IManager):
         self.real_schedule = Schedule()
 
     def apply_actions(self, actions):
-        """apply actions on the cloud (for "real") and log them"""
+        """apply actions (or requests) on the cloud (for "real") and log them"""
         self.cloud.reset_to_real()
         for t, action in actions.iteritems():
             #debug('apply %s at time %d'.format(action, t))

@@ -112,6 +112,32 @@ def test_state():
     b.remove(vm1, s1)
     assert_in(vm1, a.alloc[s1], 'changing one state must not affect the other')
 
+def test_state_place_free_cap():
+    import copy
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1);
+    vm2 = VM(1000, 1);
+    vm3 = VM(1000, 1);
+    VMs = [vm1,vm2,vm3]
+    a = State(servers, VMs, auto_allocate=False)
+    assert_equals(a.free_cap[s1]['RAM'], 4000)
+    assert_equals(a.free_cap[s1]['#CPUs'], 2)
+    a.place(vm1, s1)
+    a.place(vm2, s2)
+    a.place(vm3, s2)
+    assert_equals(a.free_cap[s1]['RAM'], 2000)
+    assert_equals(a.free_cap[s1]['#CPUs'], 1)
+    b = a.copy()
+    b.remove(vm1, s1)
+    assert_equals(a.free_cap[s1]['RAM'], 2000)
+    assert_equals(a.free_cap[s1]['#CPUs'], 1)
+    assert_equals(b.free_cap[s1]['RAM'], 4000)
+    assert_equals(b.free_cap[s1]['#CPUs'], 2)
+
 def test_migration():
     # some servers
     s1 = Server(4000, 2)
@@ -132,6 +158,28 @@ def test_migration():
 
     assert_not_in(vm1, b.alloc[s1], 'vm1 should have moved after the transition')
     assert_in(vm1, b.alloc[s2], 'vm1 should have moved after the transition')
+
+def test_migration_free_cap():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1);
+    VMs = [vm1]
+
+    a = State(servers, VMs)
+    # initial position
+    a.place(vm1, s1)
+    assert_equals(a.free_cap[s1]['RAM'], 2000)
+    migr = Migration(vm1, s2)
+    b = a.transition(migr)
+
+    assert_equals(a.free_cap[s1]['RAM'], 2000)
+    assert_equals(a.free_cap[s2]['RAM'], 8000)
+
+    assert_equals(b.free_cap[s1]['RAM'], 4000)
+    assert_equals(b.free_cap[s2]['RAM'], 6000)
 
 def test_allocation():
     s1 = Server(4000, 2)
