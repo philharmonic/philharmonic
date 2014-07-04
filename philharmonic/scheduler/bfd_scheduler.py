@@ -64,7 +64,14 @@ class BFDScheduler(IScheduler):
             return self.schedule
 
         current = self.cloud.get_current()
-        hosts = sort_pms_increasing(self.cloud.servers, current)
+        all_hosts = self.cloud.servers
+        hosts = filter(lambda s : not current.server_free(s), all_hosts)
+        hosts = sort_pms_increasing(hosts, current)
+        inactive_hosts = filter(lambda s : current.server_free(s), all_hosts)
+        inactive_hosts = sort_pms_increasing(inactive_hosts, current)
+
+        # TODO: fully implement the algorithm
+        hosts = hosts + inactive_hosts
 
         for vm in VMs:
             mapped = False

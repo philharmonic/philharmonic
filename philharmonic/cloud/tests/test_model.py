@@ -138,6 +138,14 @@ def test_state_place_free_cap():
     assert_equals(b.free_cap[s1]['RAM'], 4000)
     assert_equals(b.free_cap[s1]['#CPUs'], 2)
 
+def test_server_free():
+    s1 = Server(4000, 2)
+    vm1 = VM(2000, 2)
+    state = State([s1], [vm1], auto_allocate=False)
+    assert_true(state.server_free(s1))
+    state.place(vm1, s1)
+    assert_false(state.server_free(s1))
+
 def test_migration():
     # some servers
     s1 = Server(4000, 2)

@@ -321,6 +321,9 @@ class State():
         ratio = float(num_ok) / len(self.servers)
         return ratio
 
+    def server_free(self, s):
+        return len(self.alloc[s]) == 0
+
 class Action(object):
     """A static representation of an action on the cloud."""
     name = ''
