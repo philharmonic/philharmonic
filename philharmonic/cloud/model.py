@@ -226,22 +226,28 @@ class State():
         apply_effect(*action.args)
         return new_state
 
+    def utilisation(self, s, weights=None):
+        """utilisation ratio of a server s"""
+        if weights is None:
+            uniform_weight = 1./len(Server.resource_types)
+            weights = {r : uniform_weight for r in s.resource_types}
+        total_utilisation = 0.
+        utilisations = {}
+        for r in s.resource_types:
+            used = s.cap[r] - self.free_cap[s][r]
+            utilisations[r] = used / float(s.cap[r])
+            if utilisations[r] > 1:
+                utilisations[r] = 1
+        for r, util in utilisations.iteritems():
+            total_utilisation += weights[r] * util
+        return total_utilisation
+
     def calculate_utilisations(self):
         self.utilisations = {}
         uniform_weight = 1./len(Server.resource_types)
         weights = {res : uniform_weight for res in Server.resource_types}
         for server in self.servers:
-            total_utilisation = 0.
-            utilisations = {}
-            for i in server.resource_types:
-                used = 0.
-                for vm in self.alloc[server]:
-                    used += vm.res[i]
-                utilisations[i] = used/server.cap[i]
-                if utilisations[i] > 1:
-                    utilisations[i] = 1
-            for resource_type, utilisation in utilisations.iteritems():
-                total_utilisation += weights[resource_type] * utilisation
+            total_utilisation = self.utilisation(server, weights)
             self.utilisations[server] = total_utilisation
         return self.utilisations
 
@@ -323,6 +329,10 @@ class State():
 
     def server_free(self, s):
         return len(self.alloc[s]) == 0
+
+    def underutilised(self, s, threshold = 0.25):
+        """if the server is non-empty and utilisation below threshold"""
+        return not self.server_free(s) and self.utilisation(s) < threshold
 
 class Action(object):
     """A static representation of an action on the cloud."""

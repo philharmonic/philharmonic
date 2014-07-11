@@ -4,8 +4,8 @@ import pandas as pd
 
 from philharmonic import Schedule
 from philharmonic.scheduler import BFDScheduler
-from philharmonic.scheduler.bfd_scheduler import sort_vms_decreasing,\
-sort_pms_increasing
+from philharmonic.scheduler.bfd_scheduler import sort_vms_decreasing, \
+    sort_pms_increasing
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 from philharmonic.simulator.simulator import FBFSimulator
 from philharmonic import inputgen, Cloud, VMRequest, VM, Server, State

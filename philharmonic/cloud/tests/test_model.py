@@ -189,6 +189,25 @@ def test_migration_free_cap():
     assert_equals(b.free_cap[s1]['RAM'], 4000)
     assert_equals(b.free_cap[s2]['RAM'], 6000)
 
+def test_utilisation():
+    vm = VM(2000, 1)
+    s = Server(20000, 10)
+    cloud = Cloud([s], [vm])
+    assert_equals(cloud.get_current().utilisation(s), 0)
+    cloud.apply(Migration(vm, s))
+    assert_equals(cloud.get_current().utilisation(s), 0.1)
+
+def test_underutilised():
+    vm = VM(2000, 1)
+    vm2 = VM(10000, 8)
+    s = Server(20000, 10)
+    cloud = Cloud([s], [vm, vm2])
+    assert_false(cloud.get_current().underutilised(s))
+    cloud.apply(Migration(vm, s))
+    assert_true(cloud.get_current().underutilised(s))
+    cloud.apply(Migration(vm2, s))
+    assert_false(cloud.get_current().underutilised(s))
+
 def test_allocation():
     s1 = Server(4000, 2)
     servers = [s1]
