@@ -153,15 +153,22 @@ class State():
 
     def place(self, vm, s):
         """change current state to have vm on server s"""
-        self.alloc[s].add(vm)
-        for r in s.resource_types: # update free capacity
-            self.free_cap[s][r] -= vm.res[r]
+        if vm not in self.alloc[s]:
+            self.alloc[s].add(vm)
+            for r in s.resource_types: # update free capacity
+                self.free_cap[s][r] -= vm.res[r]
 
     def remove(self, vm, s):
         """change current state to not have vm on server s"""
-        self.alloc[s].remove(vm)
-        for r in s.resource_types: # update free capacity
-            self.free_cap[s][r] += vm.res[r]
+        if vm in self.alloc[s]:
+            self.alloc[s].remove(vm)
+            for r in s.resource_types: # update free capacity
+                self.free_cap[s][r] += vm.res[r]
+
+    def remove_all(self, s):
+        """change current state to have no VMs on server s"""
+        self.alloc[s] = set()
+        self.free_cap[s] = copy.copy(s.cap)
 
     # action effects (consequence of applying Action to State)
     #---------------
@@ -435,7 +442,7 @@ class Cloud():
     - action on Cloud -> create Action instance -> add to Schedule
 
     """
-    def __init__(self, servers, initial_vms=set(), auto_allocate=False):
+    def __init__(self, servers=[], initial_vms=set(), auto_allocate=False):
         self._servers = servers
         self._initial = State(servers, set(initial_vms), auto_allocate)
         for machine in servers + list(initial_vms): # know thy parent
@@ -443,6 +450,7 @@ class Cloud():
         self._real = self._initial
         self.reset_to_real()
 
+    #TODO: this seems wrong - current should always be a copy?
     def reset_to_real(self):
         """Set the current state back to what the real state of the cloud is."""
         self._current = self._real

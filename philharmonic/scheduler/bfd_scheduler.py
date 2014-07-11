@@ -44,6 +44,16 @@ class BFDScheduler(IScheduler):
             total_utilisation += weights[resource_type] * utilisation
         return total_utilisation
 
+    def _vms_from_underutilised_hosts(self):
+        vms = []
+        state = self.cloud.get_current()
+        for s in self.cloud.servers:
+            if state.underutilised(s):
+                vms.extend(state.alloc[s])
+                # remove the VMs from that host for now
+                self.cloud.get_current().remove_all(s) # transition?
+        return vms
+
     def reevaluate(self):
         self.schedule = Schedule()
         t = self.environment.get_time()
@@ -56,7 +66,7 @@ class BFDScheduler(IScheduler):
             if request.what == 'boot':
                 VMs.append(request.vm)
         #  - select VMs on underutilised PMs
-        #  TODO
+        VMs.extend(self._vms_from_underutilised_hosts())
 
         VMs = sort_vms_decreasing(VMs)
 
