@@ -220,8 +220,12 @@ class State():
             new_state.alloc[s] = set(vms) # create a new set
         new_state.free_cap = {}
         for s in self.servers:
-            # copy the cap dictionary
-            new_state.free_cap[s] = copy.copy(self.free_cap[s])
+            # copy the free_cap dictionary
+            try:
+                new_state.free_cap[s] = copy.copy(self.free_cap[s])
+            except AttributeError: # temp fix due to supporting old servers.pkl
+                self.free_cap = {s : copy.copy(s.cap) for s in self.servers}
+                new_state.free_cap[s] = copy.copy(self.free_cap[s])
         #TODO: copy.copy - probably faster
         return new_state
 
