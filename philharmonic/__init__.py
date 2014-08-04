@@ -1,3 +1,5 @@
+from importlib import import_module
+
 # reading temperature and el. price data
 from philharmonic.timeseries.historian import *
 from philharmonic.timeseries.calculator import *
@@ -12,3 +14,11 @@ from philharmonic.logger import info, debug, error
 
 # default data generators
 import philharmonic.simulator.inputgen as inputgen
+
+
+import philharmonic.settings.base as conf
+#conf = None
+
+def _setup(conf_module):
+    """initially load which module will be used as philharmonic.conf"""
+    globals()['conf'] = import_module(conf_module)

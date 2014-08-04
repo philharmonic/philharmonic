@@ -29,3 +29,11 @@ To test just run this from the project's root
 
     nosy
 
+
+Contributing
+============
+
+Settings
+--------
+Just `import philharmonic.conf` (`philharmonic._setup` assumed to be called) and
+use any properties in this module.
