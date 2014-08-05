@@ -12,7 +12,6 @@ import philharmonic
               help='The main conf module to load.')
 def load_settings_run(conf):
     philharmonic._setup(conf)
-    print(philharmonic.conf.extra_setting)
     from philharmonic.simulator.simulator import run
     run()
 

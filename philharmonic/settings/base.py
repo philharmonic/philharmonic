@@ -23,6 +23,7 @@ manager = "Simulator"
 
 # Manager factory
 #=================
+# old approach - use functions ...
 
 # won't have to be function once I kick out conf from PeakPauser
 def get_factory_fbf():
@@ -125,16 +126,86 @@ def get_factory_ga():
 
     return factory
 
+# new approach - just a global factory
+#-------------------------------------
+from philharmonic.scheduler import FBFScheduler, GAScheduler, BFDScheduler
+
+# environments
+from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
+
+from philharmonic.simulator import inputgen
+from philharmonic.cloud.driver import simdriver
+
+
+
+factory = {
+    "scheduler": FBFScheduler,
+    "scheduler_conf": None,
+    "environment": GASimpleSimulatedEnvironment,
+    #"cloud": inputgen.small_infrastructure,
+    #"cloud": inputgen.usa_small_infrastructure,
+    "cloud": inputgen.servers_from_pickle,
+    #"cloud": inputgen.dynamic_infrastructure,
+
+    "forecast_periods": 12,
+    ### no error
+    "SD_el": 0,
+    "SD_temp": 0,
+
+        ### small error
+    #"SD_el": 0.01,
+    #"SD_temp": 1.41,
+
+        ### medium error
+    #"SD_el": 0.03,
+    #"SD_temp": 3,
+
+        ### large error
+    #"SD_el": 0.05,
+    #"SD_temp": 5,
+
+    #"times": inputgen.two_days,
+    #"times": inputgen.usa_two_hours,
+    #"times": inputgen.usa_two_days,
+    #"times": inputgen.usa_three_months,
+    #"times": inputgen.world_two_hours,
+    "times": inputgen.world_two_days,
+    #"times": inputgen.world_three_months,
+    #"times": inputgen.dynamic_usa_times,
+    #"times": inputgen.usa_whole_period,
+    #"requests": inputgen.simple_vmreqs,
+    #"requests": inputgen.medium_vmreqs,
+    "requests": inputgen.requests_from_pickle,
+
+    #"el_prices": inputgen.simple_el,
+    #"el_prices": inputgen.medium_el,
+    #"el_prices": inputgen.usa_el,
+    "el_prices": inputgen.world_el,
+    #"el_prices": inputgen.dynamic_usa_el,
+    #"temperature": inputgen.simple_temperature,
+    #"temperature": inputgen.medium_temperature,
+    #"temperature": inputgen.usa_temperature,
+    "temperature": inputgen.world_temperature,
+    #"temperature": inputgen.dynamic_usa_temp,
+
+    "driver": simdriver,
+}
+
 def get_factory():
-    return get_factory_ga()
+    #return get_factory_ga()
+    return factory
 
 # Simulator settings
 #===========================
 
 plotserver = True
 #plotserver = False
-#liveplot = True
-liveplot = False
+
+if plotserver:
+    liveplot = False
+else:
+    liveplot = False
+    #liveplot = True
 
 DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
 DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')

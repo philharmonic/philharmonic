@@ -305,7 +305,6 @@ def run():
     nplots = 4
     # create necessary objects
     #-------------------------
-
     simulator = Simulator(conf.get_factory())
 
     print('Servers\n----------')

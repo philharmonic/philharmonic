@@ -264,25 +264,25 @@ def usa_small_infrastructure():
     return small_infrastructure(['MI-Detroit', 'IN-Indianapolis'])
 
 def usa_two_days():
-    return two_days('2010-01-01 00:00')
-
-def world_two_days():
     return two_days('2010-01-02 00:00')
 
-def usa_two_hours():
-    return two_hours('2010-01-01 00:00')
+def world_two_days():
+    return two_days('2010-01-03 00:00')
 
-def world_two_hours():
+def usa_two_hours():
     return two_hours('2010-01-02 00:00')
 
-def usa_three_months():
-    return pd.date_range('2010-01-01 00:00', '2010-03-30 23:00', freq='H')
+def world_two_hours():
+    return two_hours('2010-01-03 00:00')
 
-def world_three_months():
+def usa_three_months():
     return pd.date_range('2010-01-02 00:00', '2010-03-30 23:00', freq='H')
 
+def world_three_months():
+    return pd.date_range('2010-01-03 00:00', '2010-03-30 23:00', freq='H')
+
 def usa_whole_period():
-    #return pd.date_range('2010-01-01 00:00', '2010-12-30 23:00', freq='H')
+    #return pd.date_range('2010-01-02 00:00', '2010-12-30 23:00', freq='H')
     el_prices = usa_el()
     start, end = el_prices.index[0], el_prices.index[-26]
     return pd.date_range(start, end, freq='H')

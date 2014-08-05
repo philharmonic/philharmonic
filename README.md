@@ -29,6 +29,17 @@ To test just run this from the project's root
 
     nosy
 
+Running
+=======
+
+To use default settings:
+
+    python simulate.py
+
+To pass different settings:
+
+    python simulate.py --conf=philharmonic.settings.ga
+
 
 Contributing
 ============
@@ -37,3 +48,9 @@ Settings
 --------
 Just `import philharmonic.conf` (`philharmonic._setup` assumed to be called) and
 use any properties in this module.
+
+Debugging
+---------
+To enter ipdb on errors:
+
+    ipython --pdb -- simulate.py --conf=philharmonic.settings.ga

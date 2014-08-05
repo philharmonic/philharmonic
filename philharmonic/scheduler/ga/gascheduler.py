@@ -158,7 +158,7 @@ def roulette_selection(individuals, k):
     :mod:`random` module.
 
     .. warning::
-       The roulette selection by definition cannot be used for minimization 
+       The roulette selection by definition cannot be used for minimization
        or when the fitness can be smaller or equal to 0.
     """
     s_inds = sorted(individuals, key=lambda u : u.rfitness, reverse=True)
