@@ -11,7 +11,7 @@ from twisted.web import soap, server
 from twisted.internet import reactor, defer
 
 from philharmonic.logger import log
-import philharmonic.conf as conf
+from philharmonic import conf
 
 class BenchmarkWaiter(soap.SOAPPublisher):
     """Publish two methods, 'add' and 'echo'."""

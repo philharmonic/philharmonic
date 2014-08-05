@@ -238,25 +238,37 @@ def medium_temperature(start=None):
 # USA data
 #-----------
 import os
-from philharmonic.conf import DATA_LOC
 
-def usa_el(start=None, filepath=os.path.join(DATA_LOC, 'prices.csv')):
+def get_data_loc(filename):
+    from philharmonic import conf
+    return os.path.join(conf.DATA_LOC, filename)
+
+#TODO: refactor this!
+# - everything as strings
+# - something calls one function to load the datasets initially
+
+def usa_el(start=None, filepath=None):
+    if filepath is None:
+        filepath = get_data_loc('prices.csv')
     el_prices = pd.read_csv(filepath,
                             index_col=0, parse_dates=[0])
     return el_prices
 
-def usa_temperature(start=None,
-                    filepath=os.path.join(DATA_LOC, 'temperatures.csv')):
+def usa_temperature(start=None, filepath=None):
+    if filepath is None:
+        filepath = get_data_loc('temperatures.csv')
     temperature = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return temperature
 
-def world_el(start=None, filepath=os.path.join(DATA_LOC, 'world/prices.csv')):
+def world_el(start=None, filepath=None):
+    if filepath is None:
+        filepath = get_data_loc('world/prices.csv')
     el_prices = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return el_prices
 
-def world_temperature(start=None,
-                      filepath=os.path.join(DATA_LOC,
-                                            'world/temperatures.csv')):
+def world_temperature(start=None, filepath=None):
+    if filepath is None:
+        filepath = get_data_loc('world/temperatures.csv')
     temperature = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return temperature
 

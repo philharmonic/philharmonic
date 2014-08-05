@@ -7,9 +7,9 @@ import unittest
 
 from philharmonic.manager.manager import Manager, PeakPauserManager, NoSchedulerManager
 
-from philharmonic.scheduler import PeakPauser, NoScheduler
 from philharmonic.scheduler.ischeduler import IScheduler
-import philharmonic.conf as my_conf
+import philharmonic
+from philharmonic import conf as my_conf
 from philharmonic import runner
 
 def price_is_expensive(self): # our dummy version of the method

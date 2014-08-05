@@ -13,7 +13,12 @@ historical_en_prices = "./io/energy_price/train/3month.csv"
 #historical_en_prices = "./io/energy_price_data-quick_test.csv"
 #historical_en_prices = "./io/energy_price_data-single_day.csv"
 
-results = "./io/results.pickle"
+output_folder = "io/results/"
+
+save_power = False
+
+DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
+DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')
 
 # Manager
 #=========
@@ -23,8 +28,8 @@ manager = "Simulator"
 
 # Manager factory
 #=================
-# old approach - use functions ...
 
+# use strings and import lazily using importlib. Don't import directly.
 from philharmonic.scheduler import FBFScheduler, GAScheduler, BFDScheduler
 
 # environments
@@ -101,9 +106,7 @@ if plotserver:
 else:
     liveplot = False
     #liveplot = True
-
-DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
-DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')
+    fileplot = False
 
 inputgen_settings = {
     # cloud's servers

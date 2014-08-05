@@ -61,7 +61,7 @@ class Manager(IManager, threading.Thread):
         self.scheduler.finalize()
         self.results = {"start": self.start, "end": self.end,
                         "duration": self.duration}
-        with open(conf.results, "wb") as results_file:
+        with open(conf.loc('results.pickle'), "wb") as results_file:
             pickle.dump(self.results, results_file)
         log("------------------\n")
 
@@ -76,7 +76,8 @@ class Manager(IManager, threading.Thread):
         self.finalize()
 
 
-from philharmonic.scheduler import PeakPauser, NoScheduler
+from philharmonic.scheduler import NoScheduler
+from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from philharmonic.cloud.driver.openstack import console_api
 
 #TODO: similarly to simulator, override factory with

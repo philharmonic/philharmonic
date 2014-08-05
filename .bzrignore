@@ -7,3 +7,4 @@ io/*.pickle
 **/.DS_Store
 *.pkl
 .coverage
+io/results

@@ -1,5 +1,7 @@
 from .base import *
 
+output_folder = "io/results/ga/"
+
 gaconf = {
     "population_size": 20,
     "recombination_rate": 0.15,

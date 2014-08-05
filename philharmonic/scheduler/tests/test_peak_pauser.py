@@ -5,10 +5,10 @@ Created on Oct 16, 2012
 '''
 import unittest
 from mock import MagicMock
-from philharmonic.scheduler import PeakPauser, NoScheduler
+from philharmonic.scheduler import NoScheduler
+from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.cloud.driver import nodriver
-import philharmonic.conf as my_conf
 from philharmonic import inputgen
 from philharmonic.simulator.environment import PPSimulatedEnvironment
 
@@ -26,6 +26,8 @@ class PeakPauserTest(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
+        import philharmonic
+        from philharmonic import conf as my_conf
         my_conf.dummy = True
         my_conf.historical_en_prices_file = "./io/energy_price_data-test.csv"
         IScheduler._initial_sleep = 0.1

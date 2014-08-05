@@ -36,8 +36,10 @@ from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
 from philharmonic.scheduler import evaluator
 from philharmonic.manager.imanager import IManager
 from philharmonic.cloud.driver import simdriver
-from philharmonic.scheduler import PeakPauser, NoScheduler
+from philharmonic.scheduler import NoScheduler
+from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from environment import SimulatedEnvironment, PPSimulatedEnvironment
+from philharmonic.utils import loc
 
 
 # old scheduler design...
@@ -291,7 +293,7 @@ class NoSchedulerSimulator(Simulator):
 # TODO: route to here straight from schedule.py
 
 def pickle_results(schedule):
-    schedule.actions.to_pickle('schedule.pkl')
+    schedule.actions.to_pickle(loc('schedule.pkl'))
     #with open('schedule.pkl', 'w') as pkl_schedule:
     #    pickle.dump(schedule.actions, pkl_schedule)
 
@@ -345,7 +347,8 @@ def run():
     # cloud power consumption
     #------------------
     power = evaluator.generate_cloud_power(util)
-    power.to_pickle('power.pkl')
+    if conf.save_power:
+        power.to_pickle(loc('power.pkl'))
     ax = plt.subplot(nplots, 1, 3)
     ax.set_title('Computational power (W)')
     power.plot(ax=ax)
@@ -362,7 +365,8 @@ def run():
     ax = plt.subplot(nplots, 1, 4)
     ax.set_title('Total power (W)')
     power_total.plot(ax=ax)
-    power_total.to_pickle('power_total.pkl')
+    if conf.save_power:
+        power_total.to_pickle(loc('power_total.pkl'))
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
     info('Energy with cooling (kWh)')
     info(energy_total)
@@ -408,13 +412,16 @@ def run():
     aggr_names = ['IT energy (kWh)', 'IT cost ($)',
                   'Total energy (kWh)', 'Total cost ($)']
     aggregated_results = pd.Series(aggregated, aggr_names)
-    aggregated_results.to_pickle('results.pkl')
+    aggregated_results.to_pickle(loc('results.pkl'))
     #aggregated_results.plot(kind='bar')
     info(aggregated_results)
 
-    plt.savefig('results-graph.pdf')
     if conf.liveplot:
         plt.show()
+    elif conf.liveplot:
+        plt.savefig(loc('results-graph.pdf'))
+
+    info('Done. Results saved to: {}'.format(conf.output_folder))
 
 if __name__ == "__main__":
     run()

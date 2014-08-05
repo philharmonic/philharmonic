@@ -1,3 +1,4 @@
+import os, errno
 import warnings
 
 def deprecated(func):
@@ -12,3 +13,16 @@ def deprecated(func):
     newFunc.__doc__ = func.__doc__
     newFunc.__dict__.update(func.__dict__)
     return newFunc
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
+
+def loc(filepath):
+    from philharmonic import conf
+    mkdir_p(conf.output_folder)
+    return os.path.join(conf.output_folder, filepath)
