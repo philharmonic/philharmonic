@@ -239,7 +239,24 @@ class GAScheduler(IScheduler):
                     unit.add(action, self.environment.t)
 
     def _best_satisfies_constraints(self):
-        pass
+        """Best unit that satisfies hard constraints or None if none do."""
+        best = sorted(self.population,
+                      key=lambda u : (1 - u.constraint, u.rfitness),
+                      reverse=True)[0]
+        if best.constraint == 0:
+            return best
+        else:
+            return None
+
+    def _add_boot_actions_greedily(self, unit):
+        requests = self.environment.get_requests()
+        for request in requests:
+            if request.what == 'boot':
+                # TODO: fbf server
+                server = random.sample(self.cloud.servers, 1)[0]
+                action = Migration(request.vm, server)
+                unit.add(action, self.environment.t)
+                # TODO: check if something with that VM already there
 
     def genetic_algorithm(self):
         """Propagate through generations, evolve ScheduleUnits and find
@@ -297,13 +314,16 @@ class GAScheduler(IScheduler):
             # mutation
             for unit in random.sample(self.population, num_mutation):
                 unit = unit.mutation()
+        # first try to get best that satisfies hard constraints
+        best = self._best_satisfies_constraints()
+        if best is None: # none satisfy hard constraints
             best = self.population[0]
-            # debug unallocated VMs
-            if best.constraint > 0:
-                # something is amiss if the best schedule broke constraints
-                #import ipdb; ipdb.set_trace()
-                pass
-        # TODO: return best that satisfies hard constraints
+            self._add_boot_actions_greedily(best)
+        # debug unallocated VMs
+        if best.constraint > 0:
+            # something is amiss if the best schedule broke constraints
+            #import ipdb; ipdb.set_trace()
+            pass
         return best
 
     def reevaluate(self):

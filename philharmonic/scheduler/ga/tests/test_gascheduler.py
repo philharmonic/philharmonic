@@ -2,9 +2,10 @@ from __future__ import absolute_import
 from nose.tools import *
 
 import pandas as pd
+from mock import MagicMock
 
 from ..gascheduler import ScheduleUnit, create_random, GAScheduler
-from philharmonic import VM, Server, Cloud, Migration
+from philharmonic import VM, Server, Cloud, Migration, VMRequest
 from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
 from philharmonic.simulator import inputgen
 from philharmonic.scheduler import evaluator
@@ -132,6 +133,95 @@ def test_create_random():
 
     unit = create_random(env, cloud)
     assert_is_instance(unit, ScheduleUnit)
+
+def test_best_satisfies_constraints():
+    rfitnesses = [0.5, 1, 0.7]
+    constraint_penalties = [0, 0.3, 0]
+    population = []
+    for rfitness, constraint in zip(rfitnesses, constraint_penalties):
+        unit = MagicMock()
+        unit.rfitness = rfitness
+        unit.constraint = constraint
+        population.append(unit)
+    scheduler = GAScheduler()
+    scheduler.population = population
+    best = scheduler._best_satisfies_constraints()
+    assert_equals(best.rfitness, 0.7)
+    assert_equals(best.constraint, 0)
+
+def test_best_satisfies_constraints():
+    rfitnesses = [0.5, 1, 0.7]
+    constraint_penalties = [0, 0.3, 0]
+    population = []
+    for rfitness, constraint in zip(rfitnesses, constraint_penalties):
+        unit = MagicMock()
+        unit.rfitness = rfitness
+        unit.constraint = constraint
+        population.append(unit)
+    scheduler = GAScheduler()
+    scheduler.population = population
+    best = scheduler._best_satisfies_constraints()
+    assert_equals(best.rfitness, 0.7)
+    assert_equals(best.constraint, 0)
+
+def test_best_satisfies_constraints():
+    rfitnesses = [0.5, 1, 0.7]
+    constraint_penalties = [0, 0.3, 0]
+    population = []
+    for rfitness, constraint in zip(rfitnesses, constraint_penalties):
+        unit = MagicMock()
+        unit.rfitness = rfitness
+        unit.constraint = constraint
+        population.append(unit)
+    scheduler = GAScheduler()
+    scheduler.population = population
+    best = scheduler._best_satisfies_constraints()
+    assert_equals(best.rfitness, 0.7)
+    assert_equals(best.constraint, 0)
+
+def test_best_satisfies_constraints_none():
+    rfitnesses = [0.5, 1, 0.7]
+    constraint_penalties = [0.2, 0.3, 0.3]
+    population = []
+    for rfitness, constraint in zip(rfitnesses, constraint_penalties):
+        unit = MagicMock()
+        unit.rfitness = rfitness
+        unit.constraint = constraint
+        population.append(unit)
+    scheduler = GAScheduler()
+    scheduler.population = population
+    best = scheduler._best_satisfies_constraints()
+    assert_is(best, None)
+
+def test_add_boot_actions_greedily():
+    # some servers
+    s1 = Server(4000, 8)
+    s2 = Server(8000, 8)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    vm3 = VM(2000, 3);
+    vms = [vm1, vm2]
+    scheduler = GAScheduler()
+    scheduler.cloud = Cloud(servers)
+
+    reqs = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
+            VMRequest(vm3, 'boot')]
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    environment.t = times[0]
+    environment.get_requests = MagicMock(return_value=reqs[:2])
+    scheduler.environment = environment
+
+    unit = ScheduleUnit()
+    unit.environment = environment
+    unit.add(reqs[2], environment.t)
+    #import ipdb; ipdb.set_trace()
+    scheduler._add_boot_actions_greedily(unit)
+    expected_action_vms = set([action.vm for action in reqs])
+    for action in unit.actions.values:
+        assert_in(action.vm, expected_action_vms)
 
 def test_gascheduler():
     # cloud
