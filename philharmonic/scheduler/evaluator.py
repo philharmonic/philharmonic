@@ -379,6 +379,19 @@ def _calculate_constraint_penalty(state):
     sched_penalty = 1 - state.ratio_allocated()
     return cap_penalty, sched_penalty
 
+def _reset_cloud_state(cloud, environment, start=None, end=None):
+    """Undo any actions applied after the _real (if start given)
+    or _initial state (if start is None).
+
+    """
+    if start is None:
+        start = environment.start
+        cloud.reset_to_initial() # TODO: timestamp states and be smarter
+    else:
+        cloud.reset_to_real()
+    if end is None:
+        end = environment.end
+    return start, end
 
 def evaluate(cloud, environment, schedule,
              el_prices, temperature=None,
@@ -391,13 +404,7 @@ def evaluate(cloud, environment, schedule,
     counted and the first state is _initial.
 
     """
-    if start is None:
-        start = environment.start
-        cloud.reset_to_initial() # TODO: timestamp states and be smarter
-    else:
-        cloud.reset_to_real()
-    if end is None:
-        end = environment.end
+    start, end = _reset_cloud_state(cloud, environment, start, end)
     #TODO: use more precise pandas methods for indexing (performance)
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: see where schedule window should be propagated - here or Scheduler?
@@ -409,6 +416,7 @@ def evaluate(cloud, environment, schedule,
     cap_weight, sched_weight = 0.6, 0.4
     penalties = {}
     # if no actions - penalty for the current state
+    # or penalty for start -> t
     cap_penalty, sched_penalty = _calculate_constraint_penalty(
         cloud.get_current())
     penalty = cap_weight * cap_penalty + sched_weight * sched_penalty
@@ -421,6 +429,8 @@ def evaluate(cloud, environment, schedule,
         if t == start: # we change the initial utilisation right away
             utilisations_list = []
             times = []
+            # we remove the initial penalty, as there are immediate actions
+            penalties = {}
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
@@ -452,8 +462,8 @@ def evaluate(cloud, environment, schedule,
     util = pd.DataFrame(utilisations_list, times)
 
     # CONSTRAINTS
-    if len(schedule.actions) > 0:
-        penalties[end] = penalty # last penalty holds 'til end
+    #if len(schedule.actions) > 0: # <- not sure why this if was necessary
+    penalties[end] = penalty # last penalty holds 'til end
     # CONSTRAINTS
     penalties = pd.Series(penalties)
     constraint_penalty = ph.weighted_mean(penalties)
@@ -515,6 +525,8 @@ def evaluate(cloud, environment, schedule,
     util_penalty = float(1 - nonzero_utilisation_avg)
 
     #cost_penalty = 0.2 * util_penalty + 0.8 * utilprice_penalty
+
+    _reset_cloud_state(cloud, environment, start, end)
 
     return util_penalty, utilprice_penalty, constraint_penalty, sla_penalty
 

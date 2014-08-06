@@ -228,6 +228,7 @@ class GAScheduler(IScheduler):
         random units.
 
         """
+        #TODO: maybe better to place VMs manually and let the GA migrate them
         requests = self.environment.get_requests()
         for request in requests:
             if request.what == 'boot':
@@ -236,6 +237,9 @@ class GAScheduler(IScheduler):
                     server = random.sample(self.cloud.servers, 1)[0]
                     action = Migration(request.vm, server)
                     unit.add(action, self.environment.t)
+
+    def _best_satisfies_constraints(self):
+        pass
 
     def genetic_algorithm(self):
         """Propagate through generations, evolve ScheduleUnits and find
