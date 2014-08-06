@@ -8,6 +8,7 @@ import pickle
 from imanager import IManager
 from philharmonic.logger import log
 from philharmonic import conf
+from philharmonic.utils import loc
 
 class Manager(IManager, threading.Thread):
     """A real implementation of an IManager"""
@@ -61,7 +62,7 @@ class Manager(IManager, threading.Thread):
         self.scheduler.finalize()
         self.results = {"start": self.start, "end": self.end,
                         "duration": self.duration}
-        with open(conf.loc('results.pickle'), "wb") as results_file:
+        with open(loc('experiment_results.pickle'), "wb") as results_file:
             pickle.dump(self.results, results_file)
         log("------------------\n")
 

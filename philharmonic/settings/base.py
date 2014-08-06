@@ -13,6 +13,7 @@ historical_en_prices = "./io/energy_price/train/3month.csv"
 #historical_en_prices = "./io/energy_price_data-quick_test.csv"
 #historical_en_prices = "./io/energy_price_data-single_day.csv"
 
+common_output_folder = "io/"
 output_folder = "io/results/"
 
 save_power = False
@@ -119,6 +120,7 @@ inputgen_settings = {
 
     # VM requests
     #'VM_num': 80,
+
     'VM_num': 5,
     #'VM_num': 2000,
     # e.g. CPUs

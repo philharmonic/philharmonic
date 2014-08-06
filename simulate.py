@@ -20,10 +20,13 @@ def load_settings_run(conf):
     from philharmonic.simulator.simulator import run
     run()
 
-# TODO: inputgen command
+# TODO: see if the --conf option can be a part of the cli group
 
 @cli.command('inputgen')
-def cli_inputgen():
+@click.option('--conf', default='philharmonic.settings.base',
+              help='The main conf module to load.')
+def cli_inputgen(conf):
+    philharmonic._setup(conf)
     from philharmonic.simulator.inputgen import generate_fixed_input
     generate_fixed_input()
 

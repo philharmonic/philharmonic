@@ -24,5 +24,13 @@ def mkdir_p(path):
 
 def loc(filepath):
     from philharmonic import conf
-    mkdir_p(conf.output_folder)
+    new_path = os.path.join(conf.output_folder, os.path.dirname(filepath))
+    mkdir_p(new_path)
     return os.path.join(conf.output_folder, filepath)
+
+def common_loc(filepath):
+    from philharmonic import conf
+    new_path = os.path.join(conf.common_output_folder,
+                            os.path.dirname(filepath))
+    mkdir_p(new_path)
+    return os.path.join(conf.common_output_folder, filepath)

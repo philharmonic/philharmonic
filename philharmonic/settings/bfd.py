@@ -1,4 +1,4 @@
-from .base import *
+from .baseprod import *
 
 output_folder = "io/results/bfd/"
 

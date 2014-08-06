@@ -8,3 +8,4 @@ io/*.pickle
 *.pkl
 .coverage
 io/results
+io/workload

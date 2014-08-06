@@ -293,9 +293,14 @@ class GAScheduler(IScheduler):
             # mutation
             for unit in random.sample(self.population, num_mutation):
                 unit = unit.mutation()
-
+            best = self.population[0]
+            # debug unallocated VMs
+            if best.constraint > 0:
+                # something is amiss if the best schedule broke constraints
+                #import ipdb; ipdb.set_trace()
+                pass
         # TODO: return best that satisfies hard constraints
-        return self.population[0]
+        return best
 
     def reevaluate(self):
         debug('\nREEVALUATE (t={})\n---------------'.format(self.environment.t))

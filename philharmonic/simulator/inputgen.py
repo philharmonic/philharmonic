@@ -9,6 +9,7 @@ from scipy import stats
 from datetime import timedelta
 
 from philharmonic import Machine, Server, VM, VMRequest, Cloud
+from philharmonic.utils import common_loc
 
 # Cummon functionality
 #---------------------
@@ -337,20 +338,20 @@ def generate_fixed_input():
     locations = df.columns.values
     cloud = normal_infrastructure(locations)
     requests = normal_vmreqs(start, end)
-    with open('servers.pkl', 'w') as pkl_srv:
+    with open(common_loc('workload/servers.pkl'), 'w') as pkl_srv:
         pickle.dump(cloud, pkl_srv)
-    with open('requests.pkl', 'w') as pkl_req:
-        pickle.dump(requests, pkl_req)
+    requests.to_pickle(common_loc('workload/requests.pkl'))
     print(cloud.servers)
     print(requests)
+    print('Wrote servers.pkl and requests.pkl in {}.'.format(
+        common_loc('workload')))
 
 def servers_from_pickle():
-    with open('servers.pkl') as pkl_srv:
+    with open(common_loc('workload/servers.pkl')) as pkl_srv:
         return pickle.load(pkl_srv)
 
 def requests_from_pickle(*args, **kwargs): # TODO: don't need input
-    with open('requests.pkl') as pkl_req:
-        return pickle.load(pkl_req)
+    return pd.read_pickle(common_loc('workload/requests.pkl'))
 
 if __name__ == '__main__':
     generate_fixed_input()
