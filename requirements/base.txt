@@ -5,3 +5,4 @@ soappy
 twisted
 scipy
 matplotlib
+click
