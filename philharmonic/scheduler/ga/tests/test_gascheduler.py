@@ -213,7 +213,6 @@ def test_add_boot_actions_greedily():
     environment.t = times[0]
     environment.get_requests = MagicMock(return_value=reqs[:2])
     scheduler.environment = environment
-
     unit = ScheduleUnit()
     unit.environment = environment
     unit.add(reqs[2], environment.t)
@@ -222,6 +221,43 @@ def test_add_boot_actions_greedily():
     expected_action_vms = set([action.vm for action in reqs])
     for action in unit.actions.values:
         assert_in(action.vm, expected_action_vms)
+
+def test_add_boot_actions_greedily_some_vms_scheduled():
+    # some servers
+    s1 = Server(4000, 8)
+    s2 = Server(8000, 8)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    vm3 = VM(2000, 3);
+    vms = [vm1, vm2]
+    scheduler = GAScheduler()
+    scheduler.cloud = Cloud(servers)
+
+    marked_not_in = VMRequest(vm2, 'boot')
+    marked_not_in.TEST_marked_not_in = True
+    reqs = [VMRequest(vm1, 'boot'), marked_not_in,
+            VMRequest(vm3, 'boot')]
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    environment.t = times[0]
+    environment.get_requests = MagicMock(return_value=reqs[:2])
+    scheduler.environment = environment
+
+    unit = ScheduleUnit()
+    unit.environment = environment
+    marked_req = VMRequest(vm2, 'boot')
+    marked_req.TEST_marked = True
+    unit.add(marked_req, environment.t) # also in request for this VM
+    unit.add(reqs[2], environment.t)
+    #import ipdb; ipdb.set_trace()
+    scheduler._add_boot_actions_greedily(unit)
+    expected_action_vms = set([action.vm for action in reqs])
+    assert_true(any(hasattr(act, 'TEST_marked') for act in unit.actions.values))
+    assert_false(
+        any(hasattr(act, 'TEST_marked_not_in') for act in unit.actions.values)
+    )
 
 def test_gascheduler():
     # cloud

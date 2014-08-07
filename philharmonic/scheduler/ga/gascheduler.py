@@ -6,7 +6,7 @@ import numpy as np
 
 from philharmonic import Schedule, Migration
 from philharmonic.scheduler.ischeduler import IScheduler
-from philharmonic.scheduler import evaluator
+from philharmonic.scheduler import evaluator, FBFScheduler
 from philharmonic import random_time
 from philharmonic.logger import *
 
@@ -195,6 +195,9 @@ class GAScheduler(IScheduler):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
             self.environment.start, self.environment.end, self.cloud.servers
         )
+        self.fbf = FBFScheduler()
+        self.fbf.environment = self.environment
+        self.fbf.cloud = self.cloud
 
     def _create_or_update_population(self):
         """Initialise population or bring the old one to the new generation
@@ -233,8 +236,7 @@ class GAScheduler(IScheduler):
         for request in requests:
             if request.what == 'boot':
                 for unit in random.sample(self.population, num_units):
-                    # TODO: maybe smarter server selection
-                    server = random.sample(self.cloud.servers, 1)[0]
+                    server = self.fbf.find_host(request.vm)
                     action = Migration(request.vm, server)
                     unit.add(action, self.environment.t)
 
@@ -252,11 +254,15 @@ class GAScheduler(IScheduler):
         requests = self.environment.get_requests()
         for request in requests:
             if request.what == 'boot':
+                # check if an action with that VM already in the schedule
+                existing_actions = unit.filter_current_actions(
+                    self.environment.t, self.environment.period)
+                if request.vm in set(act.vm for act in existing_actions):
+                    continue
                 # TODO: fbf server
                 server = random.sample(self.cloud.servers, 1)[0]
                 action = Migration(request.vm, server)
                 unit.add(action, self.environment.t)
-                # TODO: check if something with that VM already there
 
     def genetic_algorithm(self):
         """Propagate through generations, evolve ScheduleUnits and find

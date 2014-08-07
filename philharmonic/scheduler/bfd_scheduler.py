@@ -26,7 +26,7 @@ class BFDScheduler(IScheduler):
         """
         # TODO: reuse free_cap data
         # TODO: this method should probably be a part of Cloud
-        current = self.cloud._current
+        current = self.cloud.get_current()
         total_utilisation = 0.
         utilisations = {}
         for i in server.resource_types:

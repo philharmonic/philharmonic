@@ -13,7 +13,7 @@ class FBFScheduler(IScheduler):
 
         """
         #TODO: this method should probably be a part of Cloud
-        current = self.cloud._current
+        current = self.cloud.get_current()
         total_utilisation = 0.
         utilisations = {}
         for i in server.resource_types:
@@ -31,6 +31,14 @@ class FBFScheduler(IScheduler):
             total_utilisation += weights[resource_type] * utilisation
         return total_utilisation
 
+    def find_host(self, vm):
+        for server in self.cloud.servers:
+            utilisation = self._fits(vm, server)
+            #TODO: compare utilisations of different potential hosts
+            if utilisation != -1:
+                return server
+        return None
+
     def reevaluate(self):
         self.schedule = Schedule()
         t = self.environment.get_time()
@@ -40,15 +48,13 @@ class FBFScheduler(IScheduler):
         #    import ipdb; ipdb.set_trace()
         for request in requests:
             if request.what == 'boot':
-                for server in self.cloud.servers:
-                    utilisation = self._fits(request.vm, server)
-                    #TODO: compare utilisations of different potential hosts
-                    if utilisation != -1:
-                        #import ipdb; ipdb.set_trace()
-                        action = Migration(request.vm, server)
-                        self.cloud.apply(action)
-                        self.schedule.add(action, t)
-                        break
+                server = self.find_host(request.vm)
+                if server is None:
+                    raise Exception("not enough free resources")
+                action = Migration(request.vm, server)
+                self.cloud.apply(action)
+                self.schedule.add(action, t)
+                break
         # for each boot request:
         # find the best server
         #  - find server that can host this VM
