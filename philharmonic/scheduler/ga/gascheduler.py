@@ -110,9 +110,10 @@ class ScheduleUnit(Schedule):
         else:
             change_mark = ''
         try:
-            s = 'unit ({:.2}: ut={:.2}, c={:.2}, cns={:.2}, sla={:.2}){}'
-            s = s.format(self.fitness, self.util, self.cost,
-                         self.constraint, self.sla, change_mark)
+            s = ('unit ({fit:.2}: cns={cns:.2}, sla={sla:.2}, ' +
+                 'ut={ut:.2}, c={c:.2}){chg}')
+            s = s.format(fit=self.fitness, ut=self.util, c=self.cost,
+                         cns=self.constraint, sla=self.sla, chg=change_mark)
         except:
             s = 'unit (fit: ?){}'.format(change_mark)
             #s += super(ScheduleUnit, self).__repr__()
@@ -215,6 +216,7 @@ class GAScheduler(IScheduler):
                 self.population.append(unit)
         else:
             new_random_units = []
+            # randomly create self.num_random_recreate new units
             for i in range(self.num_random_recreate):
                 unit = create_random(self.environment, self.cloud,
                     self.no_el_price, self.no_temperature)
@@ -224,7 +226,6 @@ class GAScheduler(IScheduler):
             self.population = existing_population + new_random_units
             for unit in existing_population:
                 unit.update() # reusing old population, so "move window"
-            #TODO: randomly create self.num_random_recreate new units
 
     def _artificially_add_boots(self, num_units):
         """Artificially add Migration actions to satisfy Boot requests to
@@ -283,7 +284,7 @@ class GAScheduler(IScheduler):
         self._create_or_update_population()
 
         # if there are any new boot requests, artificially add them
-        self._artificially_add_boots(num_artificial_boot)
+        #self._artificially_add_boots(num_artificial_boot)
 
         # TODO: check for deleted VMs and remove these actions
 
@@ -294,14 +295,16 @@ class GAScheduler(IScheduler):
             for unit in self.population:
                 unit.calculate_fitness()
 
+            i += 1
+            debug('- generation {}'.format(i))
+
             self.population.sort(key=lambda u : u.fitness, reverse=False)
             debug('  - best fitness: {}'.format(self.population[0].fitness))
-            debug('  - {}'.format(repr(self.population[0])))
+            debug('  - wrst {}'.format(repr(self.population[-1])))
+            debug('  - best {}'.format(repr(self.population[0])))
             #if self.population[0].fitness == 0.06:
             #    import ipdb; ipdb.set_trace()
 
-            i += 1
-            debug('- generation {}'.format(i))
             # check termination condition
             if i == self.max_generations:
                 break
@@ -325,6 +328,7 @@ class GAScheduler(IScheduler):
         if best is None: # none satisfy hard constraints
             best = self.population[0]
             self._add_boot_actions_greedily(best)
+        debug(u' \u2502\n \u2514\u2500\u25BA selected {}'.format(repr(best)))
         # debug unallocated VMs
         if best.constraint > 0:
             # something is amiss if the best schedule broke constraints

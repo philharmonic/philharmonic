@@ -410,11 +410,13 @@ class Schedule(object):
         self.actions.name = 'actions'
         self.actions = self.actions.sort_index()
 
-    def filter_current_actions(self, t, period):
+    def filter_current_actions(self, t, period=None):
         """return time series of actions in interval
         (closed on the left, open on the right)
 
         """
+        if period is None:
+            return self.actions.ix[t:]
         justabit = pd.offsets.Micro(1)
         return self.actions.ix[t:t + period - justabit]
         #return self.actions[t:t + period - justabit]

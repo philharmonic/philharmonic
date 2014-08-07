@@ -227,6 +227,9 @@ class Simulator(IManager):
                 debug('Requests:\n{}\n'.format(requests))
             if len(actions) > 0:
                 debug('Applying:\n{}\n'.format(actions))
+            planned_actions = schedule.filter_current_actions(t + period)
+            if len(planned_actions) > 0:
+                debug('Planned:\n{}\n'.format(planned_actions))
             self.apply_actions(actions)
         return self.cloud, self.environment, self.real_schedule
 
