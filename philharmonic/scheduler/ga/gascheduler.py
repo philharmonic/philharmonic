@@ -239,6 +239,7 @@ class GAScheduler(IScheduler):
                     server = random.sample(self.cloud.servers, 1)[0]
                     action = Migration(request.vm, server)
                     unit.add(action, self.environment.t)
+                    unit.changed = True
 
     def _termination_condition(self):
         return (self._iteration == self.max_generations)
@@ -267,6 +268,7 @@ class GAScheduler(IScheduler):
                 server = self.fbf.find_host(request.vm)
                 action = Migration(request.vm, server)
                 unit.add(action, self.environment.t)
+                unit.changed = True
 
     def genetic_algorithm(self):
         """Propagate through generations, evolve ScheduleUnits and find
@@ -331,6 +333,7 @@ class GAScheduler(IScheduler):
         if best is None: # none satisfy hard constraints
             best = self.population[0]
             self._add_boot_actions_greedily(best)
+            best.calculate_fitness()
         debug(u' \u2502\n \u2514\u2500\u25BA selected {}'.format(repr(best)))
         # debug unallocated VMs
         if best.constraint > 0:

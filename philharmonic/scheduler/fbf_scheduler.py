@@ -54,10 +54,10 @@ class FBFScheduler(IScheduler):
                 action = Migration(request.vm, server)
                 self.cloud.apply(action)
                 self.schedule.add(action, t)
-                break
         # for each boot request:
         # find the best server
         #  - find server that can host this VM
         #  - make sure the server's resources are now reserved
         # add new migration to the schedule
+        self.cloud.reset_to_real()
         return self.schedule

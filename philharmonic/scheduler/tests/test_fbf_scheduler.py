@@ -13,6 +13,7 @@ def test_fbf_returns_schedule():
     scheduler.environment = FBFSimpleSimulatedEnvironment()
     scheduler.environment.get_requests = MagicMock(return_value = [])
     scheduler.environment.get_time = MagicMock(return_value = 1)
+    scheduler.cloud = MagicMock()
     schedule = scheduler.reevaluate()
     assert_is_instance(schedule, Schedule)
 
