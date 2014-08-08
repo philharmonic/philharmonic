@@ -213,6 +213,7 @@ def test_add_boot_actions_greedily():
     environment.t = times[0]
     environment.get_requests = MagicMock(return_value=reqs[:2])
     scheduler.environment = environment
+    scheduler.initialize()
     unit = ScheduleUnit()
     unit.environment = environment
     unit.add(reqs[2], environment.t)
@@ -244,6 +245,7 @@ def test_add_boot_actions_greedily_some_vms_scheduled():
     environment.t = times[0]
     environment.get_requests = MagicMock(return_value=reqs[:2])
     scheduler.environment = environment
+    scheduler.initialize()
 
     unit = ScheduleUnit()
     unit.environment = environment

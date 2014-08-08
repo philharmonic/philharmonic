@@ -232,14 +232,16 @@ class GAScheduler(IScheduler):
         random units.
 
         """
-        #TODO: maybe better to place VMs manually and let the GA migrate them
         requests = self.environment.get_requests()
         for request in requests:
             if request.what == 'boot':
                 for unit in random.sample(self.population, num_units):
-                    server = self.fbf.find_host(request.vm)
+                    server = random.sample(self.cloud.servers, 1)[0]
                     action = Migration(request.vm, server)
                     unit.add(action, self.environment.t)
+
+    def _termination_condition(self):
+        return (self._iteration == self.max_generations)
 
     def _best_satisfies_constraints(self):
         """Best unit that satisfies hard constraints or None if none do."""
@@ -252,6 +254,8 @@ class GAScheduler(IScheduler):
             return None
 
     def _add_boot_actions_greedily(self, unit):
+        """Take the requests and make sure they are placed on a host
+        right away using FBF (if the GA didn't schedule them already)."""
         requests = self.environment.get_requests()
         for request in requests:
             if request.what == 'boot':
@@ -260,8 +264,7 @@ class GAScheduler(IScheduler):
                     self.environment.t, self.environment.period)
                 if request.vm in set(act.vm for act in existing_actions):
                     continue
-                # TODO: fbf server
-                server = random.sample(self.cloud.servers, 1)[0]
+                server = self.fbf.find_host(request.vm)
                 action = Migration(request.vm, server)
                 unit.add(action, self.environment.t)
 
@@ -289,14 +292,14 @@ class GAScheduler(IScheduler):
         # TODO: check for deleted VMs and remove these actions
 
         # main loop TODO: split into smaller functions
-        i = 0
+        self._iteration = 0
         while True: # get new generation
             # calculate fitness
             for unit in self.population:
                 unit.calculate_fitness()
 
-            i += 1
-            debug('- generation {}'.format(i))
+            self._iteration += 1
+            debug('- generation {}'.format(self._iteration))
 
             self.population.sort(key=lambda u : u.fitness, reverse=False)
             debug('  - best fitness: {}'.format(self.population[0].fitness))
@@ -306,7 +309,7 @@ class GAScheduler(IScheduler):
             #    import ipdb; ipdb.set_trace()
 
             # check termination condition
-            if i == self.max_generations:
+            if self._termination_condition():
                 break
 
             # recombination
