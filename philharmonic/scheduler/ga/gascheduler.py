@@ -254,6 +254,29 @@ class GAScheduler(IScheduler):
         else:
             return None
 
+    def _sweep_reallocate_capacity_constraints(self, schedule):
+        self.cloud.reset_to_real()
+        for t in schedule.actions.index.unique():
+            # TODO: precise indexing, not dict
+            if isinstance(schedule.actions[t], pd.Series):
+                for action in schedule.actions[t].values:
+                    self.cloud.apply(action)
+            else:
+                action = schedule.actions[t]
+                self.cloud.apply(action)
+            state = self.cloud.get_current()
+            if not state.all_within_capacity():
+                for server in self.cloud.servers:
+                    while not state.within_capacity(server):
+                        vm = state.alloc[server].pop()
+                        # place vm elsewhere to fix capacity
+                        server = self.fbf.find_host(vm)
+                        new_action = Migration(vm, server)
+                        schedule.add(new_action, t)
+                        self.cloud.apply(new_action)
+                        schedule.changed = True
+        return schedule
+
     def _add_boot_actions_greedily(self, unit):
         """Take the requests and make sure they are placed on a host
         right away using FBF (if the GA didn't schedule them already)."""
@@ -333,6 +356,7 @@ class GAScheduler(IScheduler):
         if best is None: # none satisfy hard constraints
             best = self.population[0]
             self._add_boot_actions_greedily(best)
+            self._sweep_reallocate_capacity_constraints(best)
             best.calculate_fitness()
         debug(u' \u2502\n \u2514\u2500\u25BA selected {}'.format(repr(best)))
         # debug unallocated VMs

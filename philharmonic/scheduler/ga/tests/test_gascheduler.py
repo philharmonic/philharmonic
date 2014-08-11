@@ -223,6 +223,44 @@ def test_add_boot_actions_greedily():
     for action in unit.actions.values:
         assert_in(action.vm, expected_action_vms)
 
+def test_sweep_reallocate_capacity_constraints():
+    unit = ScheduleUnit()
+    # cloud
+    vm1 = VM(4,2)
+    vm2 = VM(5,3)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+    servers = [server1, server2]
+    cloud = Cloud(servers, [vm1, vm2])
+    unit.cloud = cloud
+    scheduler = GAScheduler()
+    scheduler.cloud = cloud
+
+    # actions
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    times = [t1, t1]
+    actions = [Migration(vm1, server1), Migration(vm2, server1)]
+    unit.actions = pd.Series(actions, times)
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    env.t = t1
+    env.el_prices = inputgen.simple_el()
+    env.temperature = inputgen.simple_temperature()
+    unit.environment = env
+    scheduler.environment = env
+    scheduler.initialize()
+
+    scheduler._sweep_reallocate_capacity_constraints(unit)
+
+    # apply all actions
+    # verify there are no capacity violations
+    util, utilprice, constraint, sla = evaluator.evaluate(
+        cloud, env, unit, env.el_prices, env.temperature, env.start, env.end
+    )
+    assert_equals(constraint, 0.)
+
 def test_add_boot_actions_greedily_some_vms_scheduled():
     # some servers
     s1 = Server(4000, 8)
