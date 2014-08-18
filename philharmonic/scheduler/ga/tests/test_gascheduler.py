@@ -75,7 +75,8 @@ def test_mutation():
     mutated = unit.mutation()
     assert_is_instance(mutated, ScheduleUnit)
     assert_true((unit.actions.values == actions).all(), 'original unchanged')
-    assert_true((mutated.actions != unit.actions).any(), 'mutated changed')
+    assert_true(len(mutated.actions) != len(unit.actions) or
+                (mutated.actions != unit.actions).any(), 'mutated changed')
 
 def test_crossover():
 
@@ -318,6 +319,7 @@ def test_gascheduler():
     env.t = t1
     env.el_prices = inputgen.simple_el()
     env.temperature = inputgen.simple_temperature()
+    env.get_requests = MagicMock(return_value=[]) # else it returns random VMs
 
     scheduler = GAScheduler()
     scheduler.generation_num = 2

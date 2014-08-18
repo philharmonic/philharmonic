@@ -439,14 +439,14 @@ def evaluate(cloud, environment, schedule,
                 try:
                     migrations_num[action.vm] += 1
                 except KeyError:
-                    error('Explosion! migrations_num KeyError')
+                    error('Explosion! Check environment.get_requests.')
                     raise
         else:
             action = schedule.actions[t]
             try:
                 migrations_num[action.vm] += 1
             except KeyError:
-                error('Explosion! migrations_num KeyError')
+                error('Explosion! Check environment.get_requests.')
                 raise
             cloud.apply(action)
         state = cloud.get_current()
