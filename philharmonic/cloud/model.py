@@ -214,7 +214,7 @@ class State():
         new_state = State()
         #new_state.__dict__.update(self.__dict__)
         new_state.servers = self.servers
-        new_state.vms = self.vms
+        new_state.vms = copy.copy(self.vms)
         new_state.alloc = {}
         for s, vms in self.alloc.iteritems():
             new_state.alloc[s] = set(vms) # create a new set
@@ -229,6 +229,8 @@ class State():
         #TODO: copy.copy - probably faster
         return new_state
 
+    #TODO: test transitioning to new state with acitions including boots
+    # creates a new VMs list
     def transition(self, action):
         """transition into new state acccording to action"""
         new_state = self.copy()

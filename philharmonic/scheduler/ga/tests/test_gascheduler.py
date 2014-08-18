@@ -348,6 +348,7 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
     env.t = t1
     env.el_prices = inputgen.simple_el()
     env.temperature = inputgen.simple_temperature()
+    env.get_requests = MagicMock(return_value=[])
 
     scheduler = GAScheduler()
     scheduler.generation_num = 2
@@ -357,15 +358,19 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
     scheduler.initialize()
-    scheduler.reevaluate()
+    schedule1 = scheduler.reevaluate()
 
     #TODO: apply actions, propagate time
     env.t = pd.Timestamp('2013-02-25 17:00')
     vm3 = VM(4,2)
-    cloud.vms.remove(vm2)
+    cloud.apply_real(VMRequest(vm2, 'delete'))
+    cloud.apply_real(VMRequest(vm3, 'boot'))
     scheduler._create_or_update_population()
-    schedule = scheduler.reevaluate()
-    assert_true(len(schedule.actions[:'2013-02-25 16:00']) == 0)
+    schedule2 = scheduler.reevaluate()
+    assert_true(len(schedule2.actions[:'2013-02-25 16:00']) == 0,
+                'no outdated actions in the updated schedule')
+    assert_not_in(vm2, set(act.vm for act in schedule2.actions),
+                  'no actions for deleted VMs in the updated schedule')
 
 # TODO
 def test_update():

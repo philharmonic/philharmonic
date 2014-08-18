@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 import philharmonic as ph
+from philharmonic.logger import *
 
 def print_history(cloud, environment, schedule):
     request_names = set(['boot', 'delete'])
@@ -435,14 +436,18 @@ def evaluate(cloud, environment, schedule,
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
                 cloud.apply(action)
-                migrations_num[action.vm] += 1
+                try:
+                    migrations_num[action.vm] += 1
+                except KeyError:
+                    error('Explosion! migrations_num KeyError')
+                    raise
         else:
             action = schedule.actions[t]
             try:
                 migrations_num[action.vm] += 1
             except KeyError:
-                #import ipdb; ipdb.set_trace()
-                pass
+                error('Explosion! migrations_num KeyError')
+                raise
             cloud.apply(action)
         state = cloud.get_current()
         new_utilisations = state.calculate_utilisations()
