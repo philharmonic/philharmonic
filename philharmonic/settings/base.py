@@ -82,6 +82,7 @@ factory = {
     #"el_prices": inputgen.medium_el,
     #"el_prices": inputgen.usa_el,
     "el_prices": inputgen.world_el,
+    #"el_prices": os.path.join(DATA_LOC, 'world-realtemp/prices.csv'),
     #"el_prices": inputgen.dynamic_usa_el,
     #"temperature": inputgen.simple_temperature,
     #"temperature": inputgen.medium_temperature,

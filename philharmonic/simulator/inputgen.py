@@ -336,6 +336,9 @@ def generate_fixed_input():
     factory = conf.get_factory()
     start, end = factory['times']()[[0, -1]]
     locations = df.columns.values
+    print('Generating input based on location_dataset: {}'.format(
+        location_dataset))
+    print('Locations: {}'.format(locations))
     cloud = normal_infrastructure(locations)
     requests = normal_vmreqs(start, end)
     with open(common_loc('workload/servers.pkl'), 'w') as pkl_srv:

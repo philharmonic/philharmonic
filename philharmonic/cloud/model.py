@@ -297,6 +297,9 @@ class State():
 
     #C2
     def within_capacity(self, s):
+        if s is None:
+            #import ipdb; ipdb.set_trace()
+            pass
         for i in s.resource_types:
             used = 0
             for vm in self.alloc[s]:
