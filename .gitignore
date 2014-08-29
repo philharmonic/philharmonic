@@ -1,0 +1,17 @@
+*.egg-info
+build/
+*.log
+io/*.pickle
+/*.pickle
+/philharmonic/*.pickle
+**/.DS_Store
+*.pkl
+.coverage
+io/results
+io/workload
+
+*~
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
