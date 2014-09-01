@@ -12,9 +12,6 @@ from philharmonic.timeseries.util import *
 # the default conf if nothing is overriden
 import philharmonic.settings.base as conf
 
-# reading experiment measurements
-from philharmonic.energy_meter.continuous_energy_meter import deserialize_folder, synthetic_power, build_synth_measurement
-
 # default data generators
 import philharmonic.simulator.inputgen as inputgen
 

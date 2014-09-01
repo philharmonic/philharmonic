@@ -146,7 +146,6 @@ def calculate_cooling_overhead(power, temperature):
     pPUE = pPUE.reindex(power.index, method='ffill')
     return power * pPUE
 
-
 def joul2kwh(jouls):
     """@Return: equivalent kWh """
     kWh = jouls / _KWH_RATIO
@@ -166,3 +165,40 @@ def per_joul2per_kwh(per_joul):
     """@return: equivalent per kWh"""
     # this is the equiv. of doing:
     return kwh2joul(per_joul)
+
+def synthetic_power(mean, std, start, end, freq='5s'):
+    """build an artificial power time series"""
+    index = pd.date_range(start, end, freq='5s', name='Time')
+    P_synth = pd.Series(np.random.normal(mean, std, len(index)), index, name='Power')
+    P_synth.ix[P_synth < 0] = 0
+    return P_synth
+
+def build_synth_measurement(m, P_peak, en_elasticity=0.5,
+                            ewma_span=100, uptime=None):
+    """build an artificial copy of a Measurement with arbitrary
+    peak and idle power values.
+
+    """
+    std_peak = m.active_power[m.active_power>40].std()
+    P_synth_peak = synthetic_power(P_peak, std_peak, '2012-11-01', '2012-11-10')
+
+    P_idle = P_peak * en_elasticity
+    std_idle = m.active_power[m.active_power<40].std()
+    P_synth_idle = synthetic_power(P_idle, std_idle, '2012-11-01', '2012-11-10')
+
+    start = m.active_power.index[0]
+    end = m.active_power.index[-1]
+    pause_start = m.active_power[m.active_power<40].index[0]
+    if uptime:
+        downtime_ratio = (1-uptime)
+        pause_length = 24 * downtime_ratio
+        pause_end = pause_start + timedelta(hours=pause_length)
+    else:
+        pause_end = m.active_power[m.active_power<40].index[-1]
+    m_synth = copy.deepcopy(m)
+    m_synth.active_power = pd.concat([P_synth_peak[start:pause_start],
+                                      P_synth_idle[pause_start:pause_end],
+                                      P_synth_peak[pause_end:end]])
+    m_synth.ewma_power = pd.ewma(m_synth.active_power, span=ewma_span)
+
+    return m_synth

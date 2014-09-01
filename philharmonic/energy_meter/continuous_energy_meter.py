@@ -18,16 +18,18 @@ import copy
 
 from haley_api import Wattmeter
 from philharmonic.energy_meter.exception import SilentWattmeterError
+from philharmonic.timeseries.calculator import synthetic_power, build_synth_measurement
+from philharmonic.timeseries.historian import deserialize_folder
 
 def log(message):
     print(message)
     logging.info(message)
 
 class ContinuousEnergyMeter(threading.Thread):
-    '''
-    An energy meter that runs in the background (in a separate thread).
-    '''
+    """An energy meter that runs in the background (in a separate thread)
+    and reads experiment measurements.
 
+    """
 
     def __init__(self, machines, metrics, interval, location="energy_data.pickle"):
         '''
@@ -109,64 +111,3 @@ class ContinuousEnergyMeter(threading.Thread):
             except Empty:
                 pass
         print("Stopping background measurements.")
-
-class Measurement():
-    pass
-
-def  deserialize_folder(base_loc):
-    """read the pd.DataFrame pickled by the ContinuousEnergyMeter"""
-    # find the location
-    m = Measurement()
-    base_loc = os.path.expanduser(base_loc)
-    # Load the benchmark results
-    with open(os.path.join(base_loc, "results.pickle")) as results_pickle:
-        #print(hashlib.md5(results_pickle.read()).hexdigest())
-        results_pickle.seek(0)
-        results = pickle.load(results_pickle)
-        m.start = results["start"]
-        m.end = results["end"]
-        m.duration = results["duration"]
-    # Load the energy measurements
-    energy_data = pd.read_pickle(os.path.join(base_loc, "energy_consumption.pickle"))
-    # Cut off only the energy measurements during the benchmark.
-    buffer = timedelta(minutes=2)
-    # columns and rows kinda upside-down, so tranpose
-    m.energy_data = energy_data.transpose()[m.start-buffer:m.end+buffer]
-    return m
-
-def synthetic_power(mean, std, start, end, freq='5s'):
-    """build an artificial power time series"""
-    index = pd.date_range(start, end, freq='5s', name='Time')
-    P_synth = pd.Series(np.random.normal(mean, std, len(index)), index, name='Power')
-    P_synth.ix[P_synth < 0] = 0
-    return P_synth
-
-def build_synth_measurement(m, P_peak, en_elasticity=0.5,
-                            ewma_span=100, uptime=None):
-    """build an artificial copy of a Measurement with arbitrary
-    peak and idle power values.
-
-    """
-    std_peak = m.active_power[m.active_power>40].std()
-    P_synth_peak = synthetic_power(P_peak, std_peak, '2012-11-01', '2012-11-10')
-
-    P_idle = P_peak * en_elasticity
-    std_idle = m.active_power[m.active_power<40].std()
-    P_synth_idle = synthetic_power(P_idle, std_idle, '2012-11-01', '2012-11-10')
-
-    start = m.active_power.index[0]
-    end = m.active_power.index[-1]
-    pause_start = m.active_power[m.active_power<40].index[0]
-    if uptime:
-        downtime_ratio = (1-uptime)
-        pause_length = 24 * downtime_ratio
-        pause_end = pause_start + timedelta(hours=pause_length)
-    else:
-        pause_end = m.active_power[m.active_power<40].index[-1]
-    m_synth = copy.deepcopy(m)
-    m_synth.active_power = pd.concat([P_synth_peak[start:pause_start],
-                                      P_synth_idle[pause_start:pause_end],
-                                      P_synth_peak[pause_end:end]])
-    m_synth.ewma_power = pd.ewma(m_synth.active_power, span=ewma_span)
-
-    return m_synth

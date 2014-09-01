@@ -93,6 +93,30 @@ def realign(prices, start_date):
     # unstack to turn it into a DataSeries first
     return prices.shift(1, freq=delta)
 
+class Measurement():
+    pass
+
+def deserialize_folder(base_loc):
+    """read the pd.DataFrame pickled by the ContinuousEnergyMeter"""
+    # find the location
+    m = Measurement()
+    base_loc = os.path.expanduser(base_loc)
+    # Load the benchmark results
+    with open(os.path.join(base_loc, "results.pickle")) as results_pickle:
+        #print(hashlib.md5(results_pickle.read()).hexdigest())
+        results_pickle.seek(0)
+        results = pickle.load(results_pickle)
+        m.start = results["start"]
+        m.end = results["end"]
+        m.duration = results["duration"]
+    # Load the energy measurements
+    energy_data = pd.read_pickle(os.path.join(base_loc, "energy_consumption.pickle"))
+    # Cut off only the energy measurements during the benchmark.
+    buffer = timedelta(minutes=2)
+    # columns and rows kinda upside-down, so tranpose
+    m.energy_data = energy_data.transpose()[m.start-buffer:m.end+buffer]
+    return m
+
 if __name__ == "__main__":
     path = "/home/kermit/Dropbox/dev/itd/skripte/ipy_notebook/data/DAData_19_20120505-20120904.csv"
     prices = parse_prices(path)
