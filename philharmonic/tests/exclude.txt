@@ -1,2 +1,2 @@
 philharmonic/energy_meter/tests
-
+philharmonic/manager/tests/manager
