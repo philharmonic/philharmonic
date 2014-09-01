@@ -21,7 +21,12 @@ before_install:
 # install dependencies
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib pandas
-  - pip install -r requirements/dev.txt
+  - pip install -r requirements/test.txt
+  - pip install coveralls
 
 # command to run tests
-script: nosetests --with-yanc  --exclude-dir-file=philharmonic/tests/exclude.txt
+script: nosetests --with-coverage --cover-package=philharmonic --logging-level=INFO --with-yanc --exclude-dir-file=philharmonic/tests/exclude.txt
+
+# calculate coverage
+after_success:
+  - coveralls --config_file .coveragerc

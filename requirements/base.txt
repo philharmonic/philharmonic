@@ -1,8 +1,5 @@
 numpy
 pandas
-pysnmp
-soappy
-twisted
 scipy
 matplotlib
 click

@@ -9,21 +9,23 @@ Dependencies
 ------------
 Ubuntu dependencies
 
-    sudo apt-get install python-numpy python-pandas python-pysnmp4 python-soappy python-twisted python-twisted-web
+    sudo apt-get install python-numpy python-pandas python-matplotlib python-scipy python-pysnmp4 python-soappy python-twisted python-twisted-web
 
 OR
 
     pip install -r requirements.txt
 
+*Note:* creating a virtualenv with `--system-site-packages` and still
+installing the scientific packages via `apt-get` is much faster as no
+compiling is necessary.
+
 Development
 -----------
 Development packages
 
-    pip install nose nosy nose-exclude yanc ipdbplugin mock coverage
-
-OR
-
     pip install -r requirements/dev.txt
+
+(for the experimental workflow, install from `requirements/extra.txt` as well)
 
 To test just run this from the project's root
 

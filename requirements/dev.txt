@@ -1,11 +1,5 @@
--r base.txt
-nose
-nose-exclude
-yanc
+-r test.txt
 ipython
 ipdb
 ipdbplugin
-mock
-coverage
-nose-timer
 nosy

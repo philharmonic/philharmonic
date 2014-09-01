@@ -1,0 +1,7 @@
+-r base.txt
+nose
+nose-exclude
+yanc
+mock
+coverage
+nose-timer
