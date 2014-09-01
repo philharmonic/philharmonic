@@ -1,0 +1,8 @@
+language: python
+python:
+  - "2.7"
+# install dependencies
+install:
+  - pip install -r requirements/dev.txt
+# command to run tests
+script: nosetests --with-yanc  --exclude-dir-file=philharmonic/tests/exclude.txt
