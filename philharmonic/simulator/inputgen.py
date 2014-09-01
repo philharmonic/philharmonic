@@ -10,6 +10,7 @@ from datetime import timedelta
 
 from philharmonic import Machine, Server, VM, VMRequest, Cloud
 from philharmonic.utils import common_loc
+from philharmonic.logger import *
 
 # Cummon functionality
 #---------------------
@@ -187,6 +188,10 @@ def medium_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
 def no_requests(start, end):
     return pd.TimeSeries()
 
+## OLD APPROACH
+## - hardcoded values in different functions
+########
+
 # time range (for the simulation)
 #------------
 def two_days(start=None):
@@ -323,30 +328,50 @@ def dynamic_usa_temp():
 def dynamic_infrastructure():
     return small_infrastructure(dynamic_cities)
 #----------------------
+########
+
+
+# geotemporal inputs
+#--------------------
+def parse_dataset(filepath):
+    """Parse a file with CSV values (e.g. temperatures or el. prices)
+    into a pandas.DataFrame.
+
+    """
+    df = pd.read_csv(filepath,
+                     index_col=0, parse_dates=[0])
+    return df
+
+# initial input generation
+#--------------------------
 
 location_dataset = usa_el
 
 def generate_fixed_input():
+    """Entry function to generate servers and requests based
+    on the desired simulation time period and locations.
+
+    """
     from philharmonic import conf
     # override module settings with the config file
     for key, value in conf.inputgen_settings.iteritems():
         globals()[key] = value
-    df = globals()[location_dataset]()
-    #start, end = temperature.index[0], temperature.index[-26]temperatuer
-    factory = conf.get_factory()
-    start, end = factory['times']()[[0, -1]]
+    df = parse_dataset(location_dataset)
     locations = df.columns.values
-    print('Generating input based on location_dataset: {}'.format(
-        location_dataset))
-    print('Locations: {}'.format(locations))
-    cloud = normal_infrastructure(locations)
-    requests = normal_vmreqs(start, end)
+    start, end = conf.start, conf.end
+    info('Generating input datasets\n-------------------------\nParameters:\n' +
+         '- location_dataset: {}\n'.format(location_dataset) +
+         '- times: {} - {}\n'.format(start, end)
+    )
+    info('Locations:\n{}\n'.format(locations))
+    cloud = normal_infrastructure(locations) #TODO: method as parameter
+    requests = normal_vmreqs(start, end) #TODO: method as parameter
     with open(common_loc('workload/servers.pkl'), 'w') as pkl_srv:
         pickle.dump(cloud, pkl_srv)
     requests.to_pickle(common_loc('workload/requests.pkl'))
-    print(cloud.servers)
-    print(requests)
-    print('Wrote servers.pkl and requests.pkl in {}.'.format(
+    info('Servers:\n{}\n'.format(cloud.servers))
+    info('Requests:\n{}\n'.format(requests))
+    info('Wrote to {}:\n - servers.pkl\n - requests.pkl\n'.format(
         common_loc('workload')))
 
 def servers_from_pickle():

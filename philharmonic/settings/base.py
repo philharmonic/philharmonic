@@ -5,21 +5,49 @@ Created on Oct 9, 2012
 '''
 
 import os
+import pandas as pd
 
 # I/O
 #======
 
+# experimental workflow
+#----------------------
 historical_en_prices = "./io/energy_price/train/3month.csv"
 #historical_en_prices = "./io/energy_price_data-quick_test.csv"
 #historical_en_prices = "./io/energy_price_data-single_day.csv"
 
+save_power = False
+#----------------------
+
+# stop and check settings with user
+prompt_configuration = True
+
 common_output_folder = "io/"
 output_folder = "io/results/"
 
-save_power = False
-
 DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
 DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')
+
+# the datasets used in the simulation
+temperature_dataset = os.path.join(DATA_LOC, 'world-realtemp/temperatures.csv')
+el_price_dataset = os.path.join(DATA_LOC, 'world-realtemp/temperatures.csv')
+
+# the time period of the simulation
+start = pd.Timestamp('2010-01-03 00:00')
+# - two days
+times = pd.date_range(start, periods=48, freq='H')
+end = times[-1]
+
+# plotting results
+plotserver = True
+#plotserver = False
+if plotserver: # plotting in GUI-less environment
+    liveplot = False
+else: # GUI present (desktop OS)
+    liveplot = False
+    #liveplot = True
+    fileplot = False
+
 
 # Manager
 #=========
@@ -97,22 +125,12 @@ def get_factory():
     #return get_factory_ga()
     return factory
 
-# Simulator settings
-#===========================
-
-plotserver = True
-#plotserver = False
-
-if plotserver:
-    liveplot = False
-else:
-    liveplot = False
-    #liveplot = True
-    fileplot = False
+# inputgen settings
+#==================
 
 inputgen_settings = {
     # cloud's servers
-    'location_dataset': 'world_el',
+    'location_dataset': temperature_dataset,
     'server_num': 20,
     'min_server_cpu': 4,
     'max_server_cpu': 8,

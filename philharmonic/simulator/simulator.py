@@ -233,7 +233,7 @@ class Simulator(IManager):
             self.apply_actions(actions)
         return self.cloud, self.environment, self.real_schedule
 
-
+# TODO: these other simulator sublclasses should not be necessary
 class PeakPauserSimulator(Simulator):
     def __init__(self, factory=None):
         if factory is not None:
@@ -293,17 +293,18 @@ class NoSchedulerSimulator(Simulator):
 
 #-- simulation starter ------------------------------
 
-# TODO: route to here straight from schedule.py
+# schedule.py routes straight to here
 
 def pickle_results(schedule):
     schedule.actions.to_pickle(loc('schedule.pkl'))
     #with open('schedule.pkl', 'w') as pkl_schedule:
     #    pickle.dump(schedule.actions, pkl_schedule)
 
-# TODO: make run a method on Simulator
+# TODO: make run a method on Simulator maybe?
 
 def run():
-    logging.debug('started')
+    info('READING SETTINGS\n')
+
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
 
@@ -312,10 +313,11 @@ def run():
     #-------------------------
     simulator = Simulator(conf.get_factory())
 
-    print('Servers\n----------')
-    print(simulator.cloud.servers)
-    print('Requests\n----------')
-    print(simulator.requests)
+    info('Servers\n----------\n{}\n'.format(simulator.cloud.servers))
+    info('Requests\n----------\n{}\n'.format(simulator.requests))
+
+    if conf.prompt_configuration:
+        prompt_res = raw_input('Config good? Press enter to continue...')
 
     # run the simulation
     #-------------------

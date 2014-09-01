@@ -4,6 +4,9 @@ from .base import *
 #production_settings = False
 production_settings = True
 
+end = pd.Timestamp('2010-03-30 23:00')
+times = pd.date_range(start, end, freq='H')
+
 if production_settings:
     factory['times'] = inputgen.world_three_months
     inputgen_settings['VM_num'] = 2000
