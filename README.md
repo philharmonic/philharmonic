@@ -54,3 +54,13 @@ Debugging
 To enter ipdb on errors:
 
     ipython --pdb -- simulate.py --conf=philharmonic.settings.ga
+
+Code status
+-----------
+
+* [![Build Status](https://travis-ci.org/philharmonic/philharmonic.svg)](https://travis-ci.org/philharmonic/philharmonic)
+
+License
+-------
+Philharmonic is distributed under the GNU General Public License - see the
+accompanying LICENSE file for more details.
