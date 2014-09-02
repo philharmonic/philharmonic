@@ -48,7 +48,7 @@ def test_simulator_noscheduler_nodriver():
     """no scheduler; driver mock - catches all methods and does nothing"""
     driver = MagicMock()
     factory = Simulator.factory_copy()
-    factory['scheduler'] = NoScheduler
+    factory['scheduler'] = 'NoScheduler'
     simulator = Simulator(factory)
     # arm driver mock
     simulator.driver = driver
@@ -72,7 +72,7 @@ from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
 def test_gasimulator_empty_environment():
     """test ga scheduler; empty environmentp"""
     factory = Simulator.factory_copy()
-    factory['scheduler'] = GAScheduler
+    factory['scheduler'] = "GAScheduler"
     simulator = Simulator(factory)
     env = GASimpleSimulatedEnvironment()
     simulator.environment = env

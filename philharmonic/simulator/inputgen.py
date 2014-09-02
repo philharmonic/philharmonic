@@ -8,6 +8,7 @@ import numpy as np
 from scipy import stats
 from datetime import timedelta
 
+from philharmonic import conf
 from philharmonic import Machine, Server, VM, VMRequest, Cloud
 from philharmonic.utils import common_loc
 from philharmonic.logger import *
@@ -246,12 +247,10 @@ def medium_temperature(start=None):
 import os
 
 def get_data_loc(filename):
-    from philharmonic import conf
     return os.path.join(conf.DATA_LOC, filename)
 
-#TODO: refactor this!
-# - everything as strings
-# - something calls one function to load the datasets initially
+# these methods not really necessary any more (apart for quick testing)
+# separate conf files can be created to mimic them
 
 def usa_el(start=None, filepath=None):
     if filepath is None:
@@ -342,6 +341,17 @@ def parse_dataset(filepath):
                      index_col=0, parse_dates=[0])
     return df
 
+def times_from_conf():
+    return conf.times
+
+def el_prices_from_conf():
+    el_prices = parse_dataset(conf.el_price_dataset)
+    return el_prices
+
+def temperature_from_conf():
+    temperature = parse_dataset(conf.temperature_dataset)
+    return temperature
+
 # initial input generation
 #--------------------------
 
@@ -352,7 +362,6 @@ def generate_fixed_input():
     on the desired simulation time period and locations.
 
     """
-    from philharmonic import conf
     # override module settings with the config file
     for key, value in conf.inputgen_settings.iteritems():
         globals()[key] = value

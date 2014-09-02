@@ -18,4 +18,7 @@ def unpause(instance):
 def migrate(instance, machine):
     pass
 
+def apply_action(*args):
+    pass
+
 events = None

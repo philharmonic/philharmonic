@@ -30,7 +30,7 @@ DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')
 
 # the datasets used in the simulation
 temperature_dataset = os.path.join(DATA_LOC, 'world-realtemp/temperatures.csv')
-el_price_dataset = os.path.join(DATA_LOC, 'world-realtemp/temperatures.csv')
+el_price_dataset = os.path.join(DATA_LOC, 'world-realtemp/prices.csv')
 
 # the time period of the simulation
 start = pd.Timestamp('2010-01-03 00:00')
@@ -58,67 +58,58 @@ manager = "Simulator"
 # Manager factory
 #=================
 
-# use strings and import lazily using importlib. Don't import directly.
-from philharmonic.scheduler import FBFScheduler, GAScheduler, BFDScheduler
-
-# environments
-from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
-
-from philharmonic.simulator import inputgen
-from philharmonic.cloud.driver import simdriver
-
 factory = {
-    "scheduler": FBFScheduler,
+    # Scheduling algorithm to use. Can be:
+    #  FBFScheduler, BFDScheduler, GAScheduler, NoScheduler
+    "scheduler": "FBFScheduler",
+    # Optional object to pass to the scheduler for parameters
     "scheduler_conf": None,
-    "environment": GASimpleSimulatedEnvironment,
-    #"cloud": inputgen.small_infrastructure,
-    #"cloud": inputgen.usa_small_infrastructure,
-    "cloud": inputgen.servers_from_pickle,
-    #"cloud": inputgen.dynamic_infrastructure,
+    # The environment class (for iterating through simulation timestamps)
+    "environment": "GASimpleSimulatedEnvironment",
+    # Available cloud infrastructure. Can be:
+    #  servers_from_pickle (recommended), small_infrastructure,
+    #  usa_small_infrastructure, dynamic_infrastructure
+    "cloud": "servers_from_pickle",
 
     "forecast_periods": 12,
     ### no error
     "SD_el": 0,
     "SD_temp": 0,
-
-        ### small error
+    ### small error
     #"SD_el": 0.01,
     #"SD_temp": 1.41,
-
-        ### medium error
+    ### medium error
     #"SD_el": 0.03,
     #"SD_temp": 3,
-
-        ### large error
+    ### large error
     #"SD_el": 0.05,
     #"SD_temp": 5,
 
-    #"times": inputgen.two_days,
-    #"times": inputgen.usa_two_hours,
-    #"times": inputgen.usa_two_days,
-    #"times": inputgen.usa_three_months,
-    #"times": inputgen.world_two_hours,
-    "times": inputgen.world_two_days,
-    #"times": inputgen.world_three_months,
-    #"times": inputgen.dynamic_usa_times,
-    #"times": inputgen.usa_whole_period,
-    #"requests": inputgen.simple_vmreqs,
-    #"requests": inputgen.medium_vmreqs,
-    "requests": inputgen.requests_from_pickle,
+    # Timestamps of the simulation. Can be:
+    #  times_from_conf (take times from conf.times, recommended),
+    #  two_days, world_three_months,
+    #  usa_two_hours, usa_two_days, usa_three_months
+    #  world_two_hours, world_two_days, world_three_months
+    #  dynamic_usa_times, usa_whole_period
+    "times": "times_from_conf",
 
-    #"el_prices": inputgen.simple_el,
-    #"el_prices": inputgen.medium_el,
-    #"el_prices": inputgen.usa_el,
-    "el_prices": inputgen.world_el,
-    #"el_prices": os.path.join(DATA_LOC, 'world-realtemp/prices.csv'),
-    #"el_prices": inputgen.dynamic_usa_el,
-    #"temperature": inputgen.simple_temperature,
-    #"temperature": inputgen.medium_temperature,
-    #"temperature": inputgen.usa_temperature,
-    "temperature": inputgen.world_temperature,
-    #"temperature": inputgen.dynamic_usa_temp,
+    # VM requests. Can be:
+    #  requests_from_pickle (recommended), simple_vmreqs, medium_vmreqs
+    "requests": "requests_from_pickle",
+    # Geotemporal inputs. *_from_conf recommended
+    # (they read CSV files located at conf.*_dataset)
+    # Can also be:
+    #  simple_el, medium_el, usa_el, world_el, dynamic_usa_el
+    #  simple_temperature, medium_temperature, usa_temperature,
+    #  world_temperature, dynamic_usa_temp
+    "el_prices": "el_prices_from_conf",
+    "temperature": "temperature_from_conf",
 
-    "driver": simdriver,
+    # Driver that takes the manager's actions and controls the cloud:
+    #  nodriver (no actions)
+    #  simdriver (only logs actions)
+    #  (real OpenStack driver not implemented yet)
+    "driver": "nodriver",
 }
 
 def get_factory():

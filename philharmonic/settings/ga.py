@@ -12,5 +12,5 @@ gaconf = {
     "no_el_price": False,
 }
 
-factory['scheduler'] = GAScheduler
+factory['scheduler'] = "GAScheduler"
 factory['scheduler_conf'] = gaconf

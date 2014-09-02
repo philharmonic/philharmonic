@@ -35,7 +35,7 @@ from philharmonic import Schedule
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
 from philharmonic.scheduler import evaluator
 from philharmonic.manager.imanager import IManager
-from philharmonic.cloud.driver import simdriver
+#from philharmonic.cloud.driver import simdriver
 from philharmonic.scheduler import NoScheduler
 from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from environment import SimulatedEnvironment, PPSimulatedEnvironment
@@ -175,25 +175,27 @@ class Simulator(IManager):
     """
 
     factory = {
-        "scheduler": PeakPauser,
-        "environment": PPSimulatedEnvironment,
-        "cloud": inputgen.peak_pauser_infrastructure,
-        "driver": simdriver,
+        "scheduler": "PeakPauser",
+        "environment": "PPSimulatedEnvironment",
+        "cloud": "peak_pauser_infrastructure",
+        "driver": "simdriver",
 
-        "times": inputgen.two_days,
+        "times": "two_days",
         "requests": None, #inputgen.normal_vmreqs,
         "servers": None, #inputgen.small_infrastructure,
 
-        "el_prices": inputgen.simple_el,
-        "temperature": inputgen.simple_temperature,
+        "el_prices": "simple_el",
+        "temperature": "simple_temperature",
     }
 
     def __init__(self, factory=None):
         if factory is not None:
             self.factory = factory
         super(Simulator, self).__init__()
-        self.environment.el_prices = self._create(self.factory['el_prices'])
-        self.environment.temperature = self._create(self.factory['temperature'])
+        self.environment.el_prices = self._create(inputgen,
+                                                  self.factory['el_prices'])
+        self.environment.temperature = self._create(inputgen,
+                                                    self.factory['temperature'])
         SD_el = self.factory['SD_el'] if 'SD_el' in self.factory  else 0
         SD_temp = self.factory['SD_temp'] if 'SD_temp' in self.factory  else 0
         self.environment.model_forecast_errors(SD_el, SD_temp)
@@ -238,8 +240,8 @@ class PeakPauserSimulator(Simulator):
     def __init__(self, factory=None):
         if factory is not None:
             self.factory = factory
-        self.factory["scheduler"] = PeakPauser
-        self.factory["environment"] = PPSimulatedEnvironment
+        self.factory["scheduler"] = "PeakPauser"
+        self.factory["environment"] = "PPSimulatedEnvironment"
         super(PeakPauserSimulator, self).__init__()
 
     def run(self): #TODO: use Simulator.run instead
@@ -270,8 +272,8 @@ class FBFSimulator(Simulator):
     def __init__(self, factory=None):
         if factory is not None:
             self.factory = factory
-        self.factory["scheduler"] = FBFScheduler
-        self.factory["environment"] = FBFSimpleSimulatedEnvironment
+        self.factory["scheduler"] = "FBFScheduler"
+        self.factory["environment"] = "FBFSimpleSimulatedEnvironment"
         super(FBFSimulator, self).__init__()
 
     # this should be the normal Simulator run method
@@ -287,7 +289,7 @@ class FBFSimulator(Simulator):
 
 class NoSchedulerSimulator(Simulator):
     def __init__(self):
-        self.factory["scheduler"] = NoScheduler
+        self.factory["scheduler"] = "NoScheduler"
         super(NoSchedulerSimulator, self).__init__()
 
 
@@ -321,12 +323,12 @@ def run():
 
     # run the simulation
     #-------------------
-    print('\n\nSTARTING SIMULATION')
+    info('\n\nSTARTING SIMULATION')
     cloud, env, schedule = simulator.run()
-    print('SIMULATION COMPLETE\n\n')
+    info('SIMULATION COMPLETE\n\n')
     pickle_results(schedule)
     cloud.reset_to_initial()
-    print('Simulation timeline\n--------------')
+    info('Simulation timeline\n--------------')
     evaluator.print_history(cloud, env, schedule)
     # geotemporal inputs
     #-------------------
