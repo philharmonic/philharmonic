@@ -90,7 +90,8 @@ def normal_infrastructure(locations=['A', 'B'],
 
 # VM requests
 #------------
-# - global settings TODO: config file
+# simulate how users will use our cloud
+# - global settings, overriden by the config.inputgen ditionary
 # VM requests
 VM_num = 3
 # e.g. CPUs

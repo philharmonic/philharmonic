@@ -10,6 +10,7 @@ from philharmonic.simulator.inputgen import small_infrastructure
 #def test_run():
 #    run(steps=3)
 
+# TODO: repurpose these tests to test new simulator methods
 def test_server_locations():#TODO: refactor
     servers = small_infrastructure().servers
     server_locations(servers, ['location_'+str(id(s)) for s in servers])

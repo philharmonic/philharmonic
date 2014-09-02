@@ -122,20 +122,9 @@ def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel fo
     if steps is None:
         steps = 10 # TODO: len of shortest input
 
-    # simulate how users will use our cloud
     requests = VM_requests(times[0], times[steps-1])
     debug(requests)
 
-    # for t in requests.index:
-    #     request = requests[t]
-    #     debug(str(request))
-    #     known_data = prepare_known_data((el_prices, temperatures), t)
-    #     debug(known_data[0].index)
-    #     # call scheduler to decide on actions
-
-    # # perform the actions somehow
-
-    # instantiate scheduler
     scheduler = FBFOptimiser(servers)
 
     for t in times[:steps-1]: # iterate through all the hours
@@ -153,7 +142,7 @@ def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel fo
         # - we get new data about the future temp. and el. prices
         known_data = prepare_known_data((el_prices, temperatures), t)
         debug(known_data[0].index)
-        # call scheduler to decide on actions
+
         scheduler.find_solution(known_data, new_requests)
 
     # perform the actions somehow
@@ -219,9 +208,7 @@ class Simulator(IManager):
             if len(requests) > 0:
                 #import ipdb; ipdb.set_trace()
                 pass
-            #for request in requests:
-            #    self.cloud.vms.
-            # schedule actions
+            # call scheduler to decide on actions
             schedule = self.scheduler.reevaluate()
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(t, period)
@@ -305,7 +292,7 @@ def pickle_results(schedule):
 # TODO: make run a method on Simulator maybe?
 
 def run():
-    info('READING SETTINGS\n')
+    info('READING SETTINGS\n################\n')
 
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
@@ -315,17 +302,33 @@ def run():
     #-------------------------
     simulator = Simulator(conf.get_factory())
 
-    info('Servers\n----------\n{}\n'.format(simulator.cloud.servers))
-    info('Requests\n----------\n{}\n'.format(simulator.requests))
+    # log essential information
+    if conf.factory["times"] == "times_from_conf":
+        info('- times: {} - {}'.format(conf.start, conf.end))
+    if conf.factory["el_prices"] == "el_prices_from_conf":
+        info('- el_prices_dataset: {}'.format(conf.el_price_dataset))
+    if conf.factory["temperature"] == "temperature_from_conf":
+        info('- temperature_dataset: {}'.format(conf.temperature_dataset))
+    info('- forecasting')
+    info('  * periods: {}'.format(conf.factory['forecast_periods']))
+    info('  * errors: SD_el={}, SD_temp={}'.format(
+        conf.factory['SD_el'], conf.factory['SD_temp']
+    ))
+    info('\n- scheduler: {}'.format(conf.factory['scheduler']))
+    if conf.factory['scheduler_conf'] is not None:
+        info('  * conf: {}'.format(conf.factory['scheduler_conf']))
+
+    info('\nServers\n-------\n{}\n'.format(simulator.cloud.servers))
+    info('Requests\n--------\n{}\n'.format(simulator.requests))
 
     if conf.prompt_configuration:
         prompt_res = raw_input('Config good? Press enter to continue...')
 
     # run the simulation
     #-------------------
-    info('\n\nSTARTING SIMULATION')
+    info('\n\nSTARTING SIMULATION\n####################')
     cloud, env, schedule = simulator.run()
-    info('SIMULATION COMPLETE\n\n')
+    info('SIMULATION COMPLETE\n####################\n\n')
     pickle_results(schedule)
     cloud.reset_to_initial()
     info('Simulation timeline\n--------------')
