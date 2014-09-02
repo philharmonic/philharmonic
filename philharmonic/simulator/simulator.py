@@ -176,7 +176,7 @@ class Simulator(IManager):
 
     factory = {
         "scheduler": "PeakPauser",
-        "environment": "PPSimulatedEnvironment",
+        "environment": "GASimpleSimulatedEnvironment",
         "cloud": "peak_pauser_infrastructure",
         "driver": "simdriver",
 

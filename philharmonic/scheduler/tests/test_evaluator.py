@@ -2,7 +2,8 @@ from nose.tools import *
 import pandas as pd
 
 from ..evaluator import *
-from philharmonic import Cloud, Server, VM, Schedule, Migration, inputgen
+from philharmonic import Cloud, Server, VM, Schedule, Migration
+from philharmonic.simulator import inputgen
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 
 def test_calculate_cloud_utilisation():

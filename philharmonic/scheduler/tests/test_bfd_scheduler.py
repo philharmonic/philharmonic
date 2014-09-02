@@ -8,7 +8,8 @@ from philharmonic.scheduler.bfd_scheduler import sort_vms_decreasing, \
     sort_pms_increasing
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 from philharmonic.simulator.simulator import FBFSimulator
-from philharmonic import inputgen, Cloud, VMRequest, \
+from philharmonic.simulator import inputgen
+from philharmonic import Cloud, VMRequest, \
     VM, Server, State, Migration
 
 def test_bfd_returns_schedule():

@@ -9,7 +9,7 @@ from philharmonic.scheduler import NoScheduler
 from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.cloud.driver import nodriver
-from philharmonic import inputgen
+from philharmonic.simulator import inputgen
 from philharmonic.simulator.environment import PPSimulatedEnvironment
 
 

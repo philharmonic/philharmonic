@@ -12,9 +12,9 @@ from philharmonic.timeseries.util import *
 # the default conf if nothing is overriden
 import philharmonic.settings.base as conf
 
-# default data generators
-import philharmonic.simulator.inputgen as inputgen
-
-def _setup(conf_module):
+def _setup(conf_module='philharmonic.settings.base'):
     """initially load which module will be used as philharmonic.conf"""
     globals()['conf'] = import_module(conf_module)
+    # default data generators
+    global inputgen
+    import philharmonic.simulator.inputgen as inputgen

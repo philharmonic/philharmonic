@@ -6,7 +6,8 @@ from philharmonic import Schedule
 from philharmonic.scheduler import FBFScheduler
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 from philharmonic.simulator.simulator import FBFSimulator
-from philharmonic import inputgen, Cloud, VMRequest, VM
+from philharmonic.simulator import inputgen
+from philharmonic import Cloud, VMRequest, VM
 
 def test_fbf_returns_schedule():
     scheduler = FBFScheduler()
