@@ -1,17 +1,27 @@
-Philharmonic is a Python program offering a simple OpenStack controller that pauses and/or suspends instances based on the electricity prices.
+Philharmonic
+============
+[![Build Status](https://travis-ci.org/philharmonic/philharmonic.svg)](https://travis-ci.org/philharmonic/philharmonic) [![Coverage Status](https://img.shields.io/coveralls/philharmonic/philharmonic.svg)](https://coveralls.io/r/philharmonic/philharmonic)
+
+Philharmonic is a cloud simulator & partial OpenStack manager written in Python.
+It compares the energy and cost efficiency of different dynamic VM scheduling
+algorithms in a realistic environment with real-time electricity prices and
+temperature-dependent cooling.
+It offers a simple OpenStack controller that pauses and/or suspends instances
+based on the electricity prices, although this experimental part is not the
+focus of development any more.
 
 Installation
-============
-
-    pip install -e bzr+ssh://bazaar.launchpad.net/+branch/philharmonic/#egg=philharmonic
-
-Dependencies
 ------------
+
+    pip install -e git+ssh://git@github.com:philharmonic/philharmonic.git#egg=philharmonic
+
+### Dependencies
+
 Ubuntu dependencies
 
     sudo apt-get install python-numpy python-pandas python-matplotlib python-scipy python-pysnmp4 python-soappy python-twisted python-twisted-web
 
-OR
+or
 
     pip install -r requirements.txt
 
@@ -19,51 +29,27 @@ OR
 installing the scientific packages via `apt-get` is much faster as no
 compiling is necessary.
 
-Development
------------
-Development packages
-
-    pip install -r requirements/dev.txt
-
-(for the experimental workflow, install from `requirements/extra.txt` as well)
-
-To test just run this from the project's root
-
-    nosy
-
 Running
-=======
+-------
+First it is necessary to generate the input datasets.
 
-To use default settings:
+    python simulate.py inputgen [--conf=philharmonic.settings.ga]
 
-    python simulate.py
+Then the simulation can be started. To use the default settings:
 
-To pass different settings:
+    python simulate.py run
 
-    python simulate.py --conf=philharmonic.settings.ga
+To pass different settings use the `--conf` flag, e.g.:
+
+    python simulate.py run --conf=philharmonic.settings.ga
 
 
 Contributing
-============
-
-Settings
---------
-Just `import philharmonic.conf` (`philharmonic._setup` assumed to be called) and
-use any properties in this module.
-
-Debugging
----------
-To enter ipdb on errors:
-
-    ipython --pdb -- simulate.py --conf=philharmonic.settings.ga
-
-Code status
------------
-
-* [![Build Status](https://travis-ci.org/philharmonic/philharmonic.svg)](https://travis-ci.org/philharmonic/philharmonic)
-* [![Coverage Status](https://img.shields.io/coveralls/philharmonic/philharmonic.svg)](https://coveralls.io/r/philharmonic/philharmonic)
+------------
+Read [HACKING.md](https://github.com/philharmonic/philharmonic/blob/master/HACKING.md)
+file for some information on how the code is organised.
 
 License
 -------
 Philharmonic is distributed under the GNU General Public License - see the
-accompanying LICENSE file for more details.
+accompanying [LICENSE](https://github.com/philharmonic/philharmonic/blob/master/LICENSE) file for more details.
