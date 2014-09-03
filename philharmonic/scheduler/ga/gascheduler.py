@@ -281,16 +281,25 @@ class GAScheduler(IScheduler):
         """Take the requests and make sure they are placed on a host
         right away using FBF (if the GA didn't schedule them already)."""
         requests = self.environment.get_requests()
+        current_actions = unit.filter_current_actions(
+            self.environment.t, self.environment.period
+        ).values
+        placed_vms = set(act.vm for act in current_actions)
         for request in requests:
             if request.what == 'boot':
                 # check if an action with that VM already in the schedule
-                existing_actions = unit.filter_current_actions(
-                    self.environment.t, self.environment.period)
-                if request.vm in set(act.vm for act in existing_actions):
+
+                if request.vm in placed_vms:
                     continue
                 server = self.fbf.find_host(request.vm)
+                if server is None:
+                    continue # not enough free resources for this VM
+                # apply and add action to the schedule
                 action = Migration(request.vm, server)
                 unit.add(action, self.environment.t)
+                self.cloud.apply(action)
+                placed_vms.add(request.vm)
+                current_actions = np.append(current_actions, action)
                 unit.changed = True
 
     def genetic_algorithm(self):
@@ -355,7 +364,9 @@ class GAScheduler(IScheduler):
         best = self._best_satisfies_constraints()
         if best is None: # none satisfy hard constraints
             best = self.population[0]
+            self.cloud.reset_to_real()
             self._add_boot_actions_greedily(best)
+            self.cloud.reset_to_real()
             self._sweep_reallocate_capacity_constraints(best)
             best.calculate_fitness()
         debug(u' \u2502\n \u2514\u2500\u25BA selected {}'.format(repr(best)))

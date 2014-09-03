@@ -386,7 +386,11 @@ class Unpause(Action):
     name = 'unpause'
 
 class VMRequest(Action):
-    """VM creation/deletion actions."""
+    """VM creation/deletion actions. Applying a boot action adds it to
+    cloud.vms, but it does not place it to a concrete server. A delete
+    action also unallocates the VM and frees the server's resources.
+
+    """
     def __init__(self, vm, what):
         self.vm = vm
         self.args = [vm]

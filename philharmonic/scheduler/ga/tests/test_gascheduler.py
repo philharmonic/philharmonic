@@ -205,26 +205,56 @@ def test_add_boot_actions_greedily():
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
     vm3 = VM(2000, 3);
-    vms = [vm1, vm2]
+    vms = set([vm1, vm2, vm3])
     scheduler = GAScheduler()
-    scheduler.cloud = Cloud(servers)
+    scheduler.cloud = Cloud(servers, vms)
 
     reqs = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
             VMRequest(vm3, 'boot')]
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     environment.t = times[0]
-    environment.get_requests = MagicMock(return_value=reqs[:2])
+    environment.get_requests = MagicMock(return_value=reqs)
     scheduler.environment = environment
     scheduler.initialize()
     unit = ScheduleUnit()
     unit.environment = environment
-    unit.add(reqs[2], environment.t)
+    unit.add(Migration(vm1, s1), environment.t)
+    unit.add(Migration(vm2, s1), environment.t)
+    scheduler._add_boot_actions_greedily(unit)
+    assert_equals(set([a.vm for a in unit.actions.values]), vms)
+
+def test_add_boot_actions_greedily_only_if_possible():
+    # some servers
+    s1 = Server(5000, 5)
+    servers = [s1]
+    # some VMs
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    vm3 = VM(2000, 3);
+    scheduler = GAScheduler()
+    scheduler.cloud = Cloud(servers)
+
+    reqs = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
+            VMRequest(vm3, 'boot')]
+    for action in reqs:
+        scheduler.cloud.apply_real(action)
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    environment.t = times[0]
+    environment.get_requests = MagicMock(return_value=reqs)
+    scheduler.environment = environment
+    scheduler.initialize()
+    unit = ScheduleUnit()
+    unit.environment = environment
+    unit.add(Migration(vm1, s1), environment.t)
+    unit.add(Migration(vm2, s1), environment.t)
+    for action in unit.actions:
+        scheduler.cloud.apply_real(action)
     #import ipdb; ipdb.set_trace()
     scheduler._add_boot_actions_greedily(unit)
-    expected_action_vms = set([action.vm for action in reqs])
-    for action in unit.actions.values:
-        assert_in(action.vm, expected_action_vms)
+    expected_action_vms = set([vm1, vm2])
+    assert_equals(set([a.vm for a in unit.actions.values]), expected_action_vms)
 
 def test_sweep_reallocate_capacity_constraints():
     unit = ScheduleUnit()
@@ -273,10 +303,11 @@ def test_add_boot_actions_greedily_some_vms_scheduled():
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
     vm3 = VM(2000, 3);
-    vms = [vm1, vm2]
+    vms = set([vm1, vm2, vm3])
     scheduler = GAScheduler()
-    scheduler.cloud = Cloud(servers)
+    scheduler.cloud = Cloud(servers, vms)
 
+    # TODO: check this test - not sure if it's right after the refactoring
     marked_not_in = VMRequest(vm2, 'boot')
     marked_not_in.TEST_marked_not_in = True
     reqs = [VMRequest(vm1, 'boot'), marked_not_in,
@@ -284,16 +315,18 @@ def test_add_boot_actions_greedily_some_vms_scheduled():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     environment.t = times[0]
-    environment.get_requests = MagicMock(return_value=reqs[:2])
+    environment.get_requests = MagicMock(return_value=reqs)
     scheduler.environment = environment
     scheduler.initialize()
 
     unit = ScheduleUnit()
     unit.environment = environment
-    marked_req = VMRequest(vm2, 'boot')
+    marked_req = Migration(vm2, s1)
     marked_req.TEST_marked = True
     unit.add(marked_req, environment.t) # also in request for this VM
-    unit.add(reqs[2], environment.t)
+    unit.add(Migration(vm3, s1), environment.t)
+    for action in unit.actions:
+        scheduler.cloud.apply(action)
     #import ipdb; ipdb.set_trace()
     scheduler._add_boot_actions_greedily(unit)
     expected_action_vms = set([action.vm for action in reqs])
