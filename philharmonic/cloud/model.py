@@ -19,6 +19,9 @@ def format_spec(spec):
     s += "}"
     return s
 
+class ModelUsageError(Exception):
+    pass
+
 # some non-semantic functionality common for VMs and servers
 class Machine(object):
     resource_types = ['RAM', '#CPUs'] # to be overridden with actual values
@@ -175,6 +178,8 @@ class State():
 
     def migrate(self, vm, s):
         """change current state to have vm in s instead of the old location"""
+        if vm not in self.vms:
+            raise ModelUsageError("attempt to migrate VM that isn't booted")
         for server, vms in self.alloc.iteritems():
             if vm in vms:
                 if server == s:
@@ -201,11 +206,11 @@ class State():
 
     def delete(self, vm):
         """user requested for a vm to be deleted"""
-        try:
+        self.migrate(vm, None) # remove vm from its host server
+        try: #  remove the vm from this state's active vms
             self.vms.remove(vm)
         except KeyError: # the VM wasn't even there (booted outside environment)
             pass
-        self.migrate(vm, None) # remove vm from its host server
 
     #---------------
 
@@ -229,7 +234,7 @@ class State():
         #TODO: copy.copy - probably faster
         return new_state
 
-    #TODO: test transitioning to new state with acitions including boots
+    #TODO: test transitioning to new state with actions including boots
     # creates a new VMs list
     def transition(self, action):
         """transition into new state acccording to action"""

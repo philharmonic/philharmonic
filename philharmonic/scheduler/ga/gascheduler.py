@@ -55,7 +55,7 @@ class ScheduleUnit(Schedule):
     def mutation(self):
         self.changed = True
         # copy the ScheduleUnit
-        new_unit = copy.copy(self)
+        new_unit = copy.copy(self) # maybe just modify this unit?
         # remove one action
         if len(self.actions) > 0:
             i = random.randint(0, len(self.actions)-1)
@@ -80,7 +80,7 @@ class ScheduleUnit(Schedule):
         end = self.environment.forecast_end
         if not t:
             t = random_time(start, end)
-        child = copy.copy(self)
+        child = copy.copy(self) # TODO: better to create a new unit? state etc.
         child.changed = True
         actions1 = self.actions[:t]
         justabit = pd.offsets.Micro(1)

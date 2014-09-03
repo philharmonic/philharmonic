@@ -90,6 +90,7 @@ def test_crossover():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     t1 = pd.Timestamp('2013-02-25 00:00')
     t2 = pd.Timestamp('2013-02-25 13:00')
+    t23 = pd.Timestamp('2013-02-25 14:00')
     t3 = pd.Timestamp('2013-02-25 20:00')
     env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     env.t = t1
@@ -113,11 +114,12 @@ def test_crossover():
     child = unit.crossover(unit2)
     assert_is_instance(child, ScheduleUnit)
 
-    child = unit.crossover(unit2, t=t2)
+    child = unit.crossover(unit2, t=t23)
     assert_is_instance(child, ScheduleUnit)
     assert_true((unit.actions.values == actions).all(), 'original unchanged')
     assert_true((unit2.actions.values == actions2).all(), 'original unchanged')
-    assert_equals(unit.actions[0], child.actions[0], '1st half one parent')
+    assert_true((actions[0:2] == child.actions.values[0:2]).all(),
+                '1st half one parent')
     assert_equals(unit2.actions[-1], child.actions[-1], '2nd half other parent')
 
 def test_create_random():

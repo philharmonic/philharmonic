@@ -167,6 +167,57 @@ def test_migration():
     assert_not_in(vm1, b.alloc[s1], 'vm1 should have moved after the transition')
     assert_in(vm1, b.alloc[s2], 'vm1 should have moved after the transition')
 
+def test_multiple_state_transitions():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm2 = VM(1000, 1);
+    VMs = set()
+
+    a = State(servers, VMs)
+    b = a.transition(VMRequest(vm1, 'boot'))
+    c = b.transition(Migration(vm1, s1))
+    # alternative route
+    c2 = b.transition(Migration(vm1, s2))
+    d0 = c.transition(VMRequest(vm2, 'boot'))
+    d = d0.transition(Migration(vm2, s2))
+    # raises error - vm2 not in VMs
+
+    assert_equals(a.vms, set([]))
+    assert_equals(b.vms, set([vm1]))
+
+    assert_not_in(vm1, a.alloc[s1])
+    assert_not_in(vm1, b.alloc[s1])
+    assert_in(vm1, c.alloc[s1])
+    assert_not_in(vm1, c.alloc[s2])
+    assert_not_in(vm1, c2.alloc[s1])
+    assert_in(vm1, c2.alloc[s2])
+
+    assert_not_in(vm2, c2.alloc[s2])
+    assert_not_in(vm2, c.alloc[s2])
+    assert_in(vm2, d.alloc[s2])
+
+@raises(ModelUsageError)
+def test_migrating_unbooted_error():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm2 = VM(1000, 1);
+    VMs = set()
+
+    a = State(servers, VMs)
+    b = a.transition(Migration(vm1, s1))
+
+# test self.vms with boot, delete actions
+
+# TODO: test the resets of _initial, _real, _current
+
 def test_migration_free_cap():
     # some servers
     s1 = Server(4000, 2)
@@ -212,7 +263,7 @@ def test_allocation():
     s1 = Server(4000, 2)
     servers = [s1]
     vm1 = VM(2000, 1);
-    a = State(servers)
+    a = State(servers, set([vm1]))
     migr = Migration(vm1, s1)
     b = a.transition(migr)
 

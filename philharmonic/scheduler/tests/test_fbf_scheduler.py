@@ -5,7 +5,7 @@ import pandas as pd
 from philharmonic import Schedule
 from philharmonic.scheduler import FBFScheduler
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
-from philharmonic.simulator.simulator import FBFSimulator
+from philharmonic.simulator.simulator import FBFSimulator#, Simulator
 from philharmonic.simulator import inputgen
 from philharmonic import Cloud, VMRequest, VM
 
@@ -20,7 +20,7 @@ def test_fbf_returns_schedule():
 
 def test_fbf_run():
     driver = MagicMock()
-    simulator = FBFSimulator()
+    simulator = FBFSimulator() #Simulator() #FBFSimulator()
     assert_is_instance(simulator.scheduler, FBFScheduler)
     simulator.driver = driver
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')

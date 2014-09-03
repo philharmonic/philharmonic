@@ -12,11 +12,11 @@ def test_calculate_cloud_utilisation():
     s2 = Server(8000, 4)
     s3 = Server(4000, 2)
     servers = [s1, s2, s3]
-    cloud = Cloud(servers)
     # some VMs
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
     VMs = [vm1, vm2]
+    cloud = Cloud(servers, VMs)
 
     times = pd.date_range('2010-02-26 8:00', '2010-02-26 16:00', freq='H')
     env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
@@ -36,9 +36,9 @@ def test_calculate_cloud_utilisation():
 
 def test_calculate_cloud_simultaneous_actions():
     s1 = Server(4000, 2)
-    cloud = Cloud([s1])
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
+    cloud = Cloud([s1], set([vm1, vm2]))
 
     env = FBFSimpleSimulatedEnvironment()
     env.period = pd.offsets.Hour(1)
@@ -84,10 +84,10 @@ def test_calculate_cost_combined():
     s2 = Server(8000, 4, location='B')
     s3 = Server(4000, 4, location='B')
     servers = [s1, s2, s3]
-    cloud = Cloud(servers)
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
-    VMs = [vm1, vm2]
+    VMs = set([vm1, vm2])
+    cloud = Cloud(servers, VMs)
 
     times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
     env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)

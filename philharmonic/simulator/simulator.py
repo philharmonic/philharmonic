@@ -263,17 +263,6 @@ class FBFSimulator(Simulator):
         self.factory["environment"] = "FBFSimpleSimulatedEnvironment"
         super(FBFSimulator, self).__init__()
 
-    # this should be the normal Simulator run method
-    def run(self):
-        self.scheduler.initialize()
-        for t in self.environment.itertimes():
-            schedule = self.scheduler.reevaluate()
-            period = self.environment.get_period()
-            actions = schedule.filter_current_actions(t, period)
-            self.apply_actions(actions)
-        #events = self.cloud.driver.events
-        return self.cloud, self.environment, self.real_schedule
-
 class NoSchedulerSimulator(Simulator):
     def __init__(self):
         self.factory["scheduler"] = "NoScheduler"
