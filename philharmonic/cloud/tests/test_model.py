@@ -214,9 +214,69 @@ def test_migrating_unbooted_error():
     a = State(servers, VMs)
     b = a.transition(Migration(vm1, s1))
 
-# test self.vms with boot, delete actions
+def test_vms_during_state_transitions():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm2 = VM(2000, 1)
+    VMs = set()
 
-# TODO: test the resets of _initial, _real, _current
+    a = State(servers, VMs)
+    b = a.transition(VMRequest(vm1, 'boot'))
+    c = b.transition(Migration(vm1, s1))
+    d = c.transition(VMRequest(vm2, 'boot'))
+    e = d.transition(VMRequest(vm1, 'delete'))
+
+    assert_equals(a.vms, set([]))
+    assert_equals(b.vms, set([vm1]))
+    assert_not_in(vm1, b.alloc[s1])
+    assert_equals(c.vms, set([vm1]))
+    assert_in(vm1, c.alloc[s1])
+    assert_equals(d.vms, set([vm1, vm2]))
+    assert_equals(e.vms, set([vm2]))
+    assert_not_in(vm1, e.alloc[s1])
+
+def test_state_reset():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm2 = VM(2000, 1)
+    VMs = set()
+    cloud = Cloud(servers, VMs)
+
+    initial1 = cloud.get_current()
+    real1 = cloud.apply_real(VMRequest(vm1, 'boot'))
+    current11 = cloud.apply(Migration(vm1, s1))
+    current12 = cloud.apply(Migration(vm1, s2))
+
+    cloud.reset_to_real()
+    real2 = cloud.apply_real(VMRequest(vm2, 'boot'))
+    current21 = cloud.apply(Migration(vm1, s2))
+    current22 = cloud.apply(Migration(vm2, s2))
+
+    cloud.reset_to_initial()
+    initial2 = cloud.get_current()
+
+    assert_equals(initial1.vms, set([]))
+    assert_not_in(vm1, initial1.alloc[s1])
+    assert_equals(real1.vms, set([vm1]))
+    assert_in(vm1, current11.alloc[s1])
+    assert_not_in(vm1, current11.alloc[s2])
+    assert_in(vm1, current12.alloc[s2])
+
+    assert_not_in(vm1, real2.alloc[s2])
+    assert_equals(real2.vms, set([vm1, vm2]))
+    assert_in(vm1, current21.alloc[s2])
+    assert_not_in(vm2, current21.alloc[s2])
+    assert_in(vm2, current22.alloc[s2])
+
+    assert_equals(initial2.vms, set([]))
 
 def test_migration_free_cap():
     # some servers

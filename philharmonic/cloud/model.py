@@ -234,7 +234,6 @@ class State():
         #TODO: copy.copy - probably faster
         return new_state
 
-    #TODO: test transitioning to new state with actions including boots
     # creates a new VMs list
     def transition(self, action):
         """transition into new state acccording to action"""
@@ -492,6 +491,7 @@ class Cloud():
     def apply(self, action):
         """Apply an Action on the current state."""
         self._current = self._current.transition(action)
+        return self._current
 
     def apply_real(self, action):
         """Apply an Action on the real state (reflecting the actual physical
@@ -500,6 +500,7 @@ class Cloud():
         """
         self._real = self._real.transition(action)
         self.reset_to_real()
+        return self._real
 
     @deprecated
     def connect(self):
