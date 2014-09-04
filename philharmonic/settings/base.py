@@ -127,10 +127,10 @@ inputgen_settings = {
     # cloud's servers
     'location_dataset': temperature_dataset,
     'server_num': 20,
-    'min_server_cpu': 4,
-    'max_server_cpu': 8,
-    'min_server_ram': 4,
-    'max_server_ram': 8,
+    'min_server_cpu': 8,
+    'max_server_cpu': 16,
+    'min_server_ram': 16,
+    'max_server_ram': 32,
 
     # VM requests
     #'VM_num': 80,

@@ -286,11 +286,14 @@ class State():
                 return s
         return None
 
-    def all_allocated(self):
-        to_check = set(copy.copy(self.vms))
+    def unallocated_vms(self):
+        unallocated = set(copy.copy(self.vms))
         for s in self.servers:
-            to_check = to_check.difference(self.alloc[s])
-        return len(to_check) == 0
+            unallocated = unallocated.difference(self.alloc[s])
+        return unallocated
+
+    def all_allocated(self):
+        return len(self.unallocated_vms()) == 0
 
     def ratio_allocated(self):
         to_check = set(copy.copy(self.vms))
@@ -478,7 +481,8 @@ class Cloud():
         print(self.get_current())
 
     def show_usage(self):
-        visualiser.show_usage(self)
+        """log detailed cloud description"""
+        visualiser.show_usage(self, self.get_current())
     #----------------------------------
 
     #TODO: this seems wrong - current should always be a copy?

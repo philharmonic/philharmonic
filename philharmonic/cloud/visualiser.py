@@ -30,18 +30,28 @@ def server_usage_repr(server_free, server_cap):
         server_usage_str += '{}:|{}| '.format(res, res_usage_str)
     return server_usage_str
 
-# TODO: make this work for state and cloud.show_usage() call it with get_current
-def show_usage(cloud):
+def show_unallocated_vms(cloud, state):
+    unallocated_vms = state.unallocated_vms()
+    if len(unallocated_vms) > 0:
+        info('Unallocated VMs\n---------------')
+        info(unallocated_vms)
+        info('\n')
+
+def show_usage(cloud, state):
     locations = get_locations(cloud)
     for location in locations:
         info("\n{}\n----------".format(location))
         servers = servers_at_location(cloud, location)
         for server in servers:
             server_str = server.full_info()
-            server_free = cloud.get_current().free_cap[server]
+            if not state.within_capacity(server):
+                server_str += ' !!!'
+            server_free = state.free_cap[server]
             server_usage = server_usage_repr(server_free, server.cap)
-            vms = list(cloud.get_current().alloc[server])
+            vms = list(state.alloc[server])
             #vms_string = str([vm for vm in vms])
             vms_string = str([vm.full_info() for vm in vms])
             #info("{}\n - {}\n - {}".format(server, server_usage, vms))
             info("{} - {} - {}".format(server_usage, server_str, vms_string))
+    info('\n')
+    show_unallocated_vms(cloud, state)
