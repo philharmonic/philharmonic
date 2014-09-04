@@ -14,9 +14,10 @@ from . import visualiser
 
 def format_spec(spec):
     s = "{"
+    separator = " "
     for key, value in spec.iteritems():
-        s += "{0}:{1} ".format(key, value)
-    s = s[:-2]
+        s += "{0}:{1}{2}".format(key, value, separator)
+    s = s[:-len(separator)]
     s += "}"
     return s
 
