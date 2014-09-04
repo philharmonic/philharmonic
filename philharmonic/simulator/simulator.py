@@ -199,7 +199,20 @@ class Simulator(IManager):
             self.real_schedule.add(action, t)
             self.driver.apply_action(action, t)
 
+    def prompt(self):
+        if conf.prompt_show_cloud:
+            if conf.prompt_ipdb:
+                import ipdb; ipdb.set_trace()
+            else:
+                prompt_res = raw_input('Press enter to continue...')
+
+    def show_cloud_usage(self):
+        self.cloud.show_usage()
+        self.prompt()
+
     def run(self):
+        if conf.show_cloud_interval is not None:
+            t_show = conf.start + conf.show_cloud_interval
         self.scheduler.initialize()
         for t in self.environment.itertimes():
             # get requests & update model
@@ -210,6 +223,7 @@ class Simulator(IManager):
                 pass
             # call scheduler to decide on actions
             schedule = self.scheduler.reevaluate()
+            self.cloud.reset_to_real()
             period = self.environment.get_period()
             actions = schedule.filter_current_actions(t, period)
             if len(requests) > 0:
@@ -220,6 +234,9 @@ class Simulator(IManager):
             if len(planned_actions) > 0:
                 debug('Planned:\n{}\n'.format(planned_actions))
             self.apply_actions(actions)
+            if conf.show_cloud_interval is not None and t == t_show:
+                t_show = t_show + conf.show_cloud_interval
+                self.show_cloud_usage()
         return self.cloud, self.environment, self.real_schedule
 
 # TODO: these other simulator sublclasses should not be necessary

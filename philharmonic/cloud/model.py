@@ -10,11 +10,12 @@ import copy
 import itertools
 
 from philharmonic.utils import deprecated
+from . import visualiser
 
 def format_spec(spec):
     s = "{"
     for key, value in spec.iteritems():
-        s += "{0}:{1}, ".format(key, value)
+        s += "{0}:{1} ".format(key, value)
     s = s[:-2]
     s += "}"
     return s
@@ -32,10 +33,12 @@ class Machine(object):
             self.spec[self.resource_types[i]] = arg
 
     def __str__(self):
-        # return "({2}:{0}:{1})".format(str(id(self))[-3:],
-        #                               format_spec(self.spec),
-        #                               self.machine_type)
         return self.__repr__()
+
+    def full_info(self):
+        return "{2}:{0}:{1}".format(str(id(self))[-3:],
+                                    format_spec(self.spec),
+                                    self.machine_type)
 
     def __repr__(self):
         return "{}:{}".format(self.machine_type, str(self.id))
@@ -468,6 +471,14 @@ class Cloud():
             machine.cloud = self
         self._real = self._initial
         self.reset_to_real()
+
+    # a couple of debugging methods ---
+    def show(self):
+        print(self.get_current())
+
+    def show_usage(self):
+        visualiser.show_usage(self)
+    #----------------------------------
 
     #TODO: this seems wrong - current should always be a copy?
     def reset_to_real(self):

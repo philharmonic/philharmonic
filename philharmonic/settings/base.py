@@ -19,8 +19,13 @@ historical_en_prices = "./io/energy_price/train/3month.csv"
 save_power = False
 #----------------------
 
-# stop and check settings with user
-prompt_configuration = True
+# stop and check settings with user (only initially)
+prompt_configuration = False
+# interval at which to print cloud usage: pd.offsets.* or None
+show_cloud_interval = pd.offsets.Day(1)
+# stop the simulation for inspection?
+prompt_show_cloud = True
+prompt_ipdb = False
 
 common_output_folder = "io/"
 output_folder = "io/results/"
@@ -113,7 +118,6 @@ factory = {
 }
 
 def get_factory():
-    #return get_factory_ga()
     return factory
 
 # inputgen settings
