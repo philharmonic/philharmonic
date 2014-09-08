@@ -3,6 +3,20 @@ import numpy as np
 
 import inputgen
 
+def cleaned_requests(requests):
+    """return requests with simultaneous boot & delete actions removed"""
+    times = []
+    values = []
+    del_vms = set([req.vm for req in requests.values if req.what == 'delete'])
+    boot_vms = set([req.vm for req in requests.values if req.what == 'boot'])
+    useless_vms = boot_vms.intersection(del_vms)
+    for t, req in requests.iteritems():
+        if req.vm not in useless_vms:
+            values.append(req)
+            times.append(t)
+    return pd.TimeSeries(values, times)
+    return requests
+
 class Environment(object):
     """provides data about all the data centers
     - e.g. the temperature and prices at different location
@@ -121,7 +135,8 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
         start = self.get_time()
         justabit = pd.offsets.Micro(1)
         end = start + self._period - justabit
-        return self._requests[start:end]
+        #TODO: if same vm booted & deleted at once, skip it
+        return cleaned_requests(self._requests[start:end])
 
 class GASimpleSimulatedEnvironment(FBFSimpleSimulatedEnvironment):
     pass

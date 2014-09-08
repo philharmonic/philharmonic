@@ -11,9 +11,9 @@ import pandas as pd
 
 def test_machine_id():
     s1 = Server(4000, 2)
-    vm1 = VM(2000, 1);
+    vm1 = VM(2000, 1)
     s2 = Server(8000, 4)
-    vm2 = VM(2000, 2);
+    vm2 = VM(2000, 2)
     assert_equals(s1.id, 1)
     assert_equals(s2.id, 2)
     assert_equals(vm1.id, 1)
