@@ -2,6 +2,7 @@
 
 import random
 import pickle
+import math
 
 import pandas as pd
 import numpy as np
@@ -15,6 +16,25 @@ from philharmonic.logger import *
 
 # Cummon functionality
 #---------------------
+
+def normal_sample(bottom, top, ceil=True):
+    """ Return sample from a normal distribution.
+    bottom, top are approx. min/max values.
+
+    """
+    half = (top - bottom)/2.0
+    # we want 99% of the population to enter the [min,max] interval
+    sigma = half/3.0
+    mu = bottom + half
+    #print(mu, sigma)
+
+    value = mu + sigma * np.random.randn()
+    # negative to zero
+    if value < 0:
+        value = 0
+    if ceil:
+        value = int(math.ceil(value))
+    return value
 
 def normal_population(num, bottom, top, ceil=True):
     """ Return array @ normal distribution.
@@ -91,6 +111,53 @@ def normal_infrastructure(locations=['A', 'B'],
 # VM requests
 #------------
 # simulate how users will use our cloud
+
+def within_cloud_capacity(cloud_capacity, requested_capacity, max_usage):
+    for res, capacity in cloud_capacity.items():
+        if requested_capacity[res] > capacity * max_usage:
+            return False
+    return True
+
+def auto_vmreqs(start, end, max_usage=0.8, round_to_hour=True,
+                servers=[], **kwargs):
+    """Generate VMRequests s.t. the requested resources do not exceed
+    (on the average) @param max_cloud_usage of the available cloud capacity.
+
+    """
+    start, end = pd.Timestamp(start), pd.Timestamp(end)
+    delta = end - start
+    avg_cap = lambda res : np.mean([server.cap[res] for server in servers])
+    n = len(servers)
+    cloud_capacity = {res : n*avg_cap(res) for res in servers[0].resource_types}
+    requested_capacity = {res : 0. for res in servers[0].resource_types}
+    requests = []
+    moments = []
+    while within_cloud_capacity(cloud_capacity, requested_capacity, max_usage):
+        cpu_size = normal_sample(min_cpu, max_cpu)
+        ram_size = normal_sample(min_ram, max_ram)
+        duration = normal_sample(min_duration, max_duration)
+        vm = VM(ram_size, cpu_size)
+        for r in vm.resource_types: # add the extra capacity for stop condition
+            requested_capacity[r] += vm.res[r]
+        # the moment a VM is created
+        offset = pd.offsets.Second(np.random.uniform(0., delta.total_seconds()))
+        requests.append(VMRequest(vm, 'boot'))
+        t = start + offset
+        if round_to_hour:
+            t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
+        moments.append(t)
+        # the moment a VM is destroyed
+        offset += pd.offsets.Second(duration)
+        if start + offset <= end: # event is relevant
+            requests.append(VMRequest(vm, 'delete'))
+            t = start + offset
+            if round_to_hour:
+                t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
+            moments.append(t)
+    events = pd.TimeSeries(data=requests, index=moments)
+    #TODO: test
+    return events.sort_index()
+
 # - global settings, overriden by the config.inputgen ditionary
 # VM requests
 VM_num = 3
@@ -104,7 +171,7 @@ min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
 
-def normal_vmreqs(start, end, round_to_hour=True):
+def normal_vmreqs(start, end, round_to_hour=True, **kwargs):
     """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
@@ -375,7 +442,8 @@ def generate_fixed_input():
     )
     info('Locations:\n{}\n'.format(locations))
     cloud = normal_infrastructure(locations) #TODO: method as parameter
-    requests = normal_vmreqs(start, end) #TODO: method as parameter
+    generate_requests = globals()[VM_request_generation_method]
+    requests = generate_requests(start, end, servers=cloud.servers)
     with open(common_loc('workload/servers.pkl'), 'w') as pkl_srv:
         pickle.dump(cloud, pkl_srv)
     requests.to_pickle(common_loc('workload/requests.pkl'))

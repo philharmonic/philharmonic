@@ -24,7 +24,7 @@ prompt_configuration = False
 # interval at which to print cloud usage: pd.offsets.* or None
 show_cloud_interval = pd.offsets.Day(1)
 # stop the simulation for inspection?
-prompt_show_cloud = True
+prompt_show_cloud = False
 prompt_ipdb = False
 
 common_output_folder = "io/"
@@ -133,8 +133,10 @@ inputgen_settings = {
     'max_server_ram': 32,
 
     # VM requests
+    # TODO: auto / manual
+    # method of generating requests: normal_vmreqs, auto_vmreqs
+    'VM_request_generation_method': 'auto_vmreqs',
     #'VM_num': 80,
-
     'VM_num': 5,
     #'VM_num': 2000,
     # e.g. CPUs

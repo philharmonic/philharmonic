@@ -89,7 +89,7 @@ class TestCalculator(unittest.TestCase):
     def test_calculate_price_real_data(self):
         total_price = ph.calculate_price(self.active_power, self.loc,
                                       self.active_power.index[0].to_pydatetime())
-        self.assertEqual(total_price, 0.00030026175949577949)
+        self.assertAlmostEqual(total_price, 0.00030026175949577949)
 
     #def test_calculate_price(self):
         #power = pd.Series(pd.date_range())

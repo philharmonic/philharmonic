@@ -298,7 +298,7 @@ def pickle_results(schedule):
 # TODO: make run a method on Simulator maybe?
 
 def run():
-    info('READING SETTINGS\n################\n')
+    info('SETTINGS\n########\n')
 
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
@@ -332,9 +332,9 @@ def run():
 
     # run the simulation
     #-------------------
-    info('\n\nSTARTING SIMULATION\n####################')
+    info('\nSIMULATION\n##########')
     cloud, env, schedule = simulator.run()
-    info('SIMULATION COMPLETE\n####################\n\n')
+    info('DONE\n####\n\n')
     pickle_results(schedule)
     cloud.reset_to_initial()
     info('Simulation timeline\n--------------')
