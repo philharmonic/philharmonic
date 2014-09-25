@@ -70,7 +70,7 @@ def test_bfd_reevaluate_underutilised():
     assert_true(current.all_allocated())
 
 
-def test_vms_from_underutilised_hosts():
+def test_remove_vms_from_underutilised_hosts():
     scheduler = BFDScheduler()
     scheduler.environment = FBFSimpleSimulatedEnvironment()
     s1, s2 = Server(80000, 30), Server(4000, 2)
@@ -83,7 +83,7 @@ def test_vms_from_underutilised_hosts():
     cloud.get_current().place(vm3, s2)
     scheduler.cloud = cloud
     assert_equals(set([vm1, vm2]),
-                  set(scheduler._vms_from_underutilised_hosts()))
+                  set(scheduler._remove_vms_from_underutilised_hosts()))
 
 def test_sort_vms_decreasing():
     vm1 = VM(2000, 1)

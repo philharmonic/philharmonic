@@ -59,7 +59,7 @@ class BFDScheduler(IScheduler):
         self.schedule.add(action, t)
 
     # TODO: maybe split into multiple functions and make this one immutable
-    def _vms_from_underutilised_hosts(self):
+    def _remove_vms_from_underutilised_hosts(self):
         """mutable method that finds underutilised hosts, removes VMs from
         them in the current state, updates the _original_vm_hosts dictionary
         and returns all such VMs.
@@ -89,7 +89,7 @@ class BFDScheduler(IScheduler):
             if request.what == 'boot':
                 VMs.append(request.vm)
         #  - select VMs on underutilised PMs
-        VMs.extend(self._vms_from_underutilised_hosts())
+        VMs.extend(self._remove_vms_from_underutilised_hosts())
 
         VMs = sort_vms_decreasing(VMs)
 

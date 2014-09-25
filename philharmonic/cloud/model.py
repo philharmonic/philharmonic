@@ -361,6 +361,9 @@ class State():
         """if the server is non-empty and utilisation below threshold"""
         return not self.server_free(s) and self.utilisation(s) < threshold
 
+actions = ['boot', 'delete', 'migrate', 'pause', 'unpause']
+action_rank = dict(zip(actions, range(len(actions))))
+
 class Action(object):
     """A static representation of an action on the cloud."""
     name = ''
@@ -369,6 +372,10 @@ class Action(object):
         return '{0}: {1}'.format(self.name, str(self.args))
     def __str__(self):
         return self.__repr__()
+
+    def rank(self):
+        """the action's rank - used for sorting"""
+        return action_rank[self.name]
 
 class Migration(Action):
     """migrate vm to server"""
@@ -415,6 +422,18 @@ class Schedule(object):
         self.actions = pd.TimeSeries()
         self.actions.name = 'actions'
 
+    def sort(self):
+        # - actions in the current time have to be sorted by Action.rank()
+        # - sort_index has to be stable - not sure if it is
+        # self.actions = self.actions.sort_index()
+        # maybe cache ranked_actions, don't create it from scratch every time
+        ranked_actions = pd.DataFrame({'actions': self.actions,
+                                       'rank': [a.rank() for a in self.actions],
+                                       'index': self.actions.index},
+                                      index=self.actions.index)
+        self.actions = ranked_actions.sort(['index', 'rank']).actions
+        self.actions.name = 'actions'
+
     def add(self, action, t):
         try:
             existing_actions = self.filter_current_actions(
@@ -427,8 +446,8 @@ class Schedule(object):
                     self.actions = self.actions[self.actions != existing]
         new_action = pd.Series({t: action})
         self.actions = pd.concat([self.actions, new_action])
-        self.actions.name = 'actions'
-        self.actions = self.actions.sort_index()
+        #TODO: optimise this to only sort the new actions
+        self.sort()
 
     def filter_current_actions(self, t, period=None):
         """return time series of actions in interval

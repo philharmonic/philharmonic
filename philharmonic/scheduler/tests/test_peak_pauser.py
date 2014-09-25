@@ -37,6 +37,7 @@ class PeakPauserTest(unittest.TestCase):
         scheduler = MockedPeakPauser(cloud, driver=nodriver)
         # use PPEnvironment
         scheduler.environment = PPSimulatedEnvironment()
+        scheduler.environment.get_time = MagicMock(return_value = 1)
         self.assertEqual(scheduler.paused, False,
                          "unpaused initially")
         scheduler.test_state = 1 # expensive

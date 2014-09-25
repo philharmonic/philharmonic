@@ -388,6 +388,31 @@ def test_cloud():
     #TODO: test that auto_allocate doesn't break constraints
     assert_equals(cloud.vms, VMs)
 
+def test_schedule_sorted():
+    schedule = Schedule()
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    vm1 = VM(2000, 1)
+    vm2 = VM(2000, 1)
+    a1 = VMRequest(vm1, 'boot')
+    a2 = VMRequest(vm1, 'delete')
+    a3 = Migration(vm1, s1)
+    a4 = Pause(vm1)
+    a5 = Unpause(vm1)
+    t1 = pd.Timestamp('2013-01-01 00:00')
+    b1 = VMRequest(vm2, 'boot')
+    b2 = Migration(vm2, s1)
+    t2 = pd.Timestamp('2013-01-01 01:00')
+    schedule.add(a3, t1)
+    schedule.add(a5, t1)
+    schedule.add(a4, t1)
+    schedule.add(b2, t2)
+    schedule.add(a2, t1)
+    schedule.add(b1, t2)
+    schedule.add(a1, t1)
+    assert_sequence_equal(list(schedule.actions.values),
+                          [a1, a2, a3, a4, a5, b1, b2])
+
 def test_vm_requests():
     # some servers
     s1 = Server(4000, 2)
