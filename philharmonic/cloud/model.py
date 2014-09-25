@@ -202,7 +202,10 @@ class State():
         self.paused.add(vm) # add to paused set
 
     def unpause(self, vm):
-        self.paused.remove(vm) # remove from paused set
+        try:
+            self.paused.remove(vm) # remove from paused set
+        except KeyError:
+            pass
 
     def boot(self, vm):
         """a VM is requested by the user, but is not yet allocated"""
@@ -483,6 +486,9 @@ class Cloud():
               (as of the last action applied by the manager)
     - _current - _real or some later virtual state - controlled by the Scheduler
 
+    Note: _current must not be assigned to _real, but always on its copy, so as
+    not to change anything in _real!
+
     Workflow:
     - action on Cloud -> create Action instance -> add to Schedule
 
@@ -492,7 +498,7 @@ class Cloud():
         self._initial = State(servers, set(initial_vms), auto_allocate)
         for machine in servers + list(initial_vms): # know thy parent
             machine.cloud = self
-        self._real = self._initial
+        self._real = self._initial.copy()
         self.reset_to_real()
 
     # a couple of debugging methods ---
@@ -507,11 +513,11 @@ class Cloud():
     #TODO: this seems wrong - current should always be a copy?
     def reset_to_real(self):
         """Set the current state back to what the real state of the cloud is."""
-        self._current = self._real
+        self._current = self._real.copy()
 
     def reset_to_initial(self):
         """Set the current state back to the initial state."""
-        self._current = self._initial
+        self._current = self._initial.copy()
 
     def get_vms(self):
         """return the VMs in the current state"""

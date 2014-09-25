@@ -86,6 +86,7 @@ class BFDScheduler(IScheduler):
         #  - VMs from boot requests
         requests = self.environment.get_requests()
         for request in requests:
+            #import ipdb; ipdb.set_trace()
             if request.what == 'boot':
                 VMs.append(request.vm)
         #  - select VMs on underutilised PMs

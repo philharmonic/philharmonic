@@ -22,9 +22,9 @@ save_power = False
 # stop and check settings with user (only initially)
 prompt_configuration = False
 # interval at which to print cloud usage: pd.offsets.* or None
-show_cloud_interval = pd.offsets.Hour(1)# pd.offsets.Day(1)
+show_cloud_interval = pd.offsets.Day(1)
 # stop the simulation for inspection?
-prompt_show_cloud = False #True
+prompt_show_cloud = False
 prompt_ipdb = True
 
 common_output_folder = "io/"
