@@ -18,6 +18,7 @@ class BFDScheduler(IScheduler):
 
     def __init__(self, cloud=None, driver=None):
         IScheduler.__init__(self, cloud, driver)
+        self._original_vm_hosts = {}
 
     def _fits(self, vm, server):
         """Returns the utilisation of adding vm to server
@@ -44,18 +45,40 @@ class BFDScheduler(IScheduler):
             total_utilisation += weights[resource_type] * utilisation
         return total_utilisation
 
+    def _place(self, vm, host, t):
+        """Place vm on host. A migration will be scheduled if necessary or
+        nothing will be done if the vm is already there.
+
+        """
+        #TODO: the vm should be removed from the original server only here
+        action = Migration(vm, host)
+        self.cloud.apply(action)
+        if (vm in self._original_vm_hosts and
+            host == self._original_vm_hosts[vm]): # migration not necessary
+            return
+        self.schedule.add(action, t)
+
+    # TODO: maybe split into multiple functions and make this one immutable
     def _vms_from_underutilised_hosts(self):
+        """mutable method that finds underutilised hosts, removes VMs from
+        them in the current state, updates the _original_vm_hosts dictionary
+        and returns all such VMs.
+
+        """
         vms = []
         state = self.cloud.get_current()
         for s in self.cloud.servers:
             if state.underutilised(s):
                 vms.extend(state.alloc[s])
+                for vm in state.alloc[s]:
+                    self._original_vm_hosts[vm] = s
                 # remove the VMs from that host for now
                 self.cloud.get_current().remove_all(s) # transition?
         return vms
 
     def reevaluate(self):
         self.schedule = Schedule()
+        self._original_vm_hosts = {}
         t = self.environment.get_time()
 
         VMs = []
@@ -85,9 +108,7 @@ class BFDScheduler(IScheduler):
             while not mapped:
                 for host in hosts:
                     if self._fits(vm, host) != -1:
-                        action = Migration(vm, host)
-                        self.cloud.apply(action)
-                        self.schedule.add(action, t)
+                        self._place(vm, host, t)
                         mapped = True
                         break
                 if not mapped:

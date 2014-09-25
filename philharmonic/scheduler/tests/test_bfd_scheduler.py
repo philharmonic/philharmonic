@@ -82,7 +82,8 @@ def test_vms_from_underutilised_hosts():
     cloud.get_current().place(vm2, s1)
     cloud.get_current().place(vm3, s2)
     scheduler.cloud = cloud
-    assert_equals(set([vm1, vm2]), set(scheduler._vms_from_underutilised_hosts()))
+    assert_equals(set([vm1, vm2]),
+                  set(scheduler._vms_from_underutilised_hosts()))
 
 def test_sort_vms_decreasing():
     vm1 = VM(2000, 1)
