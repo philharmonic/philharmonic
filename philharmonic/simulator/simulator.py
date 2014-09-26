@@ -39,7 +39,7 @@ from philharmonic.manager.imanager import IManager
 from philharmonic.scheduler import NoScheduler
 from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from environment import SimulatedEnvironment, PPSimulatedEnvironment
-from philharmonic.utils import loc
+from philharmonic.utils import loc, common_loc
 
 
 # old scheduler design...
@@ -309,13 +309,14 @@ def run():
     simulator = Simulator(conf.get_factory())
 
     # log essential information
+    info('- output_folder: {}'.format(conf.output_folder))
     if conf.factory["times"] == "times_from_conf":
         info('- times: {} - {}'.format(conf.start, conf.end))
     if conf.factory["el_prices"] == "el_prices_from_conf":
-        info('- el_prices_dataset: {}'.format(conf.el_price_dataset))
+        info('- el_price_dataset: {}'.format(conf.el_price_dataset))
     if conf.factory["temperature"] == "temperature_from_conf":
         info('- temperature_dataset: {}'.format(conf.temperature_dataset))
-    info('- forecasting')
+    info('- forecasting:')
     info('  * periods: {}'.format(conf.factory['forecast_periods']))
     info('  * errors: SD_el={}, SD_temp={}'.format(
         conf.factory['SD_el'], conf.factory['SD_temp']
@@ -324,8 +325,12 @@ def run():
     if conf.factory['scheduler_conf'] is not None:
         info('  * conf: {}'.format(conf.factory['scheduler_conf']))
 
-    info('\nServers\n-------\n{}\n'.format(simulator.cloud.servers))
-    info('Requests\n--------\n{}\n'.format(simulator.requests))
+    info('\nServers ({})\n-------\n{}\n'.format(
+        common_loc('workload/servers.pkl'), simulator.cloud.servers)
+    )
+    info('Requests ({})\n--------\n{}\n'.format(
+        common_loc('workload/requests.pkl'), simulator.requests)
+    )
 
     if conf.prompt_configuration:
         prompt_res = raw_input('Config good? Press enter to continue...')
@@ -437,7 +442,7 @@ def run():
     elif conf.liveplot:
         plt.savefig(loc('results-graph.pdf'))
 
-    info('Done. Results saved to: {}'.format(conf.output_folder))
+    info('\nDone. Results saved to: {}'.format(conf.output_folder))
 
 if __name__ == "__main__":
     run()

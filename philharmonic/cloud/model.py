@@ -36,10 +36,14 @@ class Machine(object):
     def __str__(self):
         return self.__repr__()
 
-    def full_info(self):
-        return "{2}:{0}:{1}".format(str(id(self))[-3:],
-                                    format_spec(self.spec),
-                                    self.machine_type)
+    def full_info(self, location=True):
+        if location:
+            return "{0}:{1}".format(repr(self),
+                                    format_spec(self.spec))
+        else:
+            return "{2}:{0}:{1}".format(self.id,
+                                        format_spec(self.spec),
+                                        self.machine_type)
 
     def __repr__(self):
         return "{}:{}".format(self.machine_type, str(self.id))

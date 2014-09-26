@@ -43,7 +43,7 @@ def show_usage(cloud, state):
         info("\n{}\n---------------".format(location))
         servers = servers_at_location(cloud, location)
         for server in servers:
-            server_str = server.full_info()
+            server_str = server.full_info(location=False)
             if not state.within_capacity(server):
                 server_str += ' !!!'
             server_free = state.free_cap[server]

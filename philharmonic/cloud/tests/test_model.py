@@ -24,6 +24,15 @@ def test_machine_id():
     d = {s1: 'bla'}
     assert_true(s1_copy in d)
 
+def test_machine_repr_not_exploding():
+    s1 = Server(4000, 2)
+    vm1 = VM(2000, 1)
+    for m in [s1, vm1]:
+        m.full_info()
+        m.full_info(location=False)
+        repr(m)
+        str(m)
+
 def test_constraints():
     Machine.resource_types = ['RAM', '#CPUs']
     # some servers
