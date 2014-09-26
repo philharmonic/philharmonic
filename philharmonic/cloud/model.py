@@ -156,6 +156,7 @@ class State():
         """place all VMs on the first server"""
         for vm in self.vms:
             self.place(vm, self.servers[0])
+        return self
 
 
     def place(self, vm, s):
@@ -164,6 +165,7 @@ class State():
             self.alloc[s].add(vm)
             for r in s.resource_types: # update free capacity
                 self.free_cap[s][r] -= vm.res[r]
+        return self
 
     def remove(self, vm, s):
         """change current state to not have vm on server s"""
@@ -171,11 +173,13 @@ class State():
             self.alloc[s].remove(vm)
             for r in s.resource_types: # update free capacity
                 self.free_cap[s][r] += vm.res[r]
+        return self
 
     def remove_all(self, s):
         """change current state to have no VMs on server s"""
         self.alloc[s] = set()
         self.free_cap[s] = copy.copy(s.cap)
+        return self
 
     # action effects (consequence of applying Action to State)
     #---------------
@@ -197,19 +201,23 @@ class State():
             self.place(vm, s)
         # TODO: faster reverse-dictionary lookup
         # http://stackoverflow.com/a/2569076/544059
+        return self
 
     def pause(self, vm):
         self.paused.add(vm) # add to paused set
+        return self
 
     def unpause(self, vm):
         try:
             self.paused.remove(vm) # remove from paused set
         except KeyError:
             pass
+        return self
 
     def boot(self, vm):
         """a VM is requested by the user, but is not yet allocated"""
         self.vms.add(vm)
+        return self
 
     def delete(self, vm):
         """user requested for a vm to be deleted"""
@@ -218,6 +226,7 @@ class State():
             self.vms.remove(vm)
         except KeyError: # the VM wasn't even there (booted outside environment)
             pass
+        return self
 
     #---------------
 

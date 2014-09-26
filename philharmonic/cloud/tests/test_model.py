@@ -278,6 +278,54 @@ def test_state_reset():
 
     assert_equals(initial2.vms, set([]))
 
+def test_state_reset_direct_manipulation():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm2 = VM(2000, 1)
+    VMs = set()
+    cloud = Cloud(servers, VMs)
+
+    initial1 = cloud.get_current()
+    real1 = cloud.apply_real(VMRequest(vm1, 'boot'))
+    # these two states are the same as no copy is made:
+    current11 = cloud.get_current().migrate(vm1, s1)
+    current12 = cloud.get_current().migrate(vm1, s2)
+
+    cloud.reset_to_real()
+    real2 = cloud.apply_real(VMRequest(vm2, 'boot'))
+    real2 = cloud.apply_real(Migration(vm1, s1))
+    # these two states are the same as no copy is made:
+    current21 = cloud.get_current().migrate(vm1, s2)
+    current22 = cloud.get_current().migrate(vm2, s2)
+
+    cloud.reset_to_initial()
+    initial2 = cloud.get_current()
+
+    assert_equals(initial1.vms, set([]))
+    assert_not_in(vm1, initial1.alloc[s1])
+    assert_equals(real1.vms, set([vm1]))
+    assert_not_in(vm1, real1.alloc[s1], 'real1 must be unchanged')
+    assert_not_in(vm1, real1.alloc[s2], 'real1 must be unchanged')
+    assert_in(vm1, current11.alloc[s2])
+    assert_not_in(vm1, current11.alloc[s1])
+    assert_equals(current11, current12)
+
+    assert_equals(real2.vms, set([vm1, vm2]))
+    assert_in(vm1, real2.alloc[s1])
+    assert_not_in(vm1, real2.alloc[s2])
+    assert_not_in(vm2, real2.alloc[s1], 'real2 must be unchanged')
+    assert_not_in(vm2, real2.alloc[s2], 'real2 must be unchanged')
+    assert_in(vm1, current21.alloc[s2])
+    assert_in(vm2, current21.alloc[s2])
+    assert_in(vm2, current22.alloc[s2])
+    assert_equals(current11, current12)
+
+    assert_equals(initial2.vms, set([]))
+
 def test_migration_free_cap():
     # some servers
     s1 = Server(4000, 2)
