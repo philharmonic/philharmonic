@@ -291,27 +291,32 @@ class State():
     # constraint checking
     # C1
     def is_allocated(self, vm):
+        """True if @param vm is allocated to any server in this state."""
         for s in self.servers:
             if vm in self.alloc[s]:
                 return True
         return False
 
     def allocation(self, vm):
+        """The server to which @param vm is allocated or None."""
         for s in self.servers:
             if vm in self.alloc[s]:
                 return s
         return None
 
     def unallocated_vms(self):
+        """Return the set of unallocated VMs."""
         unallocated = set(copy.copy(self.vms))
         for s in self.servers:
             unallocated = unallocated.difference(self.alloc[s])
         return unallocated
 
     def all_allocated(self):
+        """True if all currently requested VMs are allocated."""
         return len(self.unallocated_vms()) == 0
 
     def ratio_allocated(self):
+        """The ratio of allocated VMs compared to all the requested VMs."""
         to_check = set(copy.copy(self.vms))
         total = len(to_check)
         if total == 0:
@@ -324,8 +329,11 @@ class State():
 
     #C2
     def within_capacity(self, s):
+        """Server s within capacity? Check resources occupied by the allocated
+        VMs and check if it exceeds the available resource capacity.
+
+        """
         if s is None:
-            #import ipdb; ipdb.set_trace()
             pass
         for i in s.resource_types:
             used = 0
@@ -336,13 +344,27 @@ class State():
                 return False
         return True
 
+    def overcapacitated_servers(self):
+        """Return the set of servers that are not within capacity."""
+        servers = set(self.servers)
+        overcap = servers.difference(
+            set([s for s in servers if self.within_capacity(s)])
+        )
+        return overcap
+
     def all_within_capacity(self):
+        """Are all the servers within capacity?"""
         for s in self.servers:
             if not self.within_capacity(s):
                 return False
         return True
 
     def capacity_penalty(self):
+        """Return a penalty 0-1.0, indicating by how much the capacity
+        of all the servers has been exceeded (closer to 1. means more servers
+        are overcapacitated).
+
+        """
         max_overcap = {res: 0. for res in Machine.resource_types}
         ratio_overcap = {res: 0. for res in Machine.resource_types}
         for s in self.servers:
@@ -360,7 +382,7 @@ class State():
         return penalty
 
     def ratio_within_capacity(self): # TODO: by resource overflows
-        """ratio of servers that are within capacity"""
+        """Ratio of servers that are within capacity."""
         num_ok = 0
         for s in self.servers:
             if self.within_capacity(s):
@@ -371,12 +393,15 @@ class State():
         return ratio
 
     def server_free(self, s):
+        """True if there are no VMs allocated to server @param s."""
         return len(self.alloc[s]) == 0
 
     def underutilised(self, s, threshold = 0.25):
-        """if the server is non-empty and utilisation below threshold"""
+        """If the server is non-empty and utilisation below threshold."""
         return not self.server_free(s) and self.utilisation(s) < threshold
 
+# The ranking determines which the order in which to apply the actions,
+# given the same timestamps.
 actions = ['boot', 'delete', 'migrate', 'pause', 'unpause']
 action_rank = dict(zip(actions, range(len(actions))))
 

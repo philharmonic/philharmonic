@@ -67,6 +67,27 @@ def test_constraints():
     assert_equals(a.all_allocated(), True, 'all VMs are allocated')
     assert_almost_equals(a.ratio_allocated(), 1.0)
 
+def test_overcapacitated_servers():
+    Machine.resource_types = ['RAM', '#CPUs']
+    # some servers
+    s1 = Server(4000, 4)
+    s2 = Server(1000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1); vm2 = VM(2000, 2); vm3 = VM(2000, 2);
+    VMs = set([vm1, vm2, vm3])
+    a = State(servers, VMs, auto_allocate=False)
+
+    # allocate and check capacity
+    a.place(vm1,s1)
+    assert_sequence_equal(list(a.overcapacitated_servers()), [])
+    a.place(vm2, s1)
+    assert_sequence_equal(list(a.overcapacitated_servers()), [])
+    a.place(vm3, s1)
+    assert_sequence_equal(list(a.overcapacitated_servers()), [s1])
+    a.migrate(vm3, s2)
+    assert_sequence_equal(list(a.overcapacitated_servers()), [s2])
+
 def test_allocation():
     s1 = Server(4000, 2)
     vm1 = VM(2000, 1)
