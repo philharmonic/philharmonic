@@ -33,14 +33,14 @@ class ScheduleUnit(Schedule):
             if self.no_el_price:
                 w_util = w_cost + w_util
                 w_cost = 0.0 # we don't consider the cost factor
-            self.util, self.cost, self.constraint, self.sla = evaluator.evaluate(
+            self.util, self.cost, self.constr, self.sla = evaluator.evaluate(
                 self.cloud, self.environment, self, el_prices, temperature,
                 start, end
             )
             weighted_sum = (
                 w_util * self.util +
                 w_cost * self.cost + w_sla * self.sla +
-                w_constraint * self.constraint
+                w_constraint * self.constr
             )
             self.fitness = weighted_sum
             self.rfitness = 1 - self.fitness
@@ -86,7 +86,14 @@ class ScheduleUnit(Schedule):
         justabit = pd.offsets.Micro(1)
         actions2 = other.actions[t + justabit:]
         child.actions = pd.concat([actions1, actions2])
-        return child
+
+        child2 = copy.copy(self) # TODO: better to create a new unit? state etc.
+        child2.changed = True
+        actions1 = other.actions[:t]
+        justabit = pd.offsets.Micro(1)
+        actions2 = self.actions[t + justabit:]
+        child2.actions = pd.concat([actions1, actions2])
+        return child, child2
 
     def update(self):
         self.changed = True
@@ -113,7 +120,7 @@ class ScheduleUnit(Schedule):
             s = ('unit ({fit:.2}: cns={cns:.2}, sla={sla:.2}, ' +
                  'ut={ut:.2}, c={c:.2}){chg}')
             s = s.format(fit=self.fitness, ut=self.util, c=self.cost,
-                         cns=self.constraint, sla=self.sla, chg=change_mark)
+                         cns=self.constr, sla=self.sla, chg=change_mark)
         except:
             s = 'unit (fit: ?){}'.format(change_mark)
             #s += super(ScheduleUnit, self).__repr__()
@@ -247,9 +254,9 @@ class GAScheduler(IScheduler):
     def _best_satisfies_constraints(self):
         """Best unit that satisfies hard constraints or None if none do."""
         best = sorted(self.population,
-                      key=lambda u : (1 - u.constraint, u.rfitness),
+                      key=lambda u : (1 - u.constr, u.rfitness),
                       reverse=True)[0]
-        if best.constraint == 0:
+        if best.constr == 0:
             return best
         else:
             return None
@@ -349,12 +356,13 @@ class GAScheduler(IScheduler):
             # recombination
             # TODO: generate two children from one pair
             # choose parents weight. among all
-            parents = roulette_selection(self.population, num_children*2)
+            parents = roulette_selection(self.population, num_children)
             children = []
-            for j in range(num_children):
+            for j in range(num_children / 2):
                 parent1, parent2 = parents[j], parents[j + 1]
-                child = parent1.crossover(parent2)
+                child, child2 = parent1.crossover(parent2)
                 children.append(child)
+                children.append(child2)
             # new generation
             self.population = self.population[:-num_children] + children
             # mutation
@@ -371,7 +379,7 @@ class GAScheduler(IScheduler):
             best.calculate_fitness()
         debug(u' \u2502\n \u2514\u2500\u25BA selected {}'.format(repr(best)))
         # debug unallocated VMs
-        if best.constraint > 0:
+        if best.constr > 0:
             # something is amiss if the best schedule broke constraints
             #import ipdb; ipdb.set_trace()
             pass
@@ -384,8 +392,11 @@ class GAScheduler(IScheduler):
     def debug_population(self):
         self.population.reverse()
         for i, unit in enumerate(self.population):
-            fit_descr = 'fit:{:.2} -> util: {:.2}, cost:{:.2}, constr:{:.2}, sla: {:.2}'.format(
-                unit.fitness, unit.util, unit.cost, unit.constraint, unit.sla)
+            fit_descr = ('fit:{:.2} -> util: {:.2}, cost:{:.2},' +
+                         'constr:{:.2}, sla: {:.2}').format(
+                             unit.fitness, unit.util, unit.cost,
+                             unit.constr, unit.sla
+                         )
             unit_descr = 'unit {} - {}\n-------\n{}\n\n'.format(
                 len(self.population) - i - 1, fit_descr, unit.actions)
             debug(unit_descr)

@@ -111,16 +111,21 @@ def test_crossover():
     actions2 = [Migration(vm2, server2), Migration(vm1, server2)]
     unit2.actions = pd.Series(actions2, [t2, t3])
 
-    child = unit.crossover(unit2)
+    child, child2 = unit.crossover(unit2)
     assert_is_instance(child, ScheduleUnit)
+    assert_is_instance(child2, ScheduleUnit)
 
-    child = unit.crossover(unit2, t=t23)
+    child, child2 = unit.crossover(unit2, t=t23)
     assert_is_instance(child, ScheduleUnit)
     assert_true((unit.actions.values == actions).all(), 'original unchanged')
     assert_true((unit2.actions.values == actions2).all(), 'original unchanged')
     assert_true((actions[0:2] == child.actions.values[0:2]).all(),
                 '1st half one parent')
     assert_equals(unit2.actions[-1], child.actions[-1], '2nd half other parent')
+    # opposite for child2
+    assert_true((unit2.actions[0] == child2.actions[0]),
+                '1st half one parent')
+    assert_equals(len(child2.actions[1:]), 0, '2nd half other parent')
 
 def test_create_random():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
@@ -144,7 +149,7 @@ def test_best_satisfies_constraints():
     for rfitness, constraint in zip(rfitnesses, constraint_penalties):
         unit = MagicMock()
         unit.rfitness = rfitness
-        unit.constraint = constraint
+        unit.constr = constraint
         population.append(unit)
     scheduler = GAScheduler()
     scheduler.population = population
@@ -159,13 +164,13 @@ def test_best_satisfies_constraints():
     for rfitness, constraint in zip(rfitnesses, constraint_penalties):
         unit = MagicMock()
         unit.rfitness = rfitness
-        unit.constraint = constraint
+        unit.constr = constraint
         population.append(unit)
     scheduler = GAScheduler()
     scheduler.population = population
     best = scheduler._best_satisfies_constraints()
     assert_equals(best.rfitness, 0.7)
-    assert_equals(best.constraint, 0)
+    assert_equals(best.constr, 0)
 
 def test_best_satisfies_constraints():
     rfitnesses = [0.5, 1, 0.7]
@@ -174,13 +179,13 @@ def test_best_satisfies_constraints():
     for rfitness, constraint in zip(rfitnesses, constraint_penalties):
         unit = MagicMock()
         unit.rfitness = rfitness
-        unit.constraint = constraint
+        unit.constr = constraint
         population.append(unit)
     scheduler = GAScheduler()
     scheduler.population = population
     best = scheduler._best_satisfies_constraints()
     assert_equals(best.rfitness, 0.7)
-    assert_equals(best.constraint, 0)
+    assert_equals(best.constr, 0)
 
 def test_best_satisfies_constraints_none():
     rfitnesses = [0.5, 1, 0.7]
@@ -189,7 +194,7 @@ def test_best_satisfies_constraints_none():
     for rfitness, constraint in zip(rfitnesses, constraint_penalties):
         unit = MagicMock()
         unit.rfitness = rfitness
-        unit.constraint = constraint
+        unit.constr = constraint
         population.append(unit)
     scheduler = GAScheduler()
     scheduler.population = population
