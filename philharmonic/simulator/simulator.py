@@ -18,6 +18,7 @@ and simulates the outcome of the schedule.
 """
 
 import pickle
+from datetime import datetime
 
 from philharmonic import conf
 if conf.plotserver:
@@ -344,6 +345,8 @@ def run():
     # run the simulation
     #-------------------
     info('\nSIMULATION\n##########')
+    start_time = datetime.now()
+    info('Simulation started at time: {}'.format(start_time))
     cloud, env, schedule = simulator.run()
     info('DONE\n####\n\n')
     pickle_results(schedule)
@@ -449,6 +452,9 @@ def run():
         plt.savefig(loc('results-graph.pdf'))
 
     info('\nDone. Results saved to: {}'.format(conf.output_folder))
+    end_time = datetime.now()
+    info('Simulation finished at time: {}'.format(end_time))
+    info('Duration: {}'.format(end_time - start_time))
 
 if __name__ == "__main__":
     run()
