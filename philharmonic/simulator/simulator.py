@@ -327,7 +327,8 @@ def run():
         info('  * conf: {}'.format(conf.factory['scheduler_conf']))
 
     info('\nServers ({} -> copied to: {})\n-------\n{}\n'.format(
-        common_loc('workload/servers.pkl'), loc('../servers.pkl'),
+        common_loc('workload/servers.pkl'),
+        os.path.relpath(loc('../servers.pkl')),
         simulator.cloud.servers)
     )
     with open(loc('../servers.pkl'), 'w') as pkl_srv:

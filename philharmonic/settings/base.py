@@ -137,7 +137,7 @@ inputgen_settings = {
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
     #'VM_num': 80,
-    'VM_num': 5,
+    'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
     'min_cpu': 1,

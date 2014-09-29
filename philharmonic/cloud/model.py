@@ -336,11 +336,7 @@ class State():
         if s is None:
             pass
         for i in s.resource_types:
-            used = 0
-            for vm in self.alloc[s]:
-                used += vm.res[i]
-            #print('%d vs %d' % (used, s.cap[i]))
-            if used > s.cap[i]:
+            if self.free_cap[s][i] < 0:
                 return False
         return True
 
@@ -369,10 +365,7 @@ class State():
         ratio_overcap = {res: 0. for res in Machine.resource_types}
         for s in self.servers:
             for r in Machine.resource_types:
-                used = 0
-                for vm in self.alloc[s]:
-                    used += vm.res[r]
-                overcap = used - s.cap[r]
+                overcap = -1 * self.free_cap[s][r]
                 if overcap > max_overcap[r]:
                     max_overcap[r] = overcap
                     ratio_overcap[r] = float(overcap) / s.cap[r]
