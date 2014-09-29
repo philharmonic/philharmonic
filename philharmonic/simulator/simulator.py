@@ -325,12 +325,18 @@ def run():
     if conf.factory['scheduler_conf'] is not None:
         info('  * conf: {}'.format(conf.factory['scheduler_conf']))
 
-    info('\nServers ({})\n-------\n{}\n'.format(
-        common_loc('workload/servers.pkl'), simulator.cloud.servers)
+    info('\nServers ({} -> copied to: {})\n-------\n{}\n'.format(
+        common_loc('workload/servers.pkl'), loc('../servers.pkl'),
+        simulator.cloud.servers)
     )
-    info('Requests ({})\n--------\n{}\n'.format(
-        common_loc('workload/requests.pkl'), simulator.requests)
+    with open(loc('../servers.pkl'), 'w') as pkl_srv:
+        pickle.dump(simulator.cloud, pkl_srv)
+    info('Requests ({} -> copied to: {})\n--------\n{}\n'.format(
+        common_loc('workload/requests.pkl'),
+        os.path.relpath(loc('../requests.pkl')),
+        simulator.requests)
     )
+    simulator.requests.to_pickle(loc('../requests.pkl'))
 
     if conf.prompt_configuration:
         prompt_res = raw_input('Config good? Press enter to continue...')
