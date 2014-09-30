@@ -1,5 +1,5 @@
 from .baseprod import *
 
-output_folder = "io/results/bfd/"
+output_folder = os.path.join(base_output_folder, "bfd/")
 
 factory['scheduler'] = "BFDScheduler"

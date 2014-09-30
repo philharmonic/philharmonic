@@ -5,8 +5,9 @@ from .base import *
 production_settings = True
 
 if production_settings:
-    end = pd.Timestamp('2010-03-30 23:00')
-    times = pd.date_range(start, end, freq='H')
+    base_output_folder = os.path.join(common_output_folder, "results/summer/")
+    times = pd.date_range(start, periods=90, freq='H')
+    end = times[-1]
     factory['times'] = "times_from_conf"
     inputgen_settings['VM_num'] = 2000
     inputgen_settings['min_duration'] = 60 * 60 # 1 hour

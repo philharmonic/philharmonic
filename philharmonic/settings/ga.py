@@ -1,6 +1,6 @@
 from .baseprod import *
 
-output_folder = "io/results/ga/"
+output_folder = os.path.join(base_output_folder, "ga/")
 
 gaconf = {
     "population_size": 100,
