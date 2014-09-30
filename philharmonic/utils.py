@@ -34,3 +34,12 @@ def common_loc(filepath):
                             os.path.dirname(filepath))
     mkdir_p(new_path)
     return os.path.join(conf.common_output_folder, filepath)
+
+class CommonEqualityMixin(object):
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+            and self.__dict__ == other.__dict__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

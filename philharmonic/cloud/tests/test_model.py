@@ -4,10 +4,13 @@ Created on Jul 11, 2013
 @author: kermit
 '''
 import unittest
+from mock import Mock, MagicMock
+
 from nose.tools import *
+import pandas as pd
 
 from philharmonic import *
-import pandas as pd
+from philharmonic.simulator.environment import Environment
 
 def test_machine_id():
     s1 = Server(4000, 2)
@@ -221,6 +224,30 @@ def test_server_free():
     assert_true(state.server_free(s1))
     state.place(vm1, s1)
     assert_false(state.server_free(s1))
+
+def test_action_equality():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm2 = VM(2000, 1)
+    VMs = [vm1]
+
+    migr1 = Migration(vm1, s2)
+    migr2 = Migration(vm1, s2)
+    migr3 = Migration(vm1, s1)
+    pause1 = Pause(vm1)
+    pause2 = Pause(vm1)
+    pause3 = Pause(vm2)
+    assert_equals(migr1, migr2)
+    migr1 = Migration(vm1, s2)
+    migr2 = Migration(vm1, s2)
+    assert_not_equals(migr1, migr3)
+    assert_not_equals(migr1, pause1)
+    assert_equals(pause1, pause2)
+    assert_not_equals(pause2, pause3)
 
 def test_migration():
     # some servers
@@ -483,8 +510,41 @@ def test_schedule():
     schedule = Schedule()
     schedule.add(a2, t2)
     schedule.add(a1, t1)
-    assert_equals(
-        (schedule.actions == pd.Series({t1: a1, t2: a2})).all(), True)
+    assert_true((schedule.actions == pd.Series({t1: a1, t2: a2})).all())
+
+def test_schedule_add_first_replaced():
+    vm1 = VM(2000, 1);
+    s1 = Server(5000, 2);
+    s2 = Server(5000, 2);
+    a1 = Migration(vm1, s1)
+    a2 = Migration(vm1, s2)
+    t1 = pd.datetime.now()
+    a3 = Migration(vm1, s2)
+    t2 = t1 + pd.offsets.Hour(1)
+    schedule = Schedule()
+    schedule.add(a1, t1)
+    schedule.add(a2, t1)
+    schedule.add(a3, t2)
+    expected = pd.Series([a1, a2, a3], index=[t1, t1, t2])
+    assert_true((schedule.actions == expected).all())
+
+def test_schedule_add_existing():
+    vm1 = VM(2000, 1);
+    s1 = Server(5000, 2);
+    s2 = Server(5000, 2);
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2002-01-01 03:00')
+    a2 = Migration(vm1, s2)
+    a3 = Migration(vm1, s2)
+    t2 = t1 + pd.offsets.Hour(1)
+    schedule = Schedule()
+    schedule.environment = Environment()
+    schedule.environment.period = pd.offsets.Hour(1)
+    schedule.add(a2, t2)
+    schedule.add(a1, t1)
+    schedule.add(a3, t2)
+    # TODO: add existing
+    assert_true((schedule.actions == pd.Series({t1: a1, t2: a2})).all())
 
 def test_schedule_filter():
     s = Schedule()

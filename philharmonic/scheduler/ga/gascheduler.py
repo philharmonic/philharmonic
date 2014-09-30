@@ -65,13 +65,16 @@ class ScheduleUnit(Schedule):
             # - pick random moment
             start = self.environment.t
             end = self.environment.forecast_end
-            t = random_time(start, end)
-            # - pick random VM (among union of all allocs at t and VMRequests)
-            vm = random.sample(self.cloud.vms, 1)[0]
-            # - pick random server
-            server = random.sample(self.cloud.servers, 1)[0]
-            new_action = Migration(vm, server)
-            new_unit.add(new_action, t)
+            mutated = False
+            while not mutated:
+                t = random_time(start, end)
+                # - pick random VM
+                # (among union of all allocs at t and VMRequests)
+                vm = random.sample(self.cloud.vms, 1)[0]
+                # - pick random server
+                server = random.sample(self.cloud.servers, 1)[0]
+                new_action = Migration(vm, server)
+                mutated = new_unit.add(new_action, t)
         return new_unit
 
     def crossover(self, other, t=None):
@@ -138,6 +141,7 @@ def create_random(environment, cloud, no_el_price=False, no_temperature=False):
     min_migrations = 0
     plan_duration = (end - start).total_seconds()
     plan_duration = int(plan_duration / 3600) # in hours
+    # TODO: make sure that this works for other periods (days, minutes etc.)
     max_migrations = plan_duration * len(cloud.vms) // 3
     migration_number = random.randint(min_migrations, max_migrations)
     # generate migration_number of migrations
@@ -264,6 +268,8 @@ class GAScheduler(IScheduler):
     def _sweep_reallocate_capacity_constraints(self, schedule):
         self.cloud.reset_to_real()
         for t in schedule.actions.index.unique():
+            # TODO: seems that adding to the same schedule affects this loop
+            # - maybe add all afterwards
             # TODO: precise indexing, not dict
             if isinstance(schedule.actions[t], pd.Series):
                 for action in schedule.actions[t].values:

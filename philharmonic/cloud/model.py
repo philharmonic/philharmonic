@@ -9,7 +9,7 @@ Created on Jul 11, 2013
 import copy
 import itertools
 
-from philharmonic.utils import deprecated
+from philharmonic.utils import deprecated, CommonEqualityMixin
 from . import visualiser
 
 def format_spec(spec):
@@ -398,7 +398,7 @@ class State():
 actions = ['boot', 'delete', 'migrate', 'pause', 'unpause']
 action_rank = dict(zip(actions, range(len(actions))))
 
-class Action(object):
+class Action(CommonEqualityMixin):
     """A static representation of an action on the cloud."""
     name = ''
     args = None
@@ -469,19 +469,30 @@ class Schedule(object):
         self.actions.name = 'actions'
 
     def add(self, action, t):
+        """Add an action to the schedule. Make sure it's still sorted.
+        Return if True/False to indicate success."""
         try:
             existing_actions = self.filter_current_actions(
                 t, self.environment.period)
-        except AttributeError:
-            pass
+        except AttributeError: # if no environment available
+            pass # TODO: maybe raise after all - confusing
         else:
             for t_ex, existing in existing_actions.iteritems():
+                # TODO: action __eq__ method override !!!
+                if existing == action:
+                    # we don't add anything as there already exists the same
+                    # action at time t
+                    return False
                 if existing.name == action.name and existing.vm == action.vm:
+                    # only if there was another action of the same name
+                    # (e.g. migrate) for this VM, do we
+                    # remove the old one, as the new one supersedes it
                     self.actions = self.actions[self.actions != existing]
         new_action = pd.Series({t: action})
         self.actions = pd.concat([self.actions, new_action])
         #TODO: optimise this to only sort the new actions
         self.sort()
+        return True
 
     def filter_current_actions(self, t, period=None):
         """return time series of actions in interval
@@ -538,6 +549,7 @@ class Cloud():
 
     def show_usage(self):
         """log detailed cloud description"""
+        # TODO: have this method return the string (for easier debugging)
         visualiser.show_usage(self, self.get_current())
     #----------------------------------
 

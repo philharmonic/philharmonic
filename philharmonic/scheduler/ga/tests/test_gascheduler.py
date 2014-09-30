@@ -276,6 +276,7 @@ def test_sweep_reallocate_capacity_constraints():
 
     # actions
     t1 = pd.Timestamp('2013-02-25 00:00')
+    # two Migrations to the same server are scheduled (beyond its capacity)
     times = [t1, t1]
     actions = [Migration(vm1, server1), Migration(vm2, server1)]
     unit.actions = pd.Series(actions, times)
@@ -289,7 +290,6 @@ def test_sweep_reallocate_capacity_constraints():
     unit.environment = env
     scheduler.environment = env
     scheduler.initialize()
-
     scheduler._sweep_reallocate_capacity_constraints(unit)
 
     # apply all actions
@@ -298,6 +298,8 @@ def test_sweep_reallocate_capacity_constraints():
         cloud, env, unit, env.el_prices, env.temperature, env.start, env.end
     )
     assert_equals(constraint, 0.)
+
+# TODO: try to replicate error where sweep_reallocate removes its own key
 
 def test_add_boot_actions_greedily_some_vms_scheduled():
     # some servers
