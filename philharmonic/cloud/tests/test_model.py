@@ -481,6 +481,15 @@ def test_allocation():
     assert_not_in(vm1, a.alloc[s1], 'vm1 initially unallocated')
     assert_in(vm1, b.alloc[s1], 'vm1 allocated after the transition')
 
+@raises(AttributeError)
+def test_alloc_readonly():
+    s1 = Server(4000, 2)
+    servers = [s1]
+    vm1 = VM(2000, 1);
+    a = State(servers, set([vm1]))
+    a.place(vm1, s1)
+    a.alloc = {}
+
 def test_pause():
     # some servers
     s1 = Server(4000, 2)

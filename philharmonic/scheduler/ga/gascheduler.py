@@ -271,6 +271,7 @@ class GAScheduler(IScheduler):
             # TODO: seems that adding to the same schedule affects this loop
             # - maybe add all afterwards
             # TODO: precise indexing, not dict
+            # TODO: never directly modify alloc - use place and remove
             if isinstance(schedule.actions[t], pd.Series):
                 for action in schedule.actions[t].values:
                     self.cloud.apply(action)
@@ -301,7 +302,6 @@ class GAScheduler(IScheduler):
         for request in requests:
             if request.what == 'boot':
                 # check if an action with that VM already in the schedule
-
                 if request.vm in placed_vms:
                     continue
                 server = self.fbf.find_host(request.vm)

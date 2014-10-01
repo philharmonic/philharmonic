@@ -127,7 +127,7 @@ class Server(Machine):
 # Schedule
 # ==========
 
-class State():
+class State(object):
     """the state of the cloud at a single moment. Various methods like migrate,
     pause... for changing it."""
 
@@ -139,22 +139,35 @@ class State():
     def __init__(self, servers=[], vms=set(), auto_allocate=False):
         self.servers = servers
         self.vms = vms
-        self.alloc = {} # servers -> allocated machines
+        self._alloc = {} # servers -> allocated machines
         # servers -> remaining free capacity
         self.free_cap = {s : copy.copy(s.cap) for s in servers}
         self.paused = set() # those VMs that are paused
         self.suspended = set() # those VMs that are paused
         for s in self.servers:
-            self.alloc[s] = set()
+            self._alloc[s] = set()
         if auto_allocate:
             self.auto_allocate()
 
     def __repr__(self):
         rep = ''
         for s in self.servers:
-            s_rep = '%s -> %s;\n' % (s.__repr__(), self.alloc[s].__repr__())
+            s_rep = '%s -> %s;\n' % (s.__repr__(), self._alloc[s].__repr__())
             rep += s_rep
         return rep
+
+    @property
+    def alloc(self):
+        """dict giving for every server the set of VMs allocated to it"""
+        # TODO: return copy where setting items raises error
+        # - make dictionary read only
+        return self._alloc
+
+    def _copy_alloc(self, other_alloc):
+        """copy other_alloc to your own alloc"""
+        self._alloc = {}
+        for s, vms in other_alloc.iteritems():
+            self.alloc[s] = set(vms) # create a new set
 
     def auto_allocate(self):
         """place all VMs on the first server"""
@@ -165,23 +178,23 @@ class State():
 
     def place(self, vm, s):
         """change current state to have vm on server s"""
-        if vm not in self.alloc[s]:
-            self.alloc[s].add(vm)
+        if vm not in self._alloc[s]:
+            self._alloc[s].add(vm)
             for r in s.resource_types: # update free capacity
                 self.free_cap[s][r] -= vm.res[r]
         return self
 
     def remove(self, vm, s):
         """change current state to not have vm on server s"""
-        if vm in self.alloc[s]:
-            self.alloc[s].remove(vm)
+        if vm in self._alloc[s]:
+            self._alloc[s].remove(vm)
             for r in s.resource_types: # update free capacity
                 self.free_cap[s][r] += vm.res[r]
         return self
 
     def remove_all(self, s):
         """change current state to have no VMs on server s"""
-        self.alloc[s] = set()
+        self._alloc[s] = set()
         self.free_cap[s] = copy.copy(s.cap)
         return self
 
@@ -192,7 +205,7 @@ class State():
         """change current state to have vm in s instead of the old location"""
         if vm not in self.vms:
             raise ModelUsageError("attempt to migrate VM that isn't booted")
-        for server, vms in self.alloc.iteritems():
+        for server, vms in self._alloc.iteritems():
             if vm in vms:
                 if server == s:
                     # it's already there
@@ -240,9 +253,7 @@ class State():
         #new_state.__dict__.update(self.__dict__)
         new_state.servers = self.servers
         new_state.vms = copy.copy(self.vms)
-        new_state.alloc = {}
-        for s, vms in self.alloc.iteritems():
-            new_state.alloc[s] = set(vms) # create a new set
+        new_state._copy_alloc(self._alloc)
         new_state.free_cap = {}
         for s in self.servers:
             # copy the free_cap dictionary
@@ -293,14 +304,14 @@ class State():
     def is_allocated(self, vm):
         """True if @param vm is allocated to any server in this state."""
         for s in self.servers:
-            if vm in self.alloc[s]:
+            if vm in self._alloc[s]:
                 return True
         return False
 
     def allocation(self, vm):
         """The server to which @param vm is allocated or None."""
         for s in self.servers:
-            if vm in self.alloc[s]:
+            if vm in self._alloc[s]:
                 return s
         return None
 
@@ -308,7 +319,7 @@ class State():
         """Return the set of unallocated VMs."""
         unallocated = set(copy.copy(self.vms))
         for s in self.servers:
-            unallocated = unallocated.difference(self.alloc[s])
+            unallocated = unallocated.difference(self._alloc[s])
         return unallocated
 
     def all_allocated(self):
@@ -322,7 +333,7 @@ class State():
         if total == 0:
             return 1.0
         for s in self.servers:
-            to_check = to_check.difference(self.alloc[s])
+            to_check = to_check.difference(self._alloc[s])
         allocated = total - len(to_check)
         ratio = float(allocated) / total
         return ratio
@@ -387,7 +398,7 @@ class State():
 
     def server_free(self, s):
         """True if there are no VMs allocated to server @param s."""
-        return len(self.alloc[s]) == 0
+        return len(self._alloc[s]) == 0
 
     def underutilised(self, s, threshold = 0.25):
         """If the server is non-empty and utilisation below threshold."""

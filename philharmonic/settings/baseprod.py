@@ -1,8 +1,8 @@
 from .base import *
 
 # if True, will go for the larger simulation
-#production_settings = False
-production_settings = True
+production_settings = False
+#production_settings = True
 
 if production_settings:
     base_output_folder = os.path.join(common_output_folder, "results/summer/")
