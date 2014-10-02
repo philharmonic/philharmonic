@@ -282,7 +282,9 @@ class GAScheduler(IScheduler):
             if not state.all_within_capacity():
                 for server in self.cloud.servers:
                     while not state.within_capacity(server):
-                        vm = state.alloc[server].pop()
+                        # TODO: smarter vm selection - use BFD or sth
+                        vm = next(iter(state.alloc[server]))
+                        state.remove(vm, server)
                         # place vm elsewhere to fix capacity
                         server = self.fbf.find_host(vm)
                         new_action = Migration(vm, server)
