@@ -481,7 +481,7 @@ class Schedule(object):
 
     def add(self, action, t):
         """Add an action to the schedule. Make sure it's still sorted.
-        Return if True/False to indicate success."""
+        Return True/False to indicate success."""
         try:
             existing_actions = self.filter_current_actions(
                 t, self.environment.period)
@@ -489,7 +489,6 @@ class Schedule(object):
             pass # TODO: maybe raise after all - confusing
         else:
             for t_ex, existing in existing_actions.iteritems():
-                # TODO: action __eq__ method override !!!
                 if existing == action:
                     # we don't add anything as there already exists the same
                     # action at time t

@@ -52,33 +52,49 @@ class ScheduleUnit(Schedule):
             self.changed = False
         return self.fitness
 
+    def _random_migration(self):
+        """Return a migration of a random VM, to a random server at a random
+        moment within the forecast horizon."""
+        # - pick random moment
+        start = self.environment.t
+        end = self.environment.forecast_end
+        t = random_time(start, end)
+        # - pick random VM
+        # (among union of all allocs at t and VMRequests)
+        vm = random.sample(self.cloud.vms, 1)[0]
+        # - pick random server
+        server = random.sample(self.cloud.servers, 1)[0]
+        new_action = Migration(vm, server)
+        return new_action, t
+
     def mutation(self):
+        """Change the unit by changing a random action."""
         self.changed = True
         # copy the ScheduleUnit
         new_unit = copy.copy(self) # maybe just modify this unit?
         # remove one action
+        removed_action = None
+        removed_t = None
         if len(self.actions) > 0:
             i = random.randint(0, len(self.actions)-1)
-            new_unit.actions = new_unit.actions.drop(self.actions.index[i])
+            removed_action = self.actions.iloc[i]
+            removed_t = self.actions.index[i]
+            new_unit.actions = new_unit.actions.drop(removed_t)
         # add new random action
         if len(self.cloud.vms) > 0:
-            # - pick random moment
-            start = self.environment.t
-            end = self.environment.forecast_end
             mutated = False
-            while not mutated:
-                t = random_time(start, end)
-                # - pick random VM
-                # (among union of all allocs at t and VMRequests)
-                vm = random.sample(self.cloud.vms, 1)[0]
-                # - pick random server
-                server = random.sample(self.cloud.servers, 1)[0]
-                new_action = Migration(vm, server)
+            tries = 0
+            max_tries = 3
+            while ((not mutated or
+                    (new_action == removed_action and t == removed_t)) and
+                   tries < max_tries):
+                tries += 1
+                new_action, t = self._random_migration()
                 mutated = new_unit.add(new_action, t)
         return new_unit
 
     def crossover(self, other, t=None):
-        """single-point crossover of both parent's actions series"""
+        """Single-point crossover of both parent's actions series."""
         start = self.environment.t
         end = self.environment.forecast_end
         if not t:
@@ -99,19 +115,23 @@ class ScheduleUnit(Schedule):
         return child, child2
 
     def update(self):
-        self.changed = True
+        """Update to match the new forecast horizon (current time until the end
+        of the forecast). Throw away old actions."""
         if len(self.actions) == 0:
             return
         # throw away old actions
         t = self.environment.t
         end = self.environment.forecast_end
+        old_len = len(self.actions)
         self.actions = self.actions[t:end]
         # throy away actions on non-existing vms
-        in_vms = self.actions.map(lambda a, vms=self.cloud.vms: a.vm in vms)
+        in_vms = self.actions.map(lambda a, vms = self.cloud.vms : a.vm in vms)
         try:
             self.actions = self.actions[in_vms]
         except IndexError:
             pass
+        if len(self.actions) != old_len: # the unit has changed
+            self.changed = True
 
 
     def __repr__(self):
@@ -288,6 +308,7 @@ class GAScheduler(IScheduler):
                         # place vm elsewhere to fix capacity
                         server = self.fbf.find_host(vm)
                         new_action = Migration(vm, server)
+                        # TODO: add only afterwards
                         schedule.add(new_action, t)
                         self.cloud.apply(new_action)
                         schedule.changed = True

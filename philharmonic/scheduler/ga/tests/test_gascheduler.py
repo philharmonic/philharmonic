@@ -2,8 +2,9 @@ from __future__ import absolute_import
 from nose.tools import *
 
 import pandas as pd
-from mock import MagicMock
+from mock import MagicMock, patch
 
+from philharmonic.scheduler.ga import gascheduler
 from ..gascheduler import ScheduleUnit, create_random, GAScheduler
 from philharmonic import VM, Server, Cloud, Migration, VMRequest
 from philharmonic.simulator.environment import GASimpleSimulatedEnvironment
@@ -76,7 +77,84 @@ def test_mutation():
     assert_is_instance(mutated, ScheduleUnit)
     assert_true((unit.actions.values == actions).all(), 'original unchanged')
     assert_true(len(mutated.actions) != len(unit.actions) or
-                (mutated.actions != unit.actions).any(), 'mutated changed')
+                (mutated.actions != unit.actions).any() or
+                (mutated.actions.index != unit.actions.index).any(),
+                'mutated changed')
+
+@patch('philharmonic.scheduler.ga.gascheduler.ScheduleUnit._random_migration')
+def test_mutation_not_infinite(mock_random_migr):
+
+    # cloud
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+
+    # actions
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 13:00')
+    times = [t1, t2]
+    actions = [Migration(vm1, server1), Migration(vm2, server2)]
+
+    # mock to always return the same action
+    mock_random_migr.return_value = (Migration(vm1, server1), t1)
+    unit = ScheduleUnit()
+    unit.cloud = Cloud([server1, server2], set([vm1, vm2]), auto_allocate=False)
+    unit.actions = pd.Series(actions, times)
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    env.t = t1
+    env.el_prices = inputgen.simple_el()
+    unit.environment = env
+
+    mutated = unit.mutation()
+
+def test_mutation_existing_action():
+
+    # cloud
+    vm1 = VM(4,2)
+    vm2 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+
+    # actions
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 13:00')
+    times = [t1, t2]
+    actions = [Migration(vm1, server1), Migration(vm2, server1)]
+
+    # mock to always return the same action
+    # mock_random_migr.return_value = (Migration(vm1, server1), t1)
+    def _random_migr_patched():
+        try:
+            unit._mock_one
+            # second call
+            return Migration(vm2, server2), t2
+        except AttributeError:
+            # first call
+            unit._mock_one = True
+            return Migration(vm1, server1), t1
+
+    unit = ScheduleUnit()
+    unit.cloud = Cloud([server1, server2], set([vm1, vm2]), auto_allocate=False)
+    unit.actions = pd.Series(actions, times)
+    unit._random_migration = _random_migr_patched
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    env.t = t1
+    env.el_prices = inputgen.simple_el()
+    unit.environment = env
+
+    mutated = unit.mutation()
+
+    assert_true(len(mutated.actions) != len(unit.actions) or
+                (mutated.actions != unit.actions).any() or
+                (mutated.actions.index != unit.actions.index).any(),
+                'mutated changed')
 
 def test_crossover():
 
