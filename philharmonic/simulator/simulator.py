@@ -19,6 +19,7 @@ and simulates the outcome of the schedule.
 
 import pickle
 from datetime import datetime
+import pprint
 
 from philharmonic import conf
 if conf.plotserver:
@@ -324,13 +325,17 @@ def run():
     ))
     info('\n- scheduler: {}'.format(conf.factory['scheduler']))
     if conf.factory['scheduler_conf'] is not None:
-        info('  * conf: {}'.format(conf.factory['scheduler_conf']))
+        info('  * conf: \n{}'.format(
+            pprint.pformat(conf.factory['scheduler_conf'])
+        ))
 
     info('\nServers ({} -> copied to: {})\n-------\n{}\n'.format(
         common_loc('workload/servers.pkl'),
         os.path.relpath(loc('../servers.pkl')),
-        simulator.cloud.servers)
-    )
+        simulator.cloud.servers
+        #pprint.pformat(simulator.cloud.servers)
+        #simulator.cloud.show_usage()
+    ))
     with open(loc('../servers.pkl'), 'w') as pkl_srv:
         pickle.dump(simulator.cloud, pkl_srv)
     info('Requests ({} -> copied to: {})\n--------\n{}\n'.format(

@@ -397,15 +397,19 @@ class GAScheduler(IScheduler):
             # mutation
             for unit in random.sample(self.population, num_mutation):
                 unit = unit.mutation()
-        # first try to get best that satisfies hard constraints
-        best = self._best_satisfies_constraints()
-        if best is None: # none satisfy hard constraints
+        if self.greedy_constraint_fix:
+            debug('- greedy constraint fix')
+            # first try to get best that satisfies hard constraints
+            best = self._best_satisfies_constraints()
+            if best is None: # none satisfy hard constraints
+                best = self.population[0]
+                self.cloud.reset_to_real()
+                self._add_boot_actions_greedily(best)
+                self.cloud.reset_to_real()
+                self._sweep_reallocate_capacity_constraints(best)
+                best.calculate_fitness()
+        else:
             best = self.population[0]
-            self.cloud.reset_to_real()
-            self._add_boot_actions_greedily(best)
-            self.cloud.reset_to_real()
-            self._sweep_reallocate_capacity_constraints(best)
-            best.calculate_fitness()
         debug(u' \u2502\n \u2514\u2500\u25BA selected {}'.format(repr(best)))
         # debug unallocated VMs
         if best.constr > 0:

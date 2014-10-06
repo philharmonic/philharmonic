@@ -134,6 +134,7 @@ class State(object):
     @staticmethod
     def random():
         """create a random state"""
+        #TODO: randomize
         return State([Server(2,2), Server(4,4)], [VM(1,1), VM(1,1)])
 
     def __init__(self, servers=[], vms=set(), auto_allocate=False):
