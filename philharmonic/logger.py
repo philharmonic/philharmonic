@@ -23,5 +23,3 @@ logging.getLogger().setLevel(LOG_LEVEL)
 
 def log(message):
     logging.info(message)
-
-

@@ -47,15 +47,6 @@ from philharmonic.utils import loc, common_loc
 # old scheduler design...
 #-------------------------
 
-# inputs (probably separate modules in the future, but we'll see)
-# -------
-def infrastructure_info():
-    """Get the infrastructure definition -- number and type of servers."""
-
-    info(" - generating aritficial infrastructure")
-    return inputgen.small_infrastructure()
-
-
 def geotemporal_inputs():
     """Read time series for el. prices and temperatures
     at different locations.
@@ -105,54 +96,8 @@ def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel fo
     return known_el_prices, known_temperatures
 
 
-# main run
-# --------
-# def run(steps=None):
-#     """run the simulation
-#     @param steps: number of time steps to make through the input data
-#     (None - go through the whole input)
-#     """
-#     info("simulation started")
-
-#     # get the input data
-#     servers = infrastructure_info()
-#     el_prices, temperatures = geotemporal_inputs()
-#     server_locations(servers, temperatures.columns)
-
-    times = temperatures[temperatures.columns[0]].index # TODO: attach this to server objects in a function
-    freq = temperatures[temperatures.columns[0]].index.freq
-    if steps is None:
-        steps = 10 # TODO: len of shortest input
-
-    requests = VM_requests(times[0], times[steps-1])
-    debug(requests)
-
-    scheduler = FBFOptimiser(servers)
-
-    for t in times[:steps-1]: # iterate through all the hours
-        # print info
-        debug(" - now at step {0}".format(t))
-        for s in servers:
-            debug('   * server {0} - el.: {1}, temp.: {2}'
-                 .format(s, el_prices[s.loc][t], temperatures[s.loc][t]))
-        # these are the event triggers
-        # - we find any requests that might arise in this interval
-        # - group requests for that step
-        new_requests = requests[t:t+freq]
-        debug(' - new requests:')
-        debug(str(new_requests))
-        # - we get new data about the future temp. and el. prices
-        known_data = prepare_known_data((el_prices, temperatures), t)
-        debug(known_data[0].index)
-
-        scheduler.find_solution(known_data, new_requests)
-
-    # perform the actions somehow
-
-
 #TODO:
 # - shorthand to access temp, price in server
-# - print info in detailed function
 
 # new simulator design
 #----------------------
@@ -212,13 +157,28 @@ class Simulator(IManager):
         self.cloud.show_usage()
         self.prompt()
 
-    def run(self):
+    def run(self, steps=None):
+        """Run the simulation. Iterate through the times, query for
+        geotemporal inputs, reevaluate the schedule and simulate actions.
+
+        @param steps: number of time steps to make through the input data
+        (if None, go through the whole input)
+
+        """
+
         if conf.show_cloud_interval is not None:
             t_show = conf.start + conf.show_cloud_interval
         self.scheduler.initialize()
-        for t in self.environment.itertimes():
+        passed_steps = 0
+        for t in self.environment.itertimes(): # iterate through all the times
+            passed_steps += 1
+            if steps is not None and passed_steps > steps:
+                break
             # get requests & update model
+            # these are the event triggers
+            # - we find any requests that might arise in this interval
             requests = self.environment.get_requests()
+            # - apply requests on the simulated cloud
             self.apply_actions(requests)
             if len(requests) > 0:
                 #import ipdb; ipdb.set_trace()
@@ -241,7 +201,7 @@ class Simulator(IManager):
                 self.show_cloud_usage()
         return self.cloud, self.environment, self.real_schedule
 
-# TODO: these other simulator sublclasses should not be necessary
+# TODO: these other simulator subclasses should not be necessary
 class PeakPauserSimulator(Simulator):
     def __init__(self, factory=None):
         if factory is not None:
@@ -288,29 +248,10 @@ class NoSchedulerSimulator(Simulator):
         super(NoSchedulerSimulator, self).__init__()
 
 
-#-- simulation starter ------------------------------
+#-- common functions --------------------------------
 
-# schedule.py routes straight to here
-
-def pickle_results(schedule):
-    schedule.actions.to_pickle(loc('schedule.pkl'))
-    #with open('schedule.pkl', 'w') as pkl_schedule:
-    #    pickle.dump(schedule.actions, pkl_schedule)
-
-# TODO: make run a method on Simulator maybe?
-
-def run():
-    info('SETTINGS\n########\n')
-
-    fig = plt.figure(1)#, figsize=(10, 15))
-    fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
-
-    nplots = 4
-    # create necessary objects
-    #-------------------------
-    simulator = Simulator(conf.get_factory())
-
-    # log essential information
+def log_config_info(simulator):
+    """Log the essential configuration information."""
     info('- output_folder: {}'.format(conf.output_folder))
     if conf.factory["times"] == "times_from_conf":
         info('- times: {} - {}'.format(conf.start, conf.end))
@@ -329,32 +270,40 @@ def run():
             pprint.pformat(conf.factory['scheduler_conf'])
         ))
 
-    info('\nServers ({} -> copied to: {})\n-------\n{}\n'.format(
+    info('\nServers ({} -> will copy to: {})\n-------\n{}\n'.format(
         common_loc('workload/servers.pkl'),
         os.path.relpath(loc('../servers.pkl')),
         simulator.cloud.servers
         #pprint.pformat(simulator.cloud.servers)
         #simulator.cloud.show_usage()
     ))
-    with open(loc('../servers.pkl'), 'w') as pkl_srv:
-        pickle.dump(simulator.cloud, pkl_srv)
-    info('Requests ({} -> copied to: {})\n--------\n{}\n'.format(
+    info('Requests ({} -> will copy to: {})\n--------\n{}\n'.format(
         common_loc('workload/requests.pkl'),
         os.path.relpath(loc('../requests.pkl')),
         simulator.requests)
     )
-    simulator.requests.to_pickle(loc('../requests.pkl'))
-
     if conf.prompt_configuration:
         prompt_res = raw_input('Config good? Press enter to continue...')
 
-    # run the simulation
-    #-------------------
-    info('\nSIMULATION\n##########')
-    start_time = datetime.now()
-    info('Simulation started at time: {}'.format(start_time))
-    cloud, env, schedule = simulator.run()
-    info('DONE\n####\n\n')
+def archive_inputs(simulator):
+    """copy input files together with the results (for archive reasons)"""
+    with open(loc('../servers.pkl'), 'w') as pkl_srv:
+        pickle.dump(simulator.cloud, pkl_srv)
+    simulator.requests.to_pickle(loc('../requests.pkl'))
+
+def pickle_results(schedule):
+    schedule.actions.to_pickle(loc('schedule.pkl'))
+
+def before_start(simulator):
+    log_config_info(simulator)
+    archive_inputs(simulator)
+
+# TODO: put most of this stuff in another module (evaluator?)
+def serialise_results(cloud, env, schedule):
+    fig = plt.figure(1)#, figsize=(10, 15))
+    fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)
+
+    nplots = 4
     pickle_results(schedule)
     cloud.reset_to_initial()
     info('Simulation timeline\n--------------')
@@ -458,6 +407,35 @@ def run():
         plt.savefig(loc('results-graph.pdf'))
 
     info('\nDone. Results saved to: {}'.format(conf.output_folder))
+
+#-- simulation starter ------------------------------
+
+# schedule.py routes straight to here
+
+# TODO: make run a method of Simulator maybe?
+
+def run(steps=None):
+    """Run the simulation."""
+    info('SETTINGS\n########\n')
+
+    # create simulator from the conf
+    #-------------------------------
+    simulator = Simulator(conf.get_factory())
+
+    before_start(simulator)
+
+    # run the simulation
+    #-------------------
+    info('\nSIMULATION\n##########')
+    start_time = datetime.now()
+    info('Simulation started at time: {}'.format(start_time))
+    cloud, env, schedule = simulator.run(steps)
+    info('DONE\n####\n\n')
+
+    # serialise and log the results
+    #------------------------------
+    serialise_results(cloud, env, schedule)
+
     end_time = datetime.now()
     info('Simulation finished at time: {}'.format(end_time))
     info('Duration: {}'.format(end_time - start_time))

@@ -1,14 +1,19 @@
 from nose.tools import *
-from mock import Mock, MagicMock
+from mock import Mock, MagicMock, patch
 import numpy as np
 import pandas as pd
 
+import philharmonic
 from philharmonic.simulator.simulator import *
 from philharmonic.simulator.inputgen import small_infrastructure
 
-
-#def test_run():
-#    run(steps=3)
+@patch('philharmonic.simulator.simulator.before_start')
+@patch('philharmonic.simulator.simulator.serialise_results')
+def test_run(mock_before_start, mock_serialise_results):
+    philharmonic._setup('philharmonic.settings.fbf')
+    mock_before_start.return_value = True
+    mock_serialise_results.return_value = True
+    run(steps=2)
 
 # TODO: repurpose these tests to test new simulator methods
 def test_server_locations():#TODO: refactor
