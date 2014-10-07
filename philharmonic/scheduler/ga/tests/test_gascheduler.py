@@ -446,6 +446,7 @@ def test_gascheduler():
     scheduler.population_size = 6
     scheduler.recombination_rate = 0.4
     scheduler.mutation_rate = 0.18
+    scheduler.greedy_constraint_fix = False
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
     scheduler.initialize()
@@ -477,6 +478,7 @@ def test_gascheduler_two_times(): # multiple reevaluation calls
     scheduler.population_size = 6
     scheduler.recombination_rate = 0.4
     scheduler.mutation_rate = 0.18
+    scheduler.greedy_constraint_fix = True
     scheduler.cloud = cloud
     scheduler.environment = env # TODO: part of the IScheduler constructor
     scheduler.initialize()
