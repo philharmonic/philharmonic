@@ -25,8 +25,17 @@ class ScheduleUnit(Schedule):
         if self.changed:
             #TODO: maybe move this method to the Scheduler
             #TODO: set start, end for sla, constraint
+            # fitness function weights - default values
             w_util, w_cost, w_sla, w_constraint = 0.18, 0.17, 0.25, 0.4
+            try:
+                w_util = self.w_util
+                w_cost = self.w_cost
+                w_sla = self.w_sla
+                w_constraint = self.w_constraint
+            except AttributeError:
+                pass # stick to the defaults
             start, end = self.environment.t, self.environment.forecast_end
+            # we get new data about the future temp. and el. prices
             el_prices, temperature = self.environment.current_data()
             if self.no_temperature:
                 temperature = None # we don't consider the temp. factor
