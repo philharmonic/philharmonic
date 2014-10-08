@@ -3,10 +3,22 @@ simulation.
 
 """
 
+import pickle
+from datetime import datetime
+import pprint
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from philharmonic import conf
 import philharmonic as ph
 from philharmonic.logger import *
+from philharmonic.scheduler import evaluator
+from philharmonic.utils import loc, common_loc
 
-# TODO: put most of this stuff in another module (evaluator?)
+def pickle_results(schedule):
+    schedule.actions.to_pickle(loc('schedule.pkl'))
+
 def serialise_results(cloud, env, schedule):
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)

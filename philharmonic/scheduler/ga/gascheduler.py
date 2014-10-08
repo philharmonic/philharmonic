@@ -407,10 +407,10 @@ class GAScheduler(IScheduler):
             for unit in random.sample(self.population, num_mutation):
                 unit = unit.mutation()
         if self.greedy_constraint_fix:
-            debug('- greedy constraint fix')
             # first try to get best that satisfies hard constraints
             best = self._best_satisfies_constraints()
             if best is None: # none satisfy hard constraints
+                debug('- greedy constraint fix')
                 best = self.population[0]
                 self.cloud.reset_to_real()
                 self._add_boot_actions_greedily(best)

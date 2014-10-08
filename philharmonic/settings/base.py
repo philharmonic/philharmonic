@@ -22,13 +22,13 @@ save_power = False
 # stop and check settings with user (only initially)
 prompt_configuration = True
 # interval at which to print cloud usage: pd.offsets.* or None
-show_cloud_interval = pd.offsets.Day(1)
+show_cloud_interval = pd.offsets.Hour(1)
 # stop the simulation for inspection?
 prompt_show_cloud = False
 prompt_ipdb = True
 
 common_output_folder = "io/"
-base_output_folder = os.path.join(common_output_folder, "results/")
+base_output_folder = os.path.join(common_output_folder, "results/test/")
 output_folder = base_output_folder
 
 DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
@@ -127,8 +127,9 @@ def get_factory():
 inputgen_settings = {
     # cloud's servers
     'location_dataset': temperature_dataset,
+    'server_num': 3,
     #'server_num': 20,
-    'server_num': 50,
+    #'server_num': 50,
     'min_server_cpu': 8,
     'max_server_cpu': 16,
     'min_server_ram': 16,
@@ -144,8 +145,8 @@ inputgen_settings = {
     # e.g. CPUs
     'min_cpu': 1,
     'max_cpu': 2,
-    'min_ram': 1,
-    'max_ram': 2,
+    'min_ram': 2,
+    'max_ram': 4,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours

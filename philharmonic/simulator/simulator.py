@@ -36,7 +36,6 @@ import inputgen
 from .results import serialise_results
 from philharmonic import Schedule
 from philharmonic.scheduler.generic.fbf_optimiser import FBFOptimiser
-from philharmonic.scheduler import evaluator
 from philharmonic.manager.imanager import IManager
 #from philharmonic.cloud.driver import simdriver
 from philharmonic.scheduler import NoScheduler
@@ -291,9 +290,6 @@ def archive_inputs(simulator):
     with open(loc('../servers.pkl'), 'w') as pkl_srv:
         pickle.dump(simulator.cloud, pkl_srv)
     simulator.requests.to_pickle(loc('../requests.pkl'))
-
-def pickle_results(schedule):
-    schedule.actions.to_pickle(loc('schedule.pkl'))
 
 def before_start(simulator):
     log_config_info(simulator)
