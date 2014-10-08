@@ -10,7 +10,7 @@ from philharmonic.simulator.inputgen import small_infrastructure
 @patch('philharmonic.simulator.simulator.before_start')
 @patch('philharmonic.simulator.simulator.serialise_results')
 def test_run(mock_before_start, mock_serialise_results):
-    philharmonic._setup('philharmonic.settings.fbf')
+    philharmonic._setup('philharmonic.settings.test')
     mock_before_start.return_value = True
     mock_serialise_results.return_value = True
     run(steps=2)
