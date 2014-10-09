@@ -77,6 +77,37 @@ class BCFScheduler(IScheduler):
             return
         self.schedule.add(action, t)
 
+    def find_host(self, vm):
+        # TODO: this group of commands can be done only once for a list of VMs
+        # in the current moment
+        self.current = self.cloud.get_current()
+        el, temp = self.environment.current_data()
+        # take only current values - TODO: average over forecast window
+        el = el.loc[self.environment.t]
+        temp = temp.loc[self.environment.t]
+        all_hosts = self.cloud.servers
+        hosts = filter(lambda s : not self.current.server_free(s), all_hosts)
+        hosts = sort_pms_best_first(hosts, self.current, el)
+        inactive_hosts = filter(lambda s : self.current.server_free(s),
+                                all_hosts)
+        inactive_hosts = sort_pms_cost_first(inactive_hosts, self.current, el)
+
+        mapped = False
+        while not mapped:
+            # sort for one of - first pass, free_cap changed or new host
+            hosts = sort_pms_best_first(hosts, self.current, el)
+            for host in hosts:
+                if self._fits(vm, host) != -1:
+                    mapped = True
+                    break
+            if not mapped:
+                if len(inactive_hosts) > 0: # activate an inactive host
+                    host = inactive_hosts.pop(0)
+                    hosts.append(host)
+                else:
+                    return None
+        return host
+
     def reevaluate(self):
         self.schedule = Schedule()
         self._original_vm_hosts = {}
@@ -93,39 +124,14 @@ class BCFScheduler(IScheduler):
         #  - select VMs on underutilised PMs
         # TODO: find and reallocate VMs from expensive locations
         #VMs.extend(self._remove_vms_from_underutilised_hosts())
-
         VMs = sort_vms_big_first(VMs)
-
         if len(VMs) == 0:
             return self.schedule
 
-        self.current = self.cloud.get_current()
-        el, temp = self.environment.current_data()
-        # take only current values - TODO: average over forecast window
-        el = el.loc[self.environment.t]
-        temp = temp.loc[self.environment.t]
-        all_hosts = self.cloud.servers
-        hosts = filter(lambda s : not self.current.server_free(s), all_hosts)
-        hosts = sort_pms_best_first(hosts, self.current, el)
-        inactive_hosts = filter(lambda s : self.current.server_free(s),
-                                all_hosts)
-        inactive_hosts = sort_pms_cost_first(inactive_hosts, self.current, el)
-
         for vm in VMs:
-            mapped = False
-            while not mapped:
-                # sort for one of - first pass, free_cap changed or new host
-                hosts = sort_pms_best_first(hosts, self.current, el)
-                for host in hosts:
-                    if self._fits(vm, host) != -1:
-                        self._place(vm, host, t)
-                        mapped = True
-                        break
-                if not mapped:
-                    if len(inactive_hosts) > 0: # activate an inactive host
-                        host = inactive_hosts.pop(0)
-                        hosts.append(host)
-                    else:
-                        break
+            host = self.find_host(vm)
+            if host is None:
+                raise Exception("not enough free resources")
+            self._place(vm, host, t)
 
         return self.schedule

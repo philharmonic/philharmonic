@@ -130,6 +130,7 @@ inputgen_settings = {
     'server_num': 3,
     #'server_num': 20,
     #'server_num': 50,
+    #'server_num': 2000,
     'min_server_cpu': 8,
     'max_server_cpu': 16,
     'min_server_ram': 16,

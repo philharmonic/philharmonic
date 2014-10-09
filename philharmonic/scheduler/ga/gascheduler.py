@@ -6,7 +6,8 @@ import numpy as np
 
 from philharmonic import Schedule, Migration
 from philharmonic.scheduler.ischeduler import IScheduler
-from philharmonic.scheduler import evaluator, FBFScheduler
+from philharmonic.scheduler import evaluator
+from philharmonic.scheduler import BCFScheduler
 from philharmonic import random_time
 from philharmonic.logger import *
 
@@ -236,9 +237,9 @@ class GAScheduler(IScheduler):
         evaluator.precreate_synth_power( # need this for efficient schedule eval
             self.environment.start, self.environment.end, self.cloud.servers
         )
-        self.fbf = FBFScheduler()
-        self.fbf.environment = self.environment
-        self.fbf.cloud = self.cloud
+        self.bcf = BCFScheduler()
+        self.bcf.environment = self.environment
+        self.bcf.cloud = self.cloud
 
     def _create_or_update_population(self):
         """Initialise population or bring the old one to the new generation
@@ -315,7 +316,7 @@ class GAScheduler(IScheduler):
                         vm = next(iter(state.alloc[server]))
                         state.remove(vm, server)
                         # place vm elsewhere to fix capacity
-                        server = self.fbf.find_host(vm)
+                        server = self.bcf.find_host(vm)
                         new_action = Migration(vm, server)
                         # TODO: add only afterwards
                         schedule.add(new_action, t)
@@ -325,7 +326,7 @@ class GAScheduler(IScheduler):
 
     def _add_boot_actions_greedily(self, unit):
         """Take the requests and make sure they are placed on a host
-        right away using FBF (if the GA didn't schedule them already)."""
+        right away using BCF (if the GA didn't schedule them already)."""
         requests = self.environment.get_requests()
         current_actions = unit.filter_current_actions(
             self.environment.t, self.environment.period
@@ -336,7 +337,7 @@ class GAScheduler(IScheduler):
                 # check if an action with that VM already in the schedule
                 if request.vm in placed_vms:
                     continue
-                server = self.fbf.find_host(request.vm)
+                server = self.bcf.find_host(request.vm)
                 if server is None:
                     continue # not enough free resources for this VM
                 # apply and add action to the schedule

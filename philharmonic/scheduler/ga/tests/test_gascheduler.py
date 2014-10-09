@@ -281,8 +281,8 @@ def test_best_satisfies_constraints_none():
 
 def test_add_boot_actions_greedily():
     # some servers
-    s1 = Server(4000, 8)
-    s2 = Server(8000, 8)
+    s1 = Server(4000, 8, location='A')
+    s2 = Server(8000, 8, location='B')
     servers = [s1, s2]
     # some VMs
     vm1 = VM(2000, 1);
@@ -297,6 +297,11 @@ def test_add_boot_actions_greedily():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     environment.t = times[0]
+    el = pd.DataFrame({'A': [0.08] * len(times), 'B': [0.08] * len(times)},
+                      times)
+    temp = pd.DataFrame({'A': [15] * len(times), 'B': [15] * len(times)},
+                        times)
+    environment.current_data = MagicMock(return_value = (el, temp))
     environment.get_requests = MagicMock(return_value=reqs)
     scheduler.environment = environment
     scheduler.initialize()
@@ -309,7 +314,7 @@ def test_add_boot_actions_greedily():
 
 def test_add_boot_actions_greedily_only_if_possible():
     # some servers
-    s1 = Server(5000, 5)
+    s1 = Server(5000, 5, location='A')
     servers = [s1]
     # some VMs
     vm1 = VM(2000, 1);
@@ -325,6 +330,11 @@ def test_add_boot_actions_greedily_only_if_possible():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     environment.t = times[0]
+    el = pd.DataFrame({'A': [0.08] * len(times), 'B': [0.08] * len(times)},
+                      times)
+    temp = pd.DataFrame({'A': [15] * len(times), 'B': [15] * len(times)},
+                        times)
+    environment.current_data = MagicMock(return_value = (el, temp))
     environment.get_requests = MagicMock(return_value=reqs)
     scheduler.environment = environment
     scheduler.initialize()
@@ -381,8 +391,8 @@ def test_sweep_reallocate_capacity_constraints():
 
 def test_add_boot_actions_greedily_some_vms_scheduled():
     # some servers
-    s1 = Server(4000, 8)
-    s2 = Server(8000, 8)
+    s1 = Server(4000, 8, location='A')
+    s2 = Server(8000, 8, location='B')
     servers = [s1, s2]
     # some VMs
     vm1 = VM(2000, 1);
@@ -400,6 +410,11 @@ def test_add_boot_actions_greedily_some_vms_scheduled():
     times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
     environment = GASimpleSimulatedEnvironment(times, forecast_periods=24)
     environment.t = times[0]
+    el = pd.DataFrame({'A': [0.08] * len(times), 'B': [0.08] * len(times)},
+                      times)
+    temp = pd.DataFrame({'A': [15] * len(times), 'B': [15] * len(times)},
+                        times)
+    environment.current_data = MagicMock(return_value = (el, temp))
     environment.get_requests = MagicMock(return_value=reqs)
     scheduler.environment = environment
     scheduler.initialize()
