@@ -27,7 +27,7 @@ class IScheduler(object):
 
     def finalize(self):
         '''Hook to wrap it all up (put VMs back to the default state etc.)'''
-        raise NotImplemented
+        raise NotImplementedError
 
     def reevaluate(self):
         '''Look at the current state of the Cloud and Environment
@@ -36,7 +36,7 @@ class IScheduler(object):
         @returns: a Schedule with a time series of actions
 
         '''
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class NoScheduler(IScheduler):

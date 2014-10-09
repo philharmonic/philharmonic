@@ -4,3 +4,4 @@ from .ischeduler import NoScheduler
 from .fbf_scheduler import FBFScheduler
 from .bfd_scheduler import BFDScheduler
 from .ga.gascheduler import GAScheduler
+from .bcf_scheduler import BCFScheduler
