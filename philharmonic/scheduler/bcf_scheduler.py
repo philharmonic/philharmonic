@@ -1,33 +1,32 @@
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic import Schedule, Migration
+from philharmonic import calculate_pue
 
 def sort_vms_big_first(VMs):
     """Sort VMs by resource size - bigger first."""
     return sorted(VMs, key=lambda x : (x.res['#CPUs'], x.res['RAM']),
                   reverse=True)
 
-def sort_pms_best_first(PMs, state, el):
+def sort_pms_best_first(PMs, state, cost):
     """Sort by free capacity decreasing (fill out almost full servers first),
     by electricity price increasing (cheaper locations are preferred).
 
     """
 
-    # TODO: add cooling efficiency
     # TODO: don't hardcode the resources
     return sorted(PMs,
                   key=lambda x : (-state.free_cap[x]['#CPUs'],
                                   -state.free_cap[x]['RAM'],
-                                  el[x.loc]))
-def sort_pms_cost_first(PMs, state, el):
+                                  cost[x.loc]))
+def sort_pms_cost_first(PMs, state, cost):
     """Sort by cost first, then prefer larger hosts
     (for waking up inactive hosts).
 
     """
 
-    # TODO: add cooling efficiency
     # TODO: don't hardcode the resources
     return sorted(PMs,
-                  key=lambda x : (el[x.loc],
+                  key=lambda x : (cost[x.loc],
                                   -state.free_cap[x]['#CPUs'],
                                   -state.free_cap[x]['RAM']))
 
@@ -85,17 +84,19 @@ class BCFScheduler(IScheduler):
         # take only current values - TODO: average over forecast window
         el = el.loc[self.environment.t]
         temp = temp.loc[self.environment.t]
+        # combined cost based on el. price and temperature
+        cost = el * calculate_pue(temp)
         all_hosts = self.cloud.servers
         hosts = filter(lambda s : not self.current.server_free(s), all_hosts)
-        hosts = sort_pms_best_first(hosts, self.current, el)
+        hosts = sort_pms_best_first(hosts, self.current, cost)
         inactive_hosts = filter(lambda s : self.current.server_free(s),
                                 all_hosts)
-        inactive_hosts = sort_pms_cost_first(inactive_hosts, self.current, el)
+        inactive_hosts = sort_pms_cost_first(inactive_hosts, self.current, cost)
 
         mapped = False
         while not mapped:
             # sort for one of - first pass, free_cap changed or new host
-            hosts = sort_pms_best_first(hosts, self.current, el)
+            hosts = sort_pms_best_first(hosts, self.current, cost)
             for host in hosts:
                 if self._fits(vm, host) != -1:
                     mapped = True
