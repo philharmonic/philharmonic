@@ -7,28 +7,34 @@ def sort_vms_big_first(VMs):
     return sorted(VMs, key=lambda x : (x.res['#CPUs'], x.res['RAM']),
                   reverse=True)
 
-def sort_pms_best_first(PMs, state, cost):
+def sort_active_pms(PMs, state, cost):
     """Sort by free capacity decreasing (fill out almost full servers first),
     by electricity price increasing (cheaper locations are preferred).
+    Used for sorting active hosts to choose targets for new VMs.
+
+    e.g. desired: (2 GB, $0.08), (4 GB, $0.04), (4 GB, $0.08)
 
     """
 
     # TODO: don't hardcode the resources
+    return sorted(PMs,
+                  key=lambda x : (state.free_cap[x]['#CPUs'],
+                                  state.free_cap[x]['RAM'],
+                                  cost[x.loc]))
+def sort_inactive_pms(PMs, state, cost):
+    """Sort by preferring bigger hosts, then by cost
+    for waking up inactive hosts.
+
+    e.g. desired: (4 GB, $0.04), (4 GB, $0.08), (2 GB, $0.08)
+
+    """
+
+    # TODO: don't hardcode the resources
+    # TODO: check if cost more important in other scenarios
     return sorted(PMs,
                   key=lambda x : (-state.free_cap[x]['#CPUs'],
                                   -state.free_cap[x]['RAM'],
                                   cost[x.loc]))
-def sort_pms_cost_first(PMs, state, cost):
-    """Sort by cost first, then prefer larger hosts
-    (for waking up inactive hosts).
-
-    """
-
-    # TODO: don't hardcode the resources
-    return sorted(PMs,
-                  key=lambda x : (cost[x.loc],
-                                  -state.free_cap[x]['#CPUs'],
-                                  -state.free_cap[x]['RAM']))
 
 class BCFScheduler(IScheduler):
     """Best Cost Fit (BCF) scheduling algorithm. Greedily places VMs on servers
@@ -76,6 +82,23 @@ class BCFScheduler(IScheduler):
             return
         self.schedule.add(action, t)
 
+    def _remove_vms_from_underutilised_hosts(self):
+        """mutable method that finds underutilised hosts, removes VMs from
+        them in the current state, updates the _original_vm_hosts dictionary
+        and returns all such VMs.
+
+        """
+        vms = []
+        state = self.cloud.get_current()
+        for s in self.cloud.servers:
+            if state.underutilised(s):
+                vms.extend(state.alloc[s])
+                for vm in state.alloc[s]:
+                    self._original_vm_hosts[vm] = s
+                # remove the VMs from that host for now
+                self.cloud.get_current().remove_all(s) # transition?
+        return vms
+
     def find_host(self, vm):
         # TODO: this group of commands can be done only once for a list of VMs
         # in the current moment
@@ -88,15 +111,15 @@ class BCFScheduler(IScheduler):
         cost = el * calculate_pue(temp)
         all_hosts = self.cloud.servers
         hosts = filter(lambda s : not self.current.server_free(s), all_hosts)
-        hosts = sort_pms_best_first(hosts, self.current, cost)
+        hosts = sort_active_pms(hosts, self.current, cost)
         inactive_hosts = filter(lambda s : self.current.server_free(s),
                                 all_hosts)
-        inactive_hosts = sort_pms_cost_first(inactive_hosts, self.current, cost)
+        inactive_hosts = sort_inactive_pms(inactive_hosts, self.current, cost)
 
         mapped = False
         while not mapped:
             # sort for one of - first pass, free_cap changed or new host
-            hosts = sort_pms_best_first(hosts, self.current, cost)
+            hosts = sort_active_pms(hosts, self.current, cost)
             for host in hosts:
                 if self._fits(vm, host) != -1:
                     mapped = True
@@ -123,8 +146,8 @@ class BCFScheduler(IScheduler):
             if request.what == 'boot':
                 VMs.append(request.vm)
         #  - select VMs on underutilised PMs
+        VMs.extend(self._remove_vms_from_underutilised_hosts())
         # TODO: find and reallocate VMs from expensive locations
-        #VMs.extend(self._remove_vms_from_underutilised_hosts())
         VMs = sort_vms_big_first(VMs)
         if len(VMs) == 0:
             return self.schedule
