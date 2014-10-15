@@ -1,6 +1,7 @@
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic import Schedule, Migration
 from philharmonic import calculate_pue
+from philharmonic import conf
 
 def sort_vms_big_first(VMs):
     """Sort VMs by resource size - bigger first."""
@@ -91,7 +92,7 @@ class BCFScheduler(IScheduler):
         vms = []
         state = self.cloud.get_current()
         for s in self.cloud.servers:
-            if state.underutilised(s):
+            if state.underutilised(s, conf.underutilised_threshold):
                 vms.extend(state.alloc[s])
                 for vm in state.alloc[s]:
                     self._original_vm_hosts[vm] = s

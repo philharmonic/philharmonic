@@ -410,7 +410,8 @@ class GAScheduler(IScheduler):
         if self.greedy_constraint_fix:
             # first try to get best that satisfies hard constraints
             best = self._best_satisfies_constraints()
-            if best is None: # none satisfy hard constraints
+            if best is None or self.always_greedy_fix:
+                # none satisfy hard constraints or we always fix
                 debug('- greedy constraint fix')
                 best = self.population[0]
                 self.cloud.reset_to_real()

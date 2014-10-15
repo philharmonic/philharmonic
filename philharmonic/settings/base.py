@@ -41,7 +41,7 @@ el_price_dataset = os.path.join(DATA_LOC, 'world-realtemp/prices.csv')
 # the time period of the simulation
 start = pd.Timestamp('2010-06-03 00:00')
 # - two days
-times = pd.date_range(start, periods=48, freq='H')
+times = pd.date_range(start, periods=24 * 7, freq='H')
 end = times[-1]
 
 # plotting results
@@ -121,15 +121,21 @@ factory = {
 def get_factory():
     return factory
 
+# Various scheduling settings
+#============================
+# Percentage of utilisation under which a PM is considered underutilised
+underutilised_threshold = 0.5
+
 # inputgen settings
 #==================
 
 inputgen_settings = {
     # cloud's servers
     'location_dataset': temperature_dataset,
-    'server_num': 3,
-    #'server_num': 20,
+    #'server_num': 3,
+    'server_num': 20,
     #'server_num': 50,
+    #'server_num': 200,
     #'server_num': 2000,
     'min_server_cpu': 8,
     'max_server_cpu': 16,
@@ -151,7 +157,7 @@ inputgen_settings = {
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
-    'max_duration': 60 * 60 * 24 * 2, # 2 days
+    'max_duration': 60 * 60 * 24 * 3, # 2 days
     #'max_duration': 60 * 60 * 24 * 10, # 10 days
     #'max_duration': 60 * 60 * 24 * 90, # 90 days
 }
