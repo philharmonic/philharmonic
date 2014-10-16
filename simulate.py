@@ -30,6 +30,17 @@ def cli_inputgen(conf):
     from philharmonic.simulator.inputgen import generate_fixed_input
     generate_fixed_input()
 
+@cli.command('profile')
+@click.option('--conf', default='philharmonic.settings.ga_profile',
+              help='The main conf module to load.')
+@click.option('--lines', '-l', default=10,
+              help='Number of lines to show.')
+def cli_profile(conf, lines):
+    philharmonic._setup(conf)
+    from philharmonic import profiler
+    profiler.prun('profiler.profile(conf_module={})'.format(conf),
+                  globals(), locals(), lines)
+
 if __name__ == "__main__":
     #load_settings_run()
     cli()

@@ -16,6 +16,19 @@ To enter ipdb on errors:
 
     ipython --pdb -- simulate.py --conf=philharmonic.settings.ga
 
+Profiling
+---------
+Inside IPython run:
+
+    ipython -- simulate.py profile --conf=philharmonic.settings.bcf -l 20
+
+where `conf` is the configuration you would like to analyse.
+
+Alternatively, run:
+
+    from philharmonic.profiler import profile_run
+    %prun profile_run()
+
 Code organisation
 -----------------
 Some useful facts.
