@@ -1,12 +1,16 @@
 Development
 -----------
-Development packages
+Development packages:
 
     pip install -r requirements/dev.txt
 
 (for the experimental workflow, install from `requirements/extra.txt` as well)
 
-To test just run this from the project's root
+To test just run this from the project's root:
+
+    nosetests
+
+or to run the tests continusly, monitoring file changes:
 
     nosy
 
