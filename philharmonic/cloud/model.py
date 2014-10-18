@@ -26,7 +26,9 @@ class ModelUsageError(Exception):
 
 # some non-semantic functionality common for VMs and servers
 class Machine(object):
-    resource_types = ['RAM', '#CPUs'] # to be overridden with actual values
+    resource_types = ['RAM', '#CPUs'] # can be overridden
+    _weights = None
+
     def __init__(self, *args):
         self.id = type(self)._new_id()
         self.spec = {}
@@ -60,6 +62,19 @@ class Machine(object):
             return hash((self.id, self.machine_type))
         except AttributeError:
             return hash(id(self))
+
+    class __metaclass__(type):
+        @property
+        def weights(cls):
+            """weights class property - only calculate on the 1st call
+            from cls.resource_types
+
+            """
+            if cls._weights is None:
+                uniform_weight = 1./len(cls.resource_types)
+                cls._weights = {r : uniform_weight for r in cls.resource_types}
+            return cls._weights
+
 
 def _delegate_to_obj(obj, method_name, *args):
     method = getattr(obj, method_name)
@@ -278,25 +293,21 @@ class State(object):
     def utilisation(self, s, weights=None):
         """utilisation ratio of a server s"""
         if weights is None:
-            uniform_weight = 1./len(Server.resource_types)
-            weights = {r : uniform_weight for r in s.resource_types}
+            weights = Machine.weights
         total_utilisation = 0.
-        utilisations = {}
         for r in s.resource_types:
             used = s.cap[r] - self.free_cap[s][r]
-            utilisations[r] = used / float(s.cap[r])
-            if utilisations[r] > 1:
-                utilisations[r] = 1
-        for r, util in utilisations.iteritems():
-            total_utilisation += weights[r] * util
+            utilisation = used / float(s.cap[r])
+            if utilisation > 1:
+                utilisation = 1
+            total_utilisation += weights[r] * utilisation
         return total_utilisation
 
     def calculate_utilisations(self):
+        """return dict server -> utilisation rate"""
         self.utilisations = {}
-        uniform_weight = 1./len(Server.resource_types)
-        weights = {res : uniform_weight for res in Server.resource_types}
         for server in self.servers:
-            total_utilisation = self.utilisation(server, weights)
+            total_utilisation = self.utilisation(server)
             self.utilisations[server] = total_utilisation
         return self.utilisations
 

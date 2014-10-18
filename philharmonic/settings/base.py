@@ -41,7 +41,8 @@ el_price_dataset = os.path.join(DATA_LOC, 'world-realtemp/prices.csv')
 # the time period of the simulation
 start = pd.Timestamp('2010-06-03 00:00')
 # - two days
-times = pd.date_range(start, periods=24 * 7, freq='H')
+#times = pd.date_range(start, periods=24 * 7, freq='H')
+times = pd.date_range(start, periods=3, freq='H')
 end = times[-1]
 
 # plotting results
