@@ -321,11 +321,12 @@ def run(steps=None):
 
     # serialise and log the results
     #------------------------------
-    serialise_results(cloud, env, schedule)
+    results = serialise_results(cloud, env, schedule)
 
     end_time = datetime.now()
     info('Simulation finished at time: {}'.format(end_time))
     info('Duration: {}'.format(end_time - start_time))
+    return results
 
 if __name__ == "__main__":
     run()

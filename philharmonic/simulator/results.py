@@ -127,3 +127,5 @@ def serialise_results(cloud, env, schedule):
         plt.savefig(loc('results-graph.pdf'))
 
     info('\nDone. Results saved to: {}'.format(conf.output_folder))
+
+    return aggregated_results

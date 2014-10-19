@@ -30,6 +30,14 @@ def cli_inputgen(conf):
     from philharmonic.simulator.inputgen import generate_fixed_input
     generate_fixed_input()
 
+@cli.command('explore')
+@click.option('--conf', default='philharmonic.settings.ga_explore',
+              help='The main conf module to load.')
+def cli_explore(conf):
+    philharmonic._setup(conf)
+    from philharmonic.explorer import explore
+    explore()
+
 @cli.command('profile')
 @click.option('--conf', default='philharmonic.settings.ga_profile',
               help='The main conf module to load.')
