@@ -15,3 +15,7 @@ io/workload
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+
+# Cython
+*.so
+*.c

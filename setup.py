@@ -6,6 +6,8 @@ Created on 14. 9. 2012.
 from setuptools import setup, find_packages
 import os
 
+from Cython.Build import cythonize
+
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -19,7 +21,8 @@ setup(
                         'pysnmp>=4.2',
 #                        '"Twisted Web">=12.2',
                         'SOAPpy>=0.12',],
-# sudo apt-get intsall python-twisted-web
+    # sudo apt-get intsall python-twisted-web
+    ext_modules = cythonize("helloworld.pyx"),
     zip_safe = True,
     
     # metadata for upload to PyPI
