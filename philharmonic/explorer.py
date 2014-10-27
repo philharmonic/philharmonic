@@ -46,6 +46,10 @@ def _process_results(all_results, new_results):
     cost = new_results['Total cost ($)']
     all_results['cost'].append(cost)
 
+def _serialise_results(combinations, results):
+    data = pd.merge(combinations, results, left_index=True, right_index=True)
+    data.to_pickle(loc('exploration_results.pkl'))
+
 def _iterate_run(combinations):
     """iterate over all the combinations and run the simulation"""
     all_results = {'cost': []}
@@ -59,15 +63,12 @@ def _iterate_run(combinations):
         new_results = _run_simulation()
         info(new_results)
         _process_results(all_results, new_results)
-    return pd.DataFrame(all_results)
-
-def _serialise_results(combinations, results):
-    data = pd.merge(combinations, results, left_index=True, right_index=True)
-    data.to_pickle(loc('exploration_results.pkl'))
+    results = pd.DataFrame(all_results)
+    _serialise_results(combinations, results)
+    return results
 
 def explore():
     """explore different parameters"""
     combinations = _generate_combinations()
     results = _iterate_run(combinations)
-    _serialise_results(combinations, results)
     #combinations.to_csv(loc('combinations.csv'))
