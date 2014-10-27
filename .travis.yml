@@ -23,6 +23,8 @@ install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib pandas
   - pip install -r requirements/test.txt
   - pip install coveralls
+  - python setup.py build_ext --inplace
+
 
 # command to run tests
 script: nosetests --with-coverage --cover-package=philharmonic --logging-level=INFO --with-yanc --exclude-dir-file=philharmonic/tests/exclude.txt

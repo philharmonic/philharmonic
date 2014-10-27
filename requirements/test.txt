@@ -5,3 +5,4 @@ yanc
 mock
 coverage
 nose-timer
+cython

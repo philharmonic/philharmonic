@@ -29,6 +29,12 @@ or
 installing the scientific packages via `apt-get` is much faster as no
 compiling is necessary.
 
+### Compiling Cython sources
+
+Before using the package, it is necessary to build the Cython sources.
+
+    python setup.py build_ext --inplace
+
 Running
 -------
 First it is necessary to generate the input datasets.
