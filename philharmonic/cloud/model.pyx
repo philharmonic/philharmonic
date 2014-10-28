@@ -1,3 +1,6 @@
+# encoding: utf-8
+# cython: profile=True
+
 '''
 The cloud model as seen from the cloud provider's perspective.
 
@@ -6,6 +9,7 @@ Created on Jul 11, 2013
 @author: kermit
 
 '''
+
 import copy
 import itertools
 

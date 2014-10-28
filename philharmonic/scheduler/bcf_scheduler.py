@@ -9,7 +9,7 @@ def sort_vms_big_first(VMs):
                   reverse=True)
 
 def sort_active_pms(PMs, state, cost):
-    """Sort by free capacity decreasing (fill out almost full servers first),
+    """Sort by free capacity increasing (fill out almost full servers first),
     by electricity price increasing (cheaper locations are preferred).
     Used for sorting active hosts to choose targets for new VMs.
 
@@ -112,11 +112,9 @@ class BCFScheduler(IScheduler):
         cost = el * calculate_pue(temp)
         all_hosts = self.cloud.servers
         hosts = filter(lambda s : not self.current.server_free(s), all_hosts)
-        hosts = sort_active_pms(hosts, self.current, cost)
         inactive_hosts = filter(lambda s : self.current.server_free(s),
                                 all_hosts)
         inactive_hosts = sort_inactive_pms(inactive_hosts, self.current, cost)
-
         mapped = False
         while not mapped:
             # sort for one of - first pass, free_cap changed or new host
@@ -148,6 +146,7 @@ class BCFScheduler(IScheduler):
                 VMs.append(request.vm)
         #  - select VMs on underutilised PMs
         VMs.extend(self._remove_vms_from_underutilised_hosts())
+        # TODO: find and reallocate VMs from overcapacitated hosts
         # TODO: find and reallocate VMs from expensive locations
         VMs = sort_vms_big_first(VMs)
         if len(VMs) == 0:

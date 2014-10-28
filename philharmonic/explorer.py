@@ -53,7 +53,7 @@ def _serialise_results(combinations, results):
 def _iterate_run(combinations):
     """iterate over all the combinations and run the simulation"""
     all_results = {'cost': []}
-    for i in combinations.index[:3]:
+    for i in combinations.index:
         info('\n' + '#' * 30 +
              '\nExploration iteration ' +
              '{}/{}\n'.format(i + 1,
@@ -63,12 +63,11 @@ def _iterate_run(combinations):
         new_results = _run_simulation()
         info(new_results)
         _process_results(all_results, new_results)
-    results = pd.DataFrame(all_results)
-    _serialise_results(combinations, results)
+        results = pd.DataFrame(all_results)
+        _serialise_results(combinations, results)
     return results
 
 def explore():
     """explore different parameters"""
     combinations = _generate_combinations()
     results = _iterate_run(combinations)
-    #combinations.to_csv(loc('combinations.csv'))
