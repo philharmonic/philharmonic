@@ -3,11 +3,11 @@ Created on 14. 9. 2012.
 
 @author: kermit
 '''
-from setuptools import setup, find_packages
+
 import os
 
+from setuptools import setup, find_packages
 from Cython.Build import cythonize
-
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -20,13 +20,11 @@ setup(
                         'numpy>=1.6.1',
                         'pysnmp>=4.2',
 #                        '"Twisted Web">=12.2',
-                        'SOAPpy>=0.12',],
+                        'SOAPpy>=0.12'],
     # sudo apt-get intsall python-twisted-web
-    ext_modules = cythonize(
-        ["helloworld.pyx", "philharmonic/cloud/model.pyx"]
-    ),
+    ext_modules = cythonize('**/*.pyx'),
     zip_safe = True,
-    
+
     # metadata for upload to PyPI
     author = "Drazen Lucanin",
     author_email = "kermit666@gmail.com",
