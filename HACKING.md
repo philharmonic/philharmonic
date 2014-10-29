@@ -22,13 +22,13 @@ To enter ipdb on errors:
 
 Profiling
 ---------
-Inside IPython run:
+From the terminal run:
 
     ipython -- simulate.py profile --conf=philharmonic.settings.bcf -l 20
 
 where `conf` is the configuration you would like to analyse.
 
-Alternatively, run:
+Alternatively open an IPython prompt and run:
 
     from philharmonic.profiler import profile_run
     %prun profile_run()
