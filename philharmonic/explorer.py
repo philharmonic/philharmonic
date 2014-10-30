@@ -11,7 +11,11 @@ from philharmonic.utils import loc
 def _generate_range(min_value, max_value, resolution):
     return np.arange(min_value, max_value + resolution, resolution)
 
-def _generate_combinations():
+def eq(a, b, eps=0.0001):
+    """float equality"""
+    return abs(a - b) <= eps
+
+def generate_combinations():
     """generate a search space of all the possible combinations"""
     w_util = _generate_range(conf.w_util_min, conf.w_util_max, conf.resolution)
     w_cost = _generate_range(conf.w_cost_min, conf.w_cost_max, conf.resolution)
@@ -21,7 +25,7 @@ def _generate_combinations():
     parameter_ranges = [w_util, w_cost, w_sla, w_constraint]
     #len(list(itertools.product(*parameter_ranges)))
     combinations = [combo for combo in itertools.product(*parameter_ranges) \
-                    if np.sum(combo) == 1.]
+                    if eq(np.sum(combo), 1.)]
     #return combinations
     cnames = ['w_util', 'w_cost', 'w_sla', 'w_constraint']
     combinations = pd.DataFrame(combinations,
@@ -69,5 +73,5 @@ def _iterate_run(combinations):
 
 def explore():
     """explore different parameters"""
-    combinations = _generate_combinations()
+    combinations = generate_combinations()
     results = _iterate_run(combinations)
