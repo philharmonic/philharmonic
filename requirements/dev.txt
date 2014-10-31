@@ -3,3 +3,4 @@ ipython
 ipdb
 ipdbplugin
 nosy
+memory-profiler

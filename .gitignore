@@ -19,3 +19,6 @@ __pycache__/
 # Cython
 *.so
 *.c
+
+# profiling data
+mprofile_*.dat
