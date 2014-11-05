@@ -83,10 +83,13 @@ class IManager(object):
 
         self.times = self._create(inputgen, factory['times'])
         if self.times is not None:
+            requests_kwargs = {'start': self.times[0], 'end': self.times[-1]}
+            if ('requests_offset' in factory and
+                factory['requests_offset'] is not None):
+                requests_kwargs['offset'] = factory['requests_offset']
             self.requests = self._create(inputgen,
                                          factory['requests'],
-                                         start=self.times[0],
-                                         end=self.times[-1])
+                                         **requests_kwargs)
         else:
             self.requests = None
         try:

@@ -108,6 +108,9 @@ factory = {
     # VM requests. Can be:
     #  requests_from_pickle (recommended), simple_vmreqs, medium_vmreqs
     "requests": "requests_from_pickle",
+    # offset by which to shift requests (None for no shifting)
+    # - mostly just for use by the explorer
+    "requests_offset": None,
     # Geotemporal inputs. *_from_conf recommended
     # (they read CSV files located at conf.*_dataset)
     # Can also be:

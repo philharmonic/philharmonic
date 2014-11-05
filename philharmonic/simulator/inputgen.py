@@ -456,8 +456,13 @@ def servers_from_pickle():
     with open(common_loc('workload/servers.pkl')) as pkl_srv:
         return pickle.load(pkl_srv)
 
+# TODO: add offset
 def requests_from_pickle(*args, **kwargs): # TODO: don't need input
-    return pd.read_pickle(common_loc('workload/requests.pkl'))
+    requests = pd.read_pickle(common_loc('workload/requests.pkl'))
+    if 'offset' in kwargs:
+        offset = kwargs['offset']
+        requests.index = requests.index + offset
+    return requests
 
 if __name__ == '__main__':
     generate_fixed_input()
