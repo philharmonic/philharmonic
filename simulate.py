@@ -43,11 +43,13 @@ def cli_explore(conf):
               help='The main conf module to load.')
 @click.option('--lines', '-l', default=10,
               help='Number of lines to show.')
-def cli_profile(conf, lines):
+@click.option('--sort', '-s', default='tottime',
+              help='Column to sort by.')
+def cli_profile(conf, lines, sort):
     philharmonic._setup(conf)
     from philharmonic import profiler
     profiler.prun('profiler.profile(conf_module={})'.format(conf),
-                  globals(), locals(), lines)
+                  globals(), locals(), lines, sort)
 
 if __name__ == "__main__":
     #load_settings_run()

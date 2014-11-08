@@ -13,13 +13,13 @@ def profile_run(conf_module='philharmonic.settings.ga_profile'):
     philharmonic._setup(conf_module)
     profile(conf_module)
 
-def prun(cmd, globals_ctx, locals_ctx, lines=10):
+def prun(cmd, globals_ctx, locals_ctx, lines=10, sort_by='tottime'):
     """mimic IPython's %prun magic function"""
     import cProfile
     import pstats
     prof = cProfile.Profile()
     prof = prof.runctx(cmd, globals_ctx, locals_ctx)
-    stats = pstats.Stats(prof).strip_dirs().sort_stats(1)
+    stats = pstats.Stats(prof).strip_dirs().sort_stats(sort_by)
     stats.print_stats(lines)
 
 def prun_real():
