@@ -159,6 +159,7 @@ class ScheduleUnit(Schedule):
         return s
 
 def create_random(environment, cloud, no_el_price=False, no_temperature=False):
+    """create a random unit"""
     # TODO: maybe kick out migrations that make no sense
     unit = ScheduleUnit() # empty schedule unit
     unit.environment = environment
@@ -174,15 +175,20 @@ def create_random(environment, cloud, no_el_price=False, no_temperature=False):
     max_migrations = plan_duration * len(cloud.vms) // 3
     migration_number = random.randint(min_migrations, max_migrations)
     # generate migration_number of migrations
+    times = []
+    actions = []
     for i in range(migration_number):
         # - pick random moment
         t = random_time(start, end)
+        times.append(t)
         # - pick random VM
         vm = random.sample(cloud.vms, 1)[0]
         # - pick random server
         server = random.sample(cloud.servers, 1)[0]
         action = Migration(vm, server)
-        unit.add(action, t)
+        actions.append(action)
+    unit.actions = pd.TimeSeries(actions, times, name='actions')
+    unit.sort() # TODO: kick out duplicates/overrides like unit.add
     return unit
 
 def roulette_selection(individuals, k):

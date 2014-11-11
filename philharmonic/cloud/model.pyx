@@ -495,6 +495,14 @@ class Schedule(object):
         self.actions = ranked_actions.sort(['index', 'rank']).actions
         self.actions.name = 'actions'
 
+    def clean(self):
+        """Remove duplicates and only consider the last action on a VM if
+        multiple exist for the same timestamp.
+
+        """
+        # TODO: is a check to leave boots alone necessary?
+        self.actions.drop_duplicates(inplace=True)
+
     def add(self, action, t):
         """Add an action to the schedule. Make sure it's still sorted.
         Return True/False to indicate success."""

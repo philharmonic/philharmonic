@@ -606,6 +606,31 @@ def test_schedule_sorted():
     assert_sequence_equal(list(schedule.actions.values),
                           [a1, a2, a3, a4, a5, b1, b2])
 
+def test_schedule_clean():
+    schedule = Schedule()
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    vm1 = VM(2000, 1)
+    vm2 = VM(2000, 1)
+    # duplicates
+    a1 = Migration(vm1, s1)
+    a2 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2013-01-01 00:00')
+    # same vm & timestamp, different action
+    b1 = Migration(vm2, s1)
+    b2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2013-01-01 01:00')
+    # normal
+    c1 = Migration(vm1, s1)
+    t3 = pd.Timestamp('2013-01-01 02:00')
+    times = [t1, t1, t2, t2, t3]
+    actions = [a1, a2, b1, b2, c1]
+    schedule.actions = pd.TimeSeries(actions, times)
+    schedule.clean()
+    assert_sequence_equal(list(schedule.actions.values),
+                          [a1, a2, b1, b2, c1])
+    # TODO: test for just a1, b2, c1
+
 def test_vm_requests():
     # some servers
     s1 = Server(4000, 2)
