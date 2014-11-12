@@ -34,6 +34,7 @@ Energy-Aware Cloud Management through Progressive SLA Specification.
 Economics of Grids, Clouds, Systems, and Services - 11th International
 Conference (GECON 2014). 16-18 September, 2014, Cardiff, UK.
 ([arXiv](http://arxiv.org/abs/1409.0325))
+
 [2] Alfeld, S., Barford, C., Barford, P.: Toward an analytic framework
 for the electrical power grid. In: Proceedings of the 3rd International
 Conference on Future Energy Systems: Where Energy, Computing and
