@@ -426,7 +426,10 @@ actions = ['boot', 'delete', 'migrate', 'pause', 'unpause']
 action_rank = dict(zip(actions, range(len(actions))))
 
 class Action(CommonEqualityMixin):
-    """A static representation of an action on the cloud."""
+    """A static representation of an action on the cloud.
+    Has to be immutable (no dicts)
+
+    """
     name = ''
     args = None
     def __repr__(self):
@@ -443,7 +446,7 @@ class Migration(Action):
     def __init__(self, vm, server):
         self.vm = vm
         self.server = server
-        self.args = [vm, server]
+        self.args = (vm, server)
     name = 'migrate'
     def __repr__(self):
         return '{} -> {}'.format(str(self.vm), str(self.server))
@@ -451,13 +454,13 @@ class Migration(Action):
 class Pause(Action):
     """pause vm"""
     def __init__(self, vm):
-        self.args = [vm]
+        self.args = (vm,)
     name = 'pause'
 
 class Unpause(Action):
     """pause vm"""
     def __init__(self, vm):
-        self.args = [vm]
+        self.args = (vm,)
     name = 'unpause'
 
 class VMRequest(Action):
@@ -468,7 +471,7 @@ class VMRequest(Action):
     """
     def __init__(self, vm, what):
         self.vm = vm
-        self.args = [vm]
+        self.args = (vm,)
         self.what = what
         self.name = self.what
     def __str__(self):

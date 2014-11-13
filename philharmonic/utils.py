@@ -43,3 +43,8 @@ class CommonEqualityMixin(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __hash__(self):
+        """Override the default hash behavior
+        (that returns the id or the object)"""
+        return hash(tuple(sorted(self.__dict__.items())))
