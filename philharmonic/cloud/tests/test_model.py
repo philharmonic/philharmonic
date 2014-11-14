@@ -637,8 +637,8 @@ def test_schedule_clean():
     actions = [a1, a2, b1, b2, c1]
     schedule.actions = pd.TimeSeries(actions, times)
     schedule.clean()
-    # assert_sequence_equal(list(schedule.actions.values),
-    #                       [a1, b1, b2, c1])
+    assert_sequence_equal(list(schedule.actions.values),
+                          [a1, b1, b2, c1])
     # TODO: test for just a1, b2, c1
 
 def test_vm_requests():

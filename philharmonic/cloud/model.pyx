@@ -504,7 +504,12 @@ class Schedule(object):
 
         """
         # TODO: is a check to leave boots alone necessary?
-        self.actions.drop_duplicates(inplace=True)
+        df = pd.DataFrame({'index': self.actions.index,
+                           'actions': self.actions.values})
+        df.drop_duplicates(cols=['actions', 'index'],
+                           take_last=True, inplace=True)
+        self.actions = df.set_index('index').actions
+        #self.actions.drop_duplicates(inplace=True)
 
     def add(self, action, t):
         """Add an action to the schedule. Make sure it's still sorted.
