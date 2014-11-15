@@ -504,12 +504,17 @@ class Schedule(object):
 
         """
         # TODO: is a check to leave boots alone necessary?
+        # remove exact duplicates on same index
         df = pd.DataFrame({'index': self.actions.index,
                            'actions': self.actions.values})
         df.drop_duplicates(cols=['actions', 'index'],
                            take_last=True, inplace=True)
+        # only take the last action applied to a VM at some index
+        df['vm'] = df.actions.apply(lambda a : a.vm)
+        df.drop_duplicates(cols=['index', 'vm'],
+                           take_last=True, inplace=True)
+        # back to the original form
         self.actions = df.set_index('index').actions
-        #self.actions.drop_duplicates(inplace=True)
 
     def add(self, action, t):
         """Add an action to the schedule. Make sure it's still sorted.

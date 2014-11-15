@@ -632,14 +632,15 @@ def test_schedule_clean():
     t2 = pd.Timestamp('2013-01-01 01:00')
     # normal
     c1 = Migration(vm1, s1)
+    c2 = Migration(vm2, s1)
     t3 = pd.Timestamp('2013-01-01 02:00')
-    times = [t1, t1, t2, t2, t3]
-    actions = [a1, a2, b1, b2, c1]
+    times = [t1, t1, t2, t2, t3, t3]
+    actions = [a1, a2, b1, b2, c1, c2]
     schedule.actions = pd.TimeSeries(actions, times)
     schedule.clean()
     assert_sequence_equal(list(schedule.actions.values),
-                          [a1, b1, b2, c1])
-    # TODO: test for just a1, b2, c1
+                          [a1, b2, c1, c2])
+    # TODO: test with boot actions as well
 
 def test_vm_requests():
     # some servers
