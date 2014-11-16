@@ -511,7 +511,8 @@ class Schedule(object):
                            take_last=True, inplace=True)
         # only take the last action applied to a VM at some index
         df['vm'] = df.actions.apply(lambda a : a.vm)
-        df.drop_duplicates(cols=['index', 'vm'],
+        df['name'] = df.actions.apply(lambda a : a.name)
+        df.drop_duplicates(cols=['index', 'vm', 'name'],
                            take_last=True, inplace=True)
         # back to the original form
         self.actions = df.set_index('index').actions

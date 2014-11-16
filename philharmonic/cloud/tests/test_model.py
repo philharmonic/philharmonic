@@ -623,6 +623,8 @@ def test_schedule_clean():
     vm1 = VM(2000, 1)
     vm2 = VM(2000, 1)
     # duplicates
+    a01 = VMRequest(vm1, 'boot')
+    a02 = VMRequest(vm2, 'boot')
     a1 = Migration(vm1, s1)
     a2 = Migration(vm1, s1)
     t1 = pd.Timestamp('2013-01-01 00:00')
@@ -634,13 +636,12 @@ def test_schedule_clean():
     c1 = Migration(vm1, s1)
     c2 = Migration(vm2, s1)
     t3 = pd.Timestamp('2013-01-01 02:00')
-    times = [t1, t1, t2, t2, t3, t3]
-    actions = [a1, a2, b1, b2, c1, c2]
+    times = [t1, t1, t1, t1, t2, t2, t3, t3]
+    actions = [a01, a02, a1, a2, b1, b2, c1, c2]
     schedule.actions = pd.TimeSeries(actions, times)
     schedule.clean()
     assert_sequence_equal(list(schedule.actions.values),
-                          [a1, b2, c1, c2])
-    # TODO: test with boot actions as well
+                          [a01, a02, a1, b2, c1, c2])
 
 def test_vm_requests():
     # some servers
