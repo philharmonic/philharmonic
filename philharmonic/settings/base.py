@@ -31,17 +31,16 @@ common_output_folder = "io/"
 base_output_folder = os.path.join(common_output_folder, "results/test/")
 output_folder = base_output_folder
 
-DATA_LOC = os.path.expanduser('~/Dropbox/dev/skripte/python/notebook')
-DATA_LOC = os.path.join(DATA_LOC, 'tu/data/geotemporal')
+DATA_LOC = "io/geotemp/"
 
 # the datasets used in the simulation
 USA = False
 if USA:
-    temperature_dataset = os.path.join(DATA_LOC, 'temperatures.csv')
-    el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
+    DATA_LOC = os.path.join(DATA_LOC, "usa/")
 else:
-    temperature_dataset = os.path.join(DATA_LOC, 'world-realtemp/temperatures.csv')
-    el_price_dataset = os.path.join(DATA_LOC, 'world-realtemp/prices.csv')
+    DATA_LOC = os.path.join(DATA_LOC, "world/")
+temperature_dataset = os.path.join(DATA_LOC, 'temperatures.csv')
+el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 
 # the time period of the simulation
 start = pd.Timestamp('2010-06-03 00:00')
