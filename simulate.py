@@ -43,7 +43,7 @@ def cli_explore(conf):
               help='The main conf module to load.')
 @click.option('--lines', '-l', default=10,
               help='Number of lines to show.')
-@click.option('--sort', '-s', default='tottime',
+@click.option('--sort', '-s', default=None,
               help='Column to sort by.')
 def cli_profile(conf, lines, sort):
     philharmonic._setup(conf)
