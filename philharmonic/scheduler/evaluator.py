@@ -364,7 +364,7 @@ def calculate_migration_overhead(cloud, environment, schedule,
 #-------------------------------------
 
 # - one run from t to forecast_end
-# - apply actions on the cloud model
+# - apply actions on the cloud model (inplace for speed)
 #   - calculate utilisation
 #   - count migration rate
 #   - note capacity constraint violations
@@ -435,7 +435,7 @@ def evaluate(cloud, environment, schedule,
         # TODO: precise indexing, not dict
         if isinstance(schedule.actions[t], pd.Series):
             for action in schedule.actions[t].values:
-                cloud.apply(action)
+                cloud.apply(action, inplace=True)
                 try:
                     migrations_num[action.vm] += 1
                 except KeyError:
@@ -448,7 +448,7 @@ def evaluate(cloud, environment, schedule,
             except KeyError:
                 error('Explosion! Check environment.get_requests.')
                 raise
-            cloud.apply(action)
+            cloud.apply(action, inplace=True)
         state = cloud.get_current()
         new_utilisations = state.calculate_utilisations()
         utilisations_list.append(new_utilisations)

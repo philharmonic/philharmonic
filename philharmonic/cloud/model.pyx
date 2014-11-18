@@ -147,12 +147,12 @@ class Server(Machine):
 # ==========
 
 class State(object):
-    """the state of the cloud at a single moment. Various methods like migrate,
+    """The state of the cloud at a single moment. Various methods like migrate,
     pause... for changing it."""
 
     @staticmethod
     def random():
-        """create a random state"""
+        """Create a random state"""
         #TODO: randomize
         return State([Server(2,2), Server(4,4)], [VM(1,1), VM(1,1)])
 
@@ -178,26 +178,26 @@ class State(object):
 
     @property
     def alloc(self):
-        """dict giving for every server the set of VMs allocated to it"""
+        """A dict giving for every server the set of VMs allocated to it."""
         # TODO: return copy where setting items raises error
         # - make dictionary read only
         return self._alloc
 
     def _copy_alloc(self, other_alloc):
-        """copy other_alloc to your own alloc"""
+        """Copy other_alloc to your own alloc."""
         self._alloc = {}
         for s, vms in other_alloc.iteritems():
             self.alloc[s] = set(vms) # create a new set
 
     def auto_allocate(self):
-        """place all VMs on the first server"""
+        """Place all VMs on the first server."""
         for vm in self.vms:
             self.place(vm, self.servers[0])
         return self
 
 
     def place(self, vm, s):
-        """change current state to have vm on server s"""
+        """Change current state to have vm on server s."""
         if vm not in self._alloc[s]:
             self._alloc[s].add(vm)
             for r in s.resource_types: # update free capacity
@@ -205,7 +205,7 @@ class State(object):
         return self
 
     def remove(self, vm, s):
-        """change current state to not have vm on server s"""
+        """Change current state to not have vm on server s."""
         if vm in self._alloc[s]:
             self._alloc[s].remove(vm)
             for r in s.resource_types: # update free capacity
@@ -213,7 +213,7 @@ class State(object):
         return self
 
     def remove_all(self, s):
-        """change current state to have no VMs on server s"""
+        """Change current state to have no VMs on server s."""
         self._alloc[s] = set()
         self.free_cap[s] = copy.copy(s.cap)
         return self
@@ -241,10 +241,12 @@ class State(object):
         return self
 
     def pause(self, vm):
+        """Pause vm."""
         self.paused.add(vm) # add to paused set
         return self
 
     def unpause(self, vm):
+        """Unpause vm."""
         try:
             self.paused.remove(vm) # remove from paused set
         except KeyError:
@@ -252,12 +254,12 @@ class State(object):
         return self
 
     def boot(self, vm):
-        """a VM is requested by the user, but is not yet allocated"""
+        """A VM is requested by the user, but is not yet allocated."""
         self.vms.add(vm)
         return self
 
     def delete(self, vm):
-        """user requested for a vm to be deleted"""
+        """User requested for a vm to be deleted."""
         self.migrate(vm, None) # remove vm from its host server
         try: #  remove the vm from this state's active vms
             self.vms.remove(vm)
@@ -268,8 +270,8 @@ class State(object):
     #---------------
 
     def copy(self):
-        """ return a copy of the state with a new alloc instance"""
-        new_state = State()
+        """Return a copy of the state with a new alloc instance."""
+        new_state = State.__new__(State) # new empty State instance
         #new_state.__dict__.update(self.__dict__)
         new_state.servers = self.servers
         new_state.vms = copy.copy(self.vms)
@@ -283,19 +285,26 @@ class State(object):
                 self.free_cap = {s : copy.copy(s.cap) for s in self.servers}
                 new_state.free_cap[s] = copy.copy(self.free_cap[s])
         #TODO: copy.copy - probably faster
+        new_state.paused = copy.copy(self.paused)
+        new_state.suspended = copy.copy(self.suspended)
         return new_state
 
     # creates a new VMs list
-    def transition(self, action):
-        """transition into new state acccording to action"""
-        new_state = self.copy()
-        #new_state.migrate(migration.vm, migration.server)
-        apply_effect = getattr(new_state, action.name)
+    def transition(self, action, inplace=False):
+        """Transition into new state or if inplace is True modify this state
+        acccording to action.
+
+        """
+        if inplace: # transitioning inplace modifies itself
+            state = self
+        else: # otherwise a copy of the state is modified
+            state = self.copy()
+        apply_effect = getattr(state, action.name)
         apply_effect(*action.args)
-        return new_state
+        return state
 
     def utilisation(self, s, weights=None):
-        """utilisation ratio of a server s"""
+        """Utilisation ratio of a server s."""
         if weights is None:
             weights = Machine.weights
         total_utilisation = 0.
@@ -507,12 +516,12 @@ class Schedule(object):
         # remove exact duplicates on same index
         df = pd.DataFrame({'index': self.actions.index,
                            'actions': self.actions.values})
-        df.drop_duplicates(cols=['actions', 'index'],
+        df.drop_duplicates(subset=['actions', 'index'],
                            take_last=True, inplace=True)
         # only take the last action applied to a VM at some index
         df['vm'] = df.actions.apply(lambda a : a.vm)
         df['name'] = df.actions.apply(lambda a : a.name)
-        df.drop_duplicates(cols=['index', 'vm', 'name'],
+        df.drop_duplicates(subset=['index', 'vm', 'name'],
                            take_last=True, inplace=True)
         # back to the original form
         self.actions = df.set_index('index').actions
@@ -603,11 +612,12 @@ class Cloud():
 
     #TODO: this seems wrong - current should always be a copy?
     def reset_to_real(self):
-        """Set the current state back to what the real state of the cloud is."""
+        """Set the current state to a copy of what the real state of the
+        cloud is."""
         self._current = self._real.copy()
 
     def reset_to_initial(self):
-        """Set the current state back to the initial state."""
+        """Set the current state to a copy of the initial state."""
         self._current = self._initial.copy()
 
     def get_vms(self):
@@ -624,17 +634,21 @@ class Cloud():
     vms = property(get_vms, doc="get the VMs in the current state")
     servers = property(get_servers, doc="get the servers (always the same)")
 
-    def apply(self, action):
-        """Apply an Action on the current state."""
-        self._current = self._current.transition(action)
+    def apply(self, action, inplace=False):
+        """Apply an Action on the current state. The original current state
+        is left untouched (the action is performed on a copy),
+        unless inplace is True.
+
+        """
+        self._current = self._current.transition(action, inplace=inplace)
         return self._current
 
-    def apply_real(self, action):
+    def apply_real(self, action, inplace=False):
         """Apply an Action on the real state (reflecting the actual physical
         state) and reset the virtual state.
 
         """
-        self._real = self._real.transition(action)
+        self._real = self._real.transition(action, inplace=inplace)
         self.reset_to_real()
         return self._real
 

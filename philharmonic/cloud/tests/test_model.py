@@ -342,6 +342,39 @@ def test_vms_during_state_transitions():
     assert_equals(e.vms, set([vm2]))
     assert_not_in(vm1, e.alloc[s1])
 
+def test_apply():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    VMs = [vm1]
+    cloud = Cloud(servers, VMs)
+
+    initial = cloud.get_current()
+    a1 = cloud.apply(Migration(vm1, s1))
+    a2 = cloud.apply(Migration(vm1, s2))
+    a3 = cloud.apply(Migration(vm1, s1), inplace=True)
+    assert_not_equals(a1, a2, "applying by default creates a copy")
+    assert_equals(a2, a3, "applying inplace modifies the current state")
+
+def test_apply_real():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    VMs = [vm1]
+    cloud = Cloud(servers, VMs)
+
+    a1 = cloud.apply_real(Migration(vm1, s1))
+    a2 = cloud.apply_real(Migration(vm1, s2))
+    a3 = cloud.apply_real(Migration(vm1, s1), inplace=True)
+    assert_not_equals(a1, a2, "applying by default creates a copy")
+    assert_equals(a2, a3, "applying inplace modifies the old state")
+
 def test_state_reset():
     # some servers
     s1 = Server(4000, 2)
