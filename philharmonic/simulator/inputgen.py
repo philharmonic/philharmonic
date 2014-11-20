@@ -320,28 +320,34 @@ def get_data_loc(filename):
 # these methods not really necessary any more (apart for quick testing)
 # separate conf files can be created to mimic them
 
+def get_data_loc_usa(filename):
+    return os.path.join(conf.DATA_LOC_USA, filename)
+
+def get_data_loc_world(filename):
+    return os.path.join(conf.DATA_LOC_WORLD, filename)
+
 def usa_el(start=None, filepath=None):
     if filepath is None:
-        filepath = get_data_loc('prices.csv')
+        filepath = get_data_loc_usa('prices.csv')
     el_prices = pd.read_csv(filepath,
                             index_col=0, parse_dates=[0])
     return el_prices
 
 def usa_temperature(start=None, filepath=None):
     if filepath is None:
-        filepath = get_data_loc('temperatures.csv')
+        filepath = get_data_loc_usa('temperatures.csv')
     temperature = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return temperature
 
 def world_el(start=None, filepath=None):
     if filepath is None:
-        filepath = get_data_loc('world/prices.csv')
+        filepath = get_data_loc_world('prices.csv')
     el_prices = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return el_prices
 
 def world_temperature(start=None, filepath=None):
     if filepath is None:
-        filepath = get_data_loc('world/temperatures.csv')
+        filepath = get_data_loc_world('temperatures.csv')
     temperature = pd.read_csv(filepath, index_col=0, parse_dates=[0])
     return temperature
 
