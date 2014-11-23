@@ -318,11 +318,7 @@ class State(object):
 
     def calculate_utilisations(self):
         """return dict server -> utilisation rate"""
-        self.utilisations = {}
-        for server in self.servers:
-            total_utilisation = self.utilisation(server)
-            self.utilisations[server] = total_utilisation
-        return self.utilisations
+        return {server: self.utilisation(server) for server in self.servers}
 
     # constraint checking
     # C1
