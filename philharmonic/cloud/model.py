@@ -162,6 +162,8 @@ class State(object):
         self._alloc = {} # servers -> allocated machines
         # servers -> remaining free capacity
         self.free_cap = {s : copy.copy(s.cap) for s in servers}
+        # server capacities in a handy DataFrame for further calculations
+        self.cap_df = pd.DataFrame({s: s.cap for s in self.servers})
         self.paused = set() # those VMs that are paused
         self.suspended = set() # those VMs that are paused
         for s in self.servers:
@@ -273,7 +275,9 @@ class State(object):
         """Return a copy of the state with a new alloc instance."""
         new_state = State.__new__(State) # new empty State instance
         #new_state.__dict__.update(self.__dict__)
+        # these two don't copy objects, as we assume servers don't change
         new_state.servers = self.servers
+        new_state.cap_df = self.cap_df
         new_state.vms = copy.copy(self.vms)
         new_state._copy_alloc(self._alloc)
         new_state.free_cap = {}
@@ -393,14 +397,21 @@ class State(object):
         are overcapacitated).
 
         """
-        max_overcap = {res: 0. for res in Machine.resource_types}
-        ratio_overcap = {res: 0. for res in Machine.resource_types}
+        # TODO: see if this method using DataFrames could be faster
+        # (free_cap instance of DataFrame?)
+        # free_cap_df = pd.DataFrame(self.free_cap)
+        # ratio_overcap = -1 * free_cap_df[free_cap_df < 0] / self.cap_df
+        # ratio_overcap[ratio_overcap.isnull()] = 0
+        # penalty = ratio_overcap.max().mean()
+        ratio_overcap = {s: 0. for s in self.servers}
         for s in self.servers:
+            max_overcap_ratio = 0
             for r in Machine.resource_types:
                 overcap = -1 * self.free_cap[s][r]
-                if overcap > max_overcap[r]:
-                    max_overcap[r] = overcap
-                    ratio_overcap[r] = float(overcap) / s.cap[r]
+                res_ratio_overcap = float(overcap) / s.cap[r]
+                if res_ratio_overcap > max_overcap_ratio:
+                    max_overcap_ratio = res_ratio_overcap
+                    ratio_overcap[s] = res_ratio_overcap
         penalty = pd.Series(ratio_overcap).mean()
         if penalty > 1.:
             penalty = 1.

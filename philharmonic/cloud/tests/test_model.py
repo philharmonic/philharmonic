@@ -171,6 +171,33 @@ def test_capacity_penalty_heterogeneous_resources():
     pen = a.capacity_penalty()
     assert_almost_equals(pen, 0.5)
 
+def test_capacity_penalty_multiple_violations():
+    """test if max_overcap check stops detecting multiple violations"""
+    Machine.resource_types = ['RAM', '#CPUs']
+    # some servers
+    s1 = Server(4000, 4)
+    s2 = Server(4000, 5)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(3000, 3);
+    vm2 = VM(3000, 3);
+    vm3 = VM(2100, 3);
+    vm4 = VM(2100, 3);
+    VMs = [vm1, vm2, vm3, vm4]
+    a = State(servers, VMs)
+
+    # allocate and check capacity and allocation
+    a.place(vm1,s1)
+    assert_almost_equals(a.capacity_penalty(), 0.0)
+    a.place(vm2,s1)
+    pen1 = a.capacity_penalty()
+    assert_greater(pen1, 0.)
+    a.place(vm3, s2)
+    pen2 = a.capacity_penalty()
+    assert_equals(pen1, pen2)
+    a.place(vm4, s2)
+    pen3 = a.capacity_penalty()
+    assert_greater(pen3, pen2)
 
 def test_state():
     import copy
