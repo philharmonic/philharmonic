@@ -12,7 +12,6 @@ from philharmonic.manager.manager import Manager, PeakPauserManager, \
 from philharmonic.scheduler.ischeduler import IScheduler
 import philharmonic
 from philharmonic import conf as my_conf
-from philharmonic import runner
 
 def price_is_expensive(self): # our dummy version of the method
     if self.test_state:
@@ -30,12 +29,13 @@ class ManagerTest(unittest.TestCase):
         my_conf.historical_en_prices_file = "./io/energy_price_data-test.csv"
         Manager._initial_sleep = 0 # TODO: mock patch
 
-    #@patch('philharmonic.manager.manager.Manager.run')
-    def test_run(self):#, mock_run):
-        #mock_run.return_value = True
+    @patch('philharmonic.runner.start_benchmark')
+    def test_run(self, mock_bench_run, *args):
+        mock_bench_run.return_value = True
+        from philharmonic import runner
         manager = NoSchedulerManager()
         runner.run(manager)
-        manager.q.put("quit")
+        manager.q.put("quit") # <- the manager also does this by itself
         self.assertTrue(manager.results is not None)
 
     #TODO: fix & test PeakPauser as a management scheduler

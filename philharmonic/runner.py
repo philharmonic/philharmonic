@@ -7,7 +7,13 @@ from philharmonic.scheduler import NoScheduler
 from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from Queue import Queue
 from philharmonic import conf
-from philharmonic.benchmark import Benchmark
+
+
+def start_benchmark():
+    from philharmonic.benchmark import Benchmark
+    # start benchmark
+    benchmark = Benchmark(conf.command)
+    benchmark.run()
 
 def run(manager):
     """
@@ -19,9 +25,7 @@ def run(manager):
     manager.q = q
     manager.start()
 
-    # start benchmark
-    benchmark = Benchmark(conf.command)
-    benchmark.run()
+    start_benchmark()
 
     # stop scheduler
     q.put("quit")
