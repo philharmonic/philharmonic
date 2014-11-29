@@ -35,8 +35,6 @@ class Manager(IManager, threading.Thread):
         '''
         IManager.__init__(self)
         threading.Thread.__init__(self)
-        pass
-
 
     def initialize(self):
         #logging.basicConfig(filename='io/philharmonic.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
@@ -88,7 +86,7 @@ class PeakPauserManager(Manager):
 
 class NoSchedulerManager(Manager):
     factory = {
-        "scheduler": NoScheduler,
+        "scheduler": "NoScheduler",
         "environment": None, #TODO
         "cloud": None, #TODO
         "driver": None, #TODO

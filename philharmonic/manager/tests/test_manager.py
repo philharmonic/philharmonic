@@ -4,8 +4,10 @@ Created on Oct 16, 2012
 @author: kermit
 '''
 import unittest
+from mock import patch
 
-from philharmonic.manager.manager import Manager, PeakPauserManager, NoSchedulerManager
+from philharmonic.manager.manager import Manager, PeakPauserManager, \
+    NoSchedulerManager
 
 from philharmonic.scheduler.ischeduler import IScheduler
 import philharmonic
@@ -28,11 +30,13 @@ class ManagerTest(unittest.TestCase):
         my_conf.historical_en_prices_file = "./io/energy_price_data-test.csv"
         Manager._initial_sleep = 0 # TODO: mock patch
 
-    def test_run(self):
-        #scheduler = NoScheduler()
+    #@patch('philharmonic.manager.manager.Manager.run')
+    def test_run(self):#, mock_run):
+        #mock_run.return_value = True
         manager = NoSchedulerManager()
         runner.run(manager)
         manager.q.put("quit")
+        self.assertTrue(manager.results is not None)
 
     #TODO: fix & test PeakPauser as a management scheduler
 
