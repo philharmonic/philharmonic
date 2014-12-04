@@ -29,5 +29,8 @@ setup(
     author = "Drazen Lucanin",
     author_email = "kermit666@gmail.com",
     #url = "http://pypi.python.org/pypi/foc-forecaster",
-    long_description=read('README.md')
+    long_description=read('README.md'),
+    entry_points = {
+        'console_scripts' : ['ph=simulate:cli', 'philharmonic=simulate:cli']
+    }
 )
