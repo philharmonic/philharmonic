@@ -68,7 +68,11 @@ class IManager(object):
             factory = self.factory
         # we getattr/import_module from strings, so that we don't have to
         # import classes/functions in the conf module directly.
-        self.scheduler = self._create(scheduler, factory['scheduler'])
+        try:
+            #logger.debug(self.custom_scheduler)
+            self.scheduler = self.custom_scheduler #TODO: how to instantiate it?
+        except AttributeError: # no custom scheduler - use the one from config
+            self.scheduler = self._create(scheduler, factory['scheduler'])
         try:
             self.scheduler_conf = factory['scheduler_conf']
         except KeyError:

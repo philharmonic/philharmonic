@@ -15,8 +15,10 @@ def cli():
 @cli.command('run')
 @click.option('--conf', default='philharmonic.settings.base',
               help='The main conf module to load.')
-def load_settings_run(conf):
-    philharmonic._setup(conf)
+@click.option('--scheduler', '-s', default=None,
+              help='The scheduler class to use.')
+def load_settings_run(conf, scheduler):
+    philharmonic._setup(conf, scheduler)
     from philharmonic.simulator.simulator import run
     run()
 

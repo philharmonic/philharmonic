@@ -124,9 +124,11 @@ class Simulator(IManager):
         "temperature": "simple_temperature",
     }
 
-    def __init__(self, factory=None):
+    def __init__(self, factory=None, custom_scheduler=None):
         if factory is not None:
             self.factory = factory
+        if custom_scheduler is not None:
+            self.custom_scheduler = custom_scheduler
         super(Simulator, self).__init__()
         self.environment.el_prices = self._create(inputgen,
                                                   self.factory['el_prices'])
@@ -301,7 +303,7 @@ def before_start(simulator):
 
 # TODO: make run a method of Simulator maybe?
 
-def run(steps=None):
+def run(steps=None, custom_simulator=None):
     """Run the simulation."""
     info('SETTINGS\n########\n')
 
