@@ -6,6 +6,7 @@ from philharmonic import scheduler
 from philharmonic.simulator import inputgen
 from philharmonic.cloud import driver
 from philharmonic.simulator import environment
+from philharmonic import logger
 
 class IManager(object):
     """abstract cloud manager. Asks the scheduler what to do, given the current
@@ -69,7 +70,7 @@ class IManager(object):
         # we getattr/import_module from strings, so that we don't have to
         # import classes/functions in the conf module directly.
         try:
-            #logger.debug(self.custom_scheduler)
+            logger.debug(self.custom_scheduler)
             self.scheduler = self.custom_scheduler #TODO: how to instantiate it?
         except AttributeError: # no custom scheduler - use the one from config
             self.scheduler = self._create(scheduler, factory['scheduler'])

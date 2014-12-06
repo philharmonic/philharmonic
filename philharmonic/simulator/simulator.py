@@ -303,13 +303,13 @@ def before_start(simulator):
 
 # TODO: make run a method of Simulator maybe?
 
-def run(steps=None, custom_simulator=None):
+def run(steps=None, custom_scheduler=None):
     """Run the simulation."""
     info('SETTINGS\n########\n')
 
     # create simulator from the conf
     #-------------------------------
-    simulator = Simulator(conf.get_factory())
+    simulator = Simulator(conf.get_factory(), custom_scheduler)
 
     before_start(simulator)
 

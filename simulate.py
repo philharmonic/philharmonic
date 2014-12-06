@@ -18,9 +18,9 @@ def cli():
 @click.option('--scheduler', '-s', default=None,
               help='The scheduler class to use.')
 def load_settings_run(conf, scheduler):
-    philharmonic._setup(conf, scheduler)
+    philharmonic._setup(conf)
     from philharmonic.simulator.simulator import run
-    run()
+    run(custom_scheduler=scheduler)
 
 # TODO: see if the --conf option can be a part of the cli group
 

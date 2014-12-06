@@ -19,4 +19,3 @@ def _setup(conf_module='philharmonic.settings.base'):
     global inputgen
     import philharmonic.simulator.inputgen as inputgen
     from philharmonic import conf
-    conf.scheduler
