@@ -1,5 +1,7 @@
 import copy
 import importlib
+import sys
+import os
 
 from philharmonic import conf
 from philharmonic import scheduler
@@ -70,8 +72,11 @@ class IManager(object):
         # we getattr/import_module from strings, so that we don't have to
         # import classes/functions in the conf module directly.
         try:
-            logger.debug(self.custom_scheduler)
-            self.scheduler = self.custom_scheduler #TODO: how to instantiate it?
+            custom_scheduler = self.custom_scheduler
+            logger.debug(custom_scheduler)
+            sys.path.append(os.getcwd())
+            self.scheduler = importlib.import_module(custom_scheduler)
+            # TODO: get the class and instantiate it
         except AttributeError: # no custom scheduler - use the one from config
             self.scheduler = self._create(scheduler, factory['scheduler'])
         try:
