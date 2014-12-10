@@ -175,6 +175,16 @@ inputgen_settings = {
     #'max_duration': 60 * 60 * 24 * 90, # 90 days
 }
 
+# Simulation details
+#===================
+
+# the frequency at which to generate the power signals
+power_freq = '5min'
+# various power values of the servers in Watts
+P_peak = 200
+P_idle = 100
+P_std = 5
+
 # Benchmark
 #===========
 

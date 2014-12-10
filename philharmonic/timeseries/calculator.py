@@ -11,6 +11,13 @@ from scipy import integrate
 
 _KWH_RATIO = 3.6e6
 
+def calculate_power(util, P_idle=100, P_peak=200):
+    """given a DataFrame of server utilisations, calculate power"""
+    P = util * (P_peak - P_idle) # dynamic part
+    # a server with no load is suspended (otherwise idle power applies)
+    P[P>0] += P_idle
+    return P
+
 def calculate_price_old(power, price_file, start_date=None, old_parser=False):
     """parse prices from a price_file ($/kWh), realign it to start_date
     (if it's provided) and calculate the price of the energy consumption
