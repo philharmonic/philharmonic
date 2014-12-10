@@ -4,6 +4,7 @@ Created on Oct 15, 2012
 @author: kermit
 '''
 import unittest
+from nose.tools import *
 import pandas as pd
 
 from philharmonic.scheduler import EnergyPredictor
@@ -41,13 +42,15 @@ class TestCalculator(unittest.TestCase):
     def test_calculate_energy(self):
         # power = 1
         samples = [1]*24
-        power = pd.Series(samples, pd.date_range('2013-01-23', periods=len(samples), freq='s'))
+        power = pd.Series(samples,
+                          pd.date_range('2013-01-23', periods=len(samples),
+                                        freq='s'))
         energy = ph.calculate_energy(power)
         self.assertEqual(energy, 24, 'energy not correctly calculated')
         # power = 3 first 12 s, 1 afterwards
         power.ix[:12] = 3
         energy = ph.calculate_energy(power)
-        self.assertAlmostEqual(energy, 48, delta=1.0)#'energy not correctly calculated')
+        self.assertAlmostEqual(energy, 48, delta=1.0)
 
     def test_calculate_energy_df(self):
         n = 24
@@ -94,6 +97,29 @@ class TestCalculator(unittest.TestCase):
     #def test_calculate_price(self):
         #power = pd.Series(pd.date_range())
         #ph.calculate_price(power, prices)
+
+def test_calculate_power():
+    index = pd.date_range('2013-01-01', periods=6, freq='H')
+    num = len(index)/2
+    util = pd.Series([0]*num + [0.5]*num, index)
+    util = pd.DataFrame({'s1': util, 's2': [0.75] * 2 * num})
+    power = ph.calculate_power(util, P_idle=100, P_peak=200)
+    assert_equals(power['s1'][0], 0)
+    assert_equals(power['s1'][num], 150)
+    assert_equals(list(power['s1'][:num]), [0] * num)
+    assert_equals(list(power['s1'][num:]), [150] * num)
+    assert_equals(list(power['s2']), [175] * 2 * num)
+
+def test_calculate_power_freq():
+    index = pd.date_range('2013-01-01', periods=6, freq='H')
+    num = len(index)/2
+    util = pd.Series([0]*num + [0.5]*num, index)
+    util = pd.DataFrame({'s1': util, 's2': [0.75] * 2 * num})
+    power = ph.calculate_power_freq(util, f=2000, P_idle=100, P_base=150,
+                                    P_dif=15, f_base=1000)
+    assert_equals(list(power['s1'][:num]), [0] * num)
+    assert_equals(list(power['s1'][num:]), [132.5] * num)
+    assert_equals(list(power['s2']), [148.75] * 2 * num)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testEnergyPrice']

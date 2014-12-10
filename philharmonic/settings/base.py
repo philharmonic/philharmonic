@@ -184,6 +184,7 @@ power_freq = '5min'
 P_peak = 200
 P_idle = 100
 P_std = 5
+power_freq_model = True # consider CPU frequency in the power model
 
 # Benchmark
 #===========

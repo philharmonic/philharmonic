@@ -99,7 +99,11 @@ def precreate_synth_power(start, end, servers):
 def generate_cloud_power(util, start=None, end=None):
     """Create power signals from varying utilisation rates."""
     # calculate on a sparse util DataFrame
-    power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
+    if conf.power_freq_model:
+        power = ph.calculate_power(util, P_idle=conf.P_idle,
+                                   P_peak=conf.P_peak)
+    else:
+        power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
     # fill it out to the full frequency
     power = power.resample(conf.power_freq, fill_method='pad')
     # add random noise

@@ -3,7 +3,9 @@ Created on 25. 10. 2012.
 
 @author: kermit
 
-Calculates data from timeseries - total electricity price, converts currencies...
+Various functions for calculating energy, costs from power, electricity price,
+temperature time series datao. Additionally some functions for converting
+currencies etc.
 '''
 
 from historian import *
@@ -12,8 +14,28 @@ from scipy import integrate
 _KWH_RATIO = 3.6e6
 
 def calculate_power(util, P_idle=100, P_peak=200):
-    """given a DataFrame of server utilisations, calculate power"""
+    """Given a DataFrame of server utilisations, calculate power. This
+    model is often used, e.g. in:
+
+    Xu, H., Feng, C., and Li, B. (2013). Temperature aware workload management
+    in geo-distributed datacenters. In Proc. USENIX ICAC, 2013.
+
+    """
     P = util * (P_peak - P_idle) # dynamic part
+    # a server with no load is suspended (otherwise idle power applies)
+    P[P>0] += P_idle
+    return P
+
+def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
+                         P_dif=15, f_base=1000):
+    """Power model as combination of calculate_power and:
+
+    J.-M. Pierson and H. Casanova, "On the Utility of DVFS for Power-Aware Job
+    Placement in Clusters", in Euro-Par 2011 Parallel Processing, E. Jeannot,
+    R. Namyst, and J. Roman, Eds. Springer Berlin Heidelberg, 2011, pp. 255-266.
+
+    """
+    P = ut * (P_base + P_dif * (float(f - f_base) / f_base)**3 - P_idle)
     # a server with no load is suspended (otherwise idle power applies)
     P[P>0] += P_idle
     return P
