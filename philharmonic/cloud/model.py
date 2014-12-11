@@ -469,7 +469,7 @@ action_rank = dict(zip(actions, range(len(actions))))
 
 class Action(CommonEqualityMixin):
     """A static representation of an action on the cloud.
-    Has to be immutable (no dicts)
+    Has to be immutable (no dicts).
 
     """
     name = ''

@@ -531,6 +531,41 @@ def evaluate(cloud, environment, schedule,
 
     return util_penalty, utilprice_penalty, constraint_penalty, sla_penalty
 
+def calculate_cloud_frequencies(cloud, environment, schedule,
+                                start=None, end=None):
+    """Calculate frequencies of all servers based on the given schedule.
+
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
+    """
+    start, end = _reset_cloud_state(cloud, environment, start, end)
+    initial_freq = cloud.get_current().freq_scale
+    freq_list = [initial_freq]
+    times = [start]
+    for t in schedule.actions.index.unique():
+        if t == start: # we change the initial frequencies right away
+            freq_list = []
+            times = []
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            for action in schedule.actions[t].values:
+                cloud.apply(action)
+        else:
+            action = schedule.actions[t]
+            cloud.apply(action)
+        state = cloud.get_current()
+        new_freq = state.freq_scale
+        freq_list.append(new_freq)
+        times.append(t)
+    if times[-1] < end:
+        # the last frequency values hold until the end - duplicate last
+        times.append(end)
+        freq_list.append(freq_list[-1])
+    df_freq = pd.DataFrame(freq_list, times)
+    return df_freq
+
 # TODO: move all the functions as methods in here, make global caches attributes
 # and have it automatically recognise when geotemp. inputs have changed to
 # cache the new results.

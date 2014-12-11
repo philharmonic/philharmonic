@@ -2,7 +2,8 @@ from nose.tools import *
 import pandas as pd
 
 from ..evaluator import *
-from philharmonic import Cloud, Server, VM, Schedule, Migration
+from philharmonic import Cloud, Server, VM, Schedule, Migration, \
+    IncreaseFreq, DecreaseFreq
 from philharmonic.simulator import inputgen
 from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 
@@ -33,6 +34,31 @@ def test_calculate_cloud_utilisation():
     assert_true((df_util[s1] == [0., 0.5, 0.5, 0.5]).all())
     assert_true((df_util[s2] == [0., 0., 0.375, 0.375]).all())
     assert_true((df_util[s3] == [0., 0., 0., 0.0]).all())
+
+def test_calculate_cloud_frequencies():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    s3 = Server(4000, 2)
+    servers = [s1, s2, s3]
+    cloud = Cloud(servers)
+
+    times = pd.date_range('2010-02-26 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+    env.t = times[0]
+    schedule = Schedule()
+    a1 = DecreaseFreq(s1)
+    t1 = pd.Timestamp('2010-02-26 11:00')
+    schedule.add(a1, t1)
+    a2 = DecreaseFreq(s2)
+    t2 = pd.Timestamp('2010-02-26 13:00')
+    schedule.add(a2, t2)
+
+    freq = calculate_cloud_frequencies(cloud, env, schedule)
+    assert_is_instance(freq, pd.DataFrame)
+    assert_true((freq[s1] == [1., 0.9, 0.9, 0.9]).all())
+    assert_true((freq[s2] == [1., 1., 0.9, 0.9]).all())
+    assert_true((freq[s3] == [1., 1., 1., 1.]).all())
 
 def test_calculate_cloud_simultaneous_actions():
     s1 = Server(4000, 2)
