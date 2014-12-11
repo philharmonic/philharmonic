@@ -115,6 +115,11 @@ class Server(Machine):
 
     machine_type = 'PM'
     _new_id = itertools.count(start=1).next
+    # freq_scale parameters can be overridden
+    freq_scale_max = 1.0
+    freq_scale_min = 0.4
+    freq_scale_delta = 0.1
+    freq_scale_digits = 1
 
     def __init__(self, *args, **kwargs):
         """@param location: server's geographical location"""
@@ -166,6 +171,8 @@ class State(object):
         self.cap_df = pd.DataFrame({s: s.cap for s in self.servers})
         self.paused = set() # those VMs that are paused
         self.suspended = set() # those VMs that are paused
+        # the CPU frequency scale of the servers (initially full)
+        self.freq_scale = {s : 1. for s in servers}
         for s in self.servers:
             self._alloc[s] = set()
         if auto_allocate:
@@ -173,8 +180,10 @@ class State(object):
 
     def __repr__(self):
         rep = ''
+        # s += '^{}'.format(self.freq_scale)
         for s in self.servers:
-            s_rep = '%s -> %s;\n' % (s.__repr__(), self._alloc[s].__repr__())
+            s_rep = '{}^{} -> {};\n'.format(s, self.freq_scale[s],
+                                            self._alloc[s])
             rep += s_rep
         return rep
 
@@ -269,6 +278,21 @@ class State(object):
             pass
         return self
 
+
+    def increase_freq(self, server):
+        """Put the server into a higher frequency mode (if it exists)"""
+        current = self.freq_scale[server]
+        if current != Server.freq_scale_max:
+            self.freq_scale[server] = round(current + Server.freq_scale_delta,
+                                            Server.freq_scale_digits)
+
+    def decrease_freq(self, server):
+        """Put the server into a lower frequency mode (if it exists)"""
+        current = self.freq_scale[server]
+        if current != Server.freq_scale_min:
+            self.freq_scale[server] = round(current - Server.freq_scale_delta,
+                                            Server.freq_scale_digits)
+
     #---------------
 
     def copy(self):
@@ -291,6 +315,7 @@ class State(object):
         #TODO: copy.copy - probably faster
         new_state.paused = copy.copy(self.paused)
         new_state.suspended = copy.copy(self.suspended)
+        new_state.freq_scale = copy.copy(self.freq_scale)
         return new_state
 
     # creates a new VMs list

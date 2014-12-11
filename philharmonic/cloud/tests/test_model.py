@@ -200,7 +200,6 @@ def test_capacity_penalty_multiple_violations():
     assert_greater(pen3, pen2)
 
 def test_state():
-    import copy
     # some servers
     s1 = Server(4000, 2)
     s2 = Server(8000, 4)
@@ -219,7 +218,6 @@ def test_state():
     assert_in(vm1, a.alloc[s1], 'changing one state must not affect the other')
 
 def test_state_place_free_cap():
-    import copy
     # some servers
     s1 = Server(4000, 2)
     s2 = Server(8000, 4)
@@ -251,6 +249,30 @@ def test_server_free():
     assert_true(state.server_free(s1))
     state.place(vm1, s1)
     assert_false(state.server_free(s1))
+
+def test_state_change_frequency():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    a = State(servers, [])
+    assert_equals(a.freq_scale[s1], 1.)
+    assert_equals(a.freq_scale[s2], 1.)
+    a.decrease_freq(s1)
+    assert_equals(a.freq_scale[s1], 0.9)
+    b = a.copy()
+    b.decrease_freq(s1)
+    assert_equals(a.freq_scale[s1], 0.9)
+    assert_equals(b.freq_scale[s1], 0.8)
+    c = b.copy()
+    c.increase_freq(s1)
+    assert_equals(b.freq_scale[s1], 0.8)
+    assert_equals(c.freq_scale[s1], 0.9)
+    c.increase_freq(s2)
+    assert_equals(c.freq_scale[s2], 1.)
+    c.freq_scale[s1] = Server.freq_scale_min
+    c.decrease_freq(s1)
+    assert_equals(c.freq_scale[s1], Server.freq_scale_min)
 
 def test_action_equality():
     # some servers
