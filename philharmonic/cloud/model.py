@@ -463,7 +463,8 @@ class State(object):
 
 # The ranking determines which the order in which to apply the actions,
 # given the same timestamps.
-actions = ['boot', 'delete', 'migrate', 'pause', 'unpause']
+actions = ['boot', 'delete', 'increase_freq', 'decrease_freq',
+           'migrate', 'pause', 'unpause']
 action_rank = dict(zip(actions, range(len(actions))))
 
 class Action(CommonEqualityMixin):
@@ -479,11 +480,11 @@ class Action(CommonEqualityMixin):
         return self.__repr__()
 
     def rank(self):
-        """the action's rank - used for sorting"""
+        """The action's rank - used for sorting."""
         return action_rank[self.name]
 
 class Migration(Action):
-    """migrate vm to server"""
+    """Migrate vm to server."""
     def __init__(self, vm, server):
         self.vm = vm
         self.server = server
@@ -493,16 +494,28 @@ class Migration(Action):
         return '{} -> {}'.format(str(self.vm), str(self.server))
 
 class Pause(Action):
-    """pause vm"""
+    """Pause vm."""
     def __init__(self, vm):
         self.args = (vm,)
     name = 'pause'
 
 class Unpause(Action):
-    """pause vm"""
+    """Unpause vm."""
     def __init__(self, vm):
         self.args = (vm,)
     name = 'unpause'
+
+class IncreaseFreq(Action):
+    """Increase a server's CPU frequency if possible."""
+    def __init__(self, server):
+        self.args = (server,)
+    name = 'increase_freq'
+
+class DecreaseFreq(Action):
+    """Decrease a server's CPU frequency if possible."""
+    def __init__(self, server):
+        self.args = (server,)
+    name = 'decrease_freq'
 
 class VMRequest(Action):
     """VM creation/deletion actions. Applying a boot action adds it to

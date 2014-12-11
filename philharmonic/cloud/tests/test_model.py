@@ -592,6 +592,20 @@ def test_pause():
     assert_in(vm1, b.paused,
               'vm1 should be paused after transition')
 
+def test_change_frequency():
+    # some servers
+    s1 = Server(4000, 2)
+    servers = [s1]
+
+    a = State(servers)
+    decrease = DecreaseFreq(s1)
+    b = a.transition(decrease)
+    increase = IncreaseFreq(s1)
+    c = b.transition(increase)
+    assert_equals(a.freq_scale[s1], 1.)
+    assert_equals(b.freq_scale[s1], 0.9)
+    assert_equals(c.freq_scale[s1], 1.)
+
 def test_schedule():
     vm1 = VM(2000, 1);
     a1 = Pause(vm1)
