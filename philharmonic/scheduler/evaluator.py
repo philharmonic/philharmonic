@@ -96,12 +96,15 @@ def precreate_synth_power(start, end, servers):
     globals()['cached_end'] = None
 
 # TODO: get rid of this globals nonsense and create a Class (or a generator)
-def generate_cloud_power(util, start=None, end=None):
+def generate_cloud_power(util, start=None, end=None, power_freq_model=None):
     """Create power signals from varying utilisation rates."""
+    if power_freq_model is None:
+        power_freq_model = conf.power_freq_model
     # calculate on a sparse util DataFrame
-    if conf.power_freq_model:
-        power = ph.calculate_power(util, P_idle=conf.P_idle,
-                                   P_peak=conf.P_peak)
+    if power_freq_model:
+        #TODO: get frequencies from the servers
+        power = ph.calculate_power_freq(util, f=2000, P_idle=conf.P_idle,
+                                        P_base=conf.P_base, P_dif=conf.P_dif)
     else:
         power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
     # fill it out to the full frequency
