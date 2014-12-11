@@ -6,8 +6,8 @@ Created on Oct 9, 2012
 
 import os
 import pandas as pd
-import numpy as np
-import pylab as pl
+# import numpy as np
+# import pylab as pl
 
 # I/O
 #======
@@ -194,9 +194,9 @@ freq_scale_max = 1.0
 freq_scale_min = 0.4
 freq_scale_delta = 0.1
 freq_scale_digits = 1
-freq_scales = np.round(pl.frange(freq_scale_max, freq_scale_min,
-                                 delta=-freq_scale_delta),
-                       freq_scale_digits)
+# freq_scales = np.round(frange(freq_scale_max, freq_scale_min,
+#                                  delta=-freq_scale_delta),
+#                        freq_scale_digits)
 
 # Benchmark
 #===========
