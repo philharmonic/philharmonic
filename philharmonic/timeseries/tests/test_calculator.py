@@ -121,6 +121,20 @@ def test_calculate_power_freq():
     assert_equals(list(power['s1'][num:]), [132.5] * num)
     assert_equals(list(power['s2']), [148.75] * 2 * num)
 
+def test_calculate_power_freq_different_freqs():
+    index = pd.date_range('2013-01-01', periods=6, freq='H')
+    num = len(index)/2
+    util = pd.Series([0]*num + [0.5]*num, index)
+    util = pd.DataFrame({'s1': util, 's2': [0.75] * 2 * num})
+    freq = pd.Series([1.]*num + [0.7]*num, index)
+    freq  = pd.DataFrame({'s1': freq, 's2': [0.8] * 2 * num})
+    freq = freq * 2000
+    power = ph.calculate_power_freq(util, freq, P_idle=100, P_base=150,
+                                    P_dif=15, f_base=1000)
+    assert_equals(list(power['s1'][:num]), [0] * num)
+    assert_almost_equals(list(power['s1'][num:]), [125.48] * num)
+    assert_almost_equals(list(power['s2']), [139.93] * 2 * num)
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testEnergyPrice']
     unittest.main()

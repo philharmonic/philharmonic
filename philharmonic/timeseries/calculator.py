@@ -35,7 +35,7 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
     R. Namyst, and J. Roman, Eds. Springer Berlin Heidelberg, 2011, pp. 255-266.
 
     """
-    P = ut * (P_base + P_dif * (float(f - f_base) / f_base)**3 - P_idle)
+    P = ut * (P_base + P_dif * ((f - float(f_base)) / f_base)**3 - P_idle)
     # a server with no load is suspended (otherwise idle power applies)
     P[P>0] += P_idle
     return P

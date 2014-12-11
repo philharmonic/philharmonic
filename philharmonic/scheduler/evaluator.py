@@ -96,14 +96,17 @@ def precreate_synth_power(start, end, servers):
     globals()['cached_end'] = None
 
 # TODO: get rid of this globals nonsense and create a Class (or a generator)
-def generate_cloud_power(util, start=None, end=None, power_freq_model=None):
+def generate_cloud_power(util, start=None, end=None,
+                         power_freq_model=None, freq=None):
     """Create power signals from varying utilisation rates."""
     if power_freq_model is None:
         power_freq_model = conf.power_freq_model
+    if freq is None:
+        freq = 2000
     # calculate on a sparse util DataFrame
     if power_freq_model:
         #TODO: get frequencies from the servers
-        power = ph.calculate_power_freq(util, f=2000, P_idle=conf.P_idle,
+        power = ph.calculate_power_freq(util, f=freq, P_idle=conf.P_idle,
                                         P_base=conf.P_base, P_dif=conf.P_dif)
     else:
         power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
@@ -141,12 +144,23 @@ def calculate_cloud_cooling(power, temperature):
                                                        temperature_server)
     return power_with_cooling
 
+def _get_freq_or_none(cloud, environment, schedule, start, end):
+
+    return freq
+
 def _worst_case_power(cloud, environment, start, end): # TODO: use this
     """ the power if all the servers were fully utilised"""
     utilisations = {server : [1.0, 1.0] for server in cloud.servers}
     full_util = pd.DataFrame(utilisations,
                            index=[start, end])
-    full_power = generate_cloud_power(full_util)
+    if conf.power_freq_model:
+        full_freq = {server : [1.0, 1.0] for server in cloud.servers}
+        full_freq = pd.DataFrame(full_freq,
+                                 index=[start, end])
+        full_freq = full_freq * conf.f_max
+    else:
+        full_freq = None
+    full_power = generate_cloud_power(full_util, freq=full_freq)
 
 def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
                   start=None, end=None):
@@ -160,7 +174,12 @@ def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
         start = environment.start
     if end is None:
         end = environment.end
-    power = generate_cloud_power(util)
+    if conf.power_freq_model:
+        freq = calculate_cloud_frequencies(cloud, environment, schedule,
+                                           start, end)
+    else:
+        freq = None
+    power = generate_cloud_power(util, freq=freq)
     if temperature is not None:
         power = calculate_cloud_cooling(power, temperature[start:end])
     cost = calculate_cloud_cost(power, el_prices[start:end])
