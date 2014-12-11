@@ -188,6 +188,7 @@ P_idle = 100
 P_std = 5
 P_base=150
 P_dif = 15
+f_max = 2000 # the maximum CPU frequency in MHz
 power_freq_model = True # consider CPU frequency in the power model
 # TODO: apply to model
 freq_scale_max = 1.0

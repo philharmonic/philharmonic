@@ -564,7 +564,9 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
         times.append(end)
         freq_list.append(freq_list[-1])
     df_freq = pd.DataFrame(freq_list, times)
-    return df_freq
+    # convert freq_scale to absolute value in Hz
+    df_freq_hz = conf.f_max * df_freq
+    return df_freq_hz
 
 # TODO: move all the functions as methods in here, make global caches attributes
 # and have it automatically recognise when geotemp. inputs have changed to

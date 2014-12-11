@@ -1,4 +1,5 @@
 from nose.tools import *
+from mock import patch
 import pandas as pd
 
 from ..evaluator import *
@@ -35,7 +36,8 @@ def test_calculate_cloud_utilisation():
     assert_true((df_util[s2] == [0., 0., 0.375, 0.375]).all())
     assert_true((df_util[s3] == [0., 0., 0., 0.0]).all())
 
-def test_calculate_cloud_frequencies():
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_calculate_cloud_frequencies(mock_conf):
     # some servers
     s1 = Server(4000, 2)
     s2 = Server(8000, 4)
@@ -54,11 +56,14 @@ def test_calculate_cloud_frequencies():
     t2 = pd.Timestamp('2010-02-26 13:00')
     schedule.add(a2, t2)
 
+    f_max = 3000.
+    f_lower = 2700.
+    mock_conf.f_max = f_max
     freq = calculate_cloud_frequencies(cloud, env, schedule)
     assert_is_instance(freq, pd.DataFrame)
-    assert_true((freq[s1] == [1., 0.9, 0.9, 0.9]).all())
-    assert_true((freq[s2] == [1., 1., 0.9, 0.9]).all())
-    assert_true((freq[s3] == [1., 1., 1., 1.]).all())
+    assert_true((freq[s1] == [f_max] + [f_lower] * 3).all())
+    assert_true((freq[s2] == [f_max] * 2 + [f_lower] * 2).all())
+    assert_true((freq[s3] == [f_max] * 4).all())
 
 def test_calculate_cloud_simultaneous_actions():
     s1 = Server(4000, 2)
