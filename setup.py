@@ -22,7 +22,7 @@ setup(
 #                        '"Twisted Web">=12.2',
                         'SOAPpy>=0.12'],
     # sudo apt-get intsall python-twisted-web
-    ext_modules = cythonize('**/*.pyx'),
+    #ext_modules = cythonize('**/*.pyx'),
     zip_safe = True,
 
     # metadata for upload to PyPI
