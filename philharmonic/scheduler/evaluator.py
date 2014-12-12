@@ -13,6 +13,7 @@ from philharmonic.logger import *
 from philharmonic import conf
 
 def print_history(cloud, environment, schedule):
+    """Print the schedule in a human-readable format."""
     request_names = set(['boot', 'delete'])
     for t in environment.itertimes():
         requests = environment.get_requests()
@@ -148,7 +149,7 @@ def _get_freq_or_none(cloud, environment, schedule, start, end):
     return freq
 
 def _worst_case_power(cloud, environment, start, end): # TODO: use this
-    """ the power if all the servers were fully utilised"""
+    """The power if all the servers were fully utilised."""
     utilisations = {server : [1.0, 1.0] for server in cloud.servers}
     full_util = pd.DataFrame(utilisations,
                            index=[start, end])
@@ -163,7 +164,8 @@ def _worst_case_power(cloud, environment, start, end): # TODO: use this
 
 def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
                   start=None, end=None):
-    """calculate costs in one function"""
+    """Calculate energy costs including IT equipment energy cooling overhead and
+    the real-time electricity price."""
 
     # we first calculate utilisation with start, end = None / some timestamp
     # this way it knows which state to start from
@@ -270,7 +272,7 @@ def calculate_constraint_penalties(cloud, environment, schedule,
 
 def calculate_sla_penalties(cloud, environment, schedule,
                             start=None, end=None):
-    """1 migration per VM: 0.0; more migrations - closer to 1.0.
+    """One migration per VM: 0.0; more migrations - closer to 1.0.
 
     @param start, end: if given, only this period will be counted,
     cloud model starts from _real. If not, whole environment.start-end
@@ -586,9 +588,46 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
     df_freq_hz = conf.f_max * df_freq
     return df_freq_hz
 
+def calculate_service_profit(cloud, environment, schedule,
+                             start=None, end=None):
+    """Calculate the profit for the cloud provider for hosting the VMs."""
+
+    start, end = _reset_cloud_state(cloud, environment, start, end)
+    if conf.power_freq_model:
+        freq = calculate_cloud_frequencies(cloud, environment, schedule,
+                                           start, end)
+    else:
+        freq = None
+
+    initial_prices = cloud.get_current().calculate_prices()
+    prices_list = [initial_prices]
+    times = [start]
+    for t in schedule.actions.index.unique():
+        if t == start: # we change the initial utilisation right away
+            prices_list = []
+            times = []
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            for action in schedule.actions[t].values:
+                cloud.apply(action)
+        else:
+            action = schedule.actions[t]
+            cloud.apply(action)
+        state = cloud.get_current()
+        new_prices = state.calculate_prices()
+        prices_list.append(new_prices)
+        times.append(t)
+    if times[-1] < end:
+        # the last utilisation values hold until the end - duplicate last
+        times.append(end)
+        prices_list.append(prices_list[-1])
+    df_price = pd.DataFrame(prices_list, times)
+    df_price = df_price.resample(conf.pricing_freq, fill_method='pad')
+    total_profit = df_price.sum().sum()
+    return total_profit
+
 # TODO: move all the functions as methods in here, make global caches attributes
 # and have it automatically recognise when geotemp. inputs have changed to
 # cache the new results.
 class Evaluator(object):
     pass
- 

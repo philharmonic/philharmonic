@@ -199,6 +199,10 @@ freq_scale_digits = 1
 #                                  delta=-freq_scale_delta),
 #                        freq_scale_digits)
 
+# pricing
+# the frequency at which to generate the VM price is calculated
+pricing_freq = '1h'
+
 # Benchmark
 #===========
 
