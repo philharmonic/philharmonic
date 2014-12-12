@@ -113,8 +113,7 @@ def generate_cloud_power(util, start=None, end=None,
     # fill it out to the full frequency
     power = power.resample(conf.power_freq, fill_method='pad')
     # add random noise
-    power[power > 0] += conf.P_std * np.random.randn(len(power),
-                                                     len(util.columns))
+    power[power > 0] += conf.P_std * np.random.randn(*power.shape)
     return power
 
 def calculate_cloud_cost(power, el_prices):
