@@ -135,6 +135,22 @@ def test_calculate_power_freq_different_freqs():
     assert_almost_equals(list(power['s1'][num:]), [125.48] * num)
     assert_almost_equals(list(power['s2']), [139.93] * 2 * num)
 
+def test_vm_price():
+    cost = ph.vm_price(2000)
+    assert_is_instance(cost, float)
+    cost2 = ph.vm_price(3000)
+    assert_greater(cost2, cost)
+
+def test_vm_price_progressive():
+    cost1 = ph.vm_price_progressive(2000, 1.)
+    cost2 = ph.vm_price_progressive(3000, 1.)
+    cost3 = ph.vm_price_progressive(2000, .5)
+    cost4 = ph.vm_price_progressive(2000, 0)
+    cost5 = ph.vm_price_progressive(3000, 0)
+    assert_greater(cost2, cost1)
+    assert_greater(cost3, cost1)
+    assert_equals(cost4, cost5)
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testEnergyPrice']
     unittest.main()

@@ -96,6 +96,7 @@ class VM(Machine):
     def __init__(self, *args):
         super(VM, self).__init__(*args)
         self.res = self.spec
+        self.price = 0.026 # $/h - default price Amazon US East t2.small
 
     # calling (un)pause or migrate on a VM gets routed to the cloud
     # and then to the current state
@@ -346,8 +347,12 @@ class State(object):
         return total_utilisation
 
     def calculate_utilisations(self):
-        """return dict server -> utilisation rate"""
+        """Return dict server -> utilisation rate."""
         return {server: self.utilisation(server) for server in self.servers}
+
+    def calculate_prices(self):
+        """Return dict vm -> price."""
+        return {vm: vm.price for vm in self.vms}
 
     # constraint checking
     # C1

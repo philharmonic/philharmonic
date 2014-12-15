@@ -209,6 +209,49 @@ def test_calculate_cost_combined_different_freq(mock_conf):
                                            temperature, env.t, env.forecast_end)
     assert_true(0 <= normalised3 < normalised2 < normalised1 <= 1.)
 
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_calculate_service_profit(mock_conf):
+    f_max = 3000
+    mock_conf.f_max = f_max
+    mock_conf.power_freq_model = True
+    mock_conf.P_idle = 100
+    mock_conf.P_std = 5
+    mock_conf.P_dif = 15
+    mock_conf.P_base = 150
+    mock_conf.power_freq = '5min'
+    mock_conf.pricing_freq = '1h'
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+    s3 = Server(4000, 4, location='B')
+    servers = [s1, s2, s3]
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = set([vm1, vm2])
+    cloud = Cloud(servers, VMs)
+
+    times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+    schedule1 = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2010-02-25 11:00')
+    schedule1.add(a1, t1)
+    a2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2010-02-25 13:00')
+    schedule1.add(a2, t2)
+
+    # same as 1, but with lower frequencies
+    schedule2 = copy.copy(schedule1)
+    schedule2.add(DecreaseFreq(s1), t1)
+    schedule2.add(DecreaseFreq(s2), t1)
+
+    profit1 = calculate_service_profit(cloud, env, schedule1,
+                                     env.t, env.forecast_end)
+    assert_is_instance(profit1, float)
+    profit2 = calculate_service_profit(cloud, env, schedule2,
+                                     env.t, env.forecast_end)
+
+    assert_greater(profit1, profit2)
+
 def test_calculate_constraint_penalties():
     # some servers
     s1 = Server(4000, 2)

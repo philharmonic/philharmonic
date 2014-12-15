@@ -511,6 +511,31 @@ def test_state_reset_direct_manipulation():
 
     assert_equals(initial2.vms, set([]))
 
+def test_state_calculate_prices():
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    servers = [s1, s2]
+    # some VMs
+    vm1 = VM(2000, 1)
+    vm1.price = 0.2
+    vm2 = VM(2000, 1)
+    vm2.price = 0.4
+    VMs = [vm1, vm2]
+    cloud = Cloud(servers, VMs)
+
+    state = cloud.get_current()
+    cloud.apply(Migration(vm1, s1), inplace=True)
+    cloud.apply(Migration(vm2, s2), inplace=True)
+    price1 = pd.Series(state.calculate_prices()).sum()
+    cloud.apply(DecreaseFreq(s1), inplace=True)
+    cloud.apply(DecreaseFreq(s2), inplace=True)
+    cloud.apply(DecreaseFreq(s2), inplace=True)
+    price2 = pd.Series(state.calculate_prices()).sum()
+
+    assert_is_instance(price1, float)
+    assert_is_instance(price2, float)
+
 def test_migration_free_cap():
     # some servers
     s1 = Server(4000, 2)
