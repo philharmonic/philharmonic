@@ -7,6 +7,7 @@ io/*.pickle
 **/.DS_Store
 *.pkl
 .coverage
+.settings
 io/results
 io/workload
 

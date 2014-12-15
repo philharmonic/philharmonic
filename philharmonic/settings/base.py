@@ -33,6 +33,11 @@ common_output_folder = "io/"
 base_output_folder = os.path.join(common_output_folder, "results/test/")
 output_folder = base_output_folder
 
+
+WORKLOAD_LOC = "io/workload/" # path from the philharmonic root
+# from this module to philharmonic root and then to WORKLOAD_LOC
+WORKLOAD_LOC = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                         '../..', WORKLOAD_LOC))
 DATA_LOC = "io/geotemp/" # path from the philharmonic root
 # from this module to philharmonic root and then to DATA_LOC
 DATA_LOC = os.path.realpath(os.path.join(os.path.dirname(__file__),
