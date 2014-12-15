@@ -551,9 +551,31 @@ def evaluate(cloud, environment, schedule,
 
     return util_penalty, utilprice_penalty, constraint_penalty, sla_penalty
 
+# TODO: maybe move to State.freq_scale_vms
+def _server_freqs_to_vm_freqs(state):
+    """Return a dict with VMs as keys and showing frequencies
+    of servers hosting them in @param state.
+
+    """
+    vm_freq = {vm : state.freq_scale[state.allocation(vm)] for vm in state.vms}
+    return vm_freq
+
+def _get_frequencies(state, for_vms=False):
+    """Get frequencies for VMs/servers in the given state as needed"""
+    if for_vms:
+        try:
+            freq = _server_freqs_to_vm_freqs(state)
+        except KeyError: # when VMs are not allocated anywhere
+            freq = {}
+    else:
+        freq = state.freq_scale
+    return freq
+
 def calculate_cloud_frequencies(cloud, environment, schedule,
-                                start=None, end=None):
-    """Calculate frequencies of all servers based on the given schedule.
+                                start=None, end=None, for_vms=False):
+    """Calculate frequencies of all servers or VMs based on the given schedule.
+
+    @param for_vms: if True return freqs for VMs, otherwise for servers
 
     @param start, end: if given, only this period will be counted,
     cloud model starts from _real. If not, whole environment.start-end
@@ -561,7 +583,7 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
 
     """
     start, end = _reset_cloud_state(cloud, environment, start, end)
-    initial_freq = cloud.get_current().freq_scale
+    initial_freq = _get_frequencies(cloud.get_current(), for_vms)
     freq_list = [initial_freq]
     times = [start]
     for t in schedule.actions.index.unique():
@@ -576,7 +598,7 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
-        new_freq = state.freq_scale
+        new_freq = _get_frequencies(state, for_vms)
         freq_list.append(new_freq)
         times.append(t)
     if times[-1] < end:
@@ -595,7 +617,7 @@ def calculate_service_profit(cloud, environment, schedule,
     start, end = _reset_cloud_state(cloud, environment, start, end)
     if conf.power_freq_model:
         freq = calculate_cloud_frequencies(cloud, environment, schedule,
-                                           start, end)
+                                           start, end, for_vms=True)
     else:
         freq = None
     # initial_prices = cloud.get_current().calculate_prices()
@@ -623,9 +645,10 @@ def calculate_service_profit(cloud, environment, schedule,
     # df_price = pd.DataFrame(prices_list, times)
     # TODO: use the above in the future to support different VM prices
     # we use constant VM prices for now, so this is enough:
-    # TODO: beta from the VM's
-    df_price = ph.vm_price_progressive(freq, 1.)
-    #import ipdb; ipdb.set_trace()
+    df_beta = pd.DataFrame([{vm : vm.beta for vm in cloud.get_current().vms}],
+                           [start])
+    df_beta = df_beta.reindex(freq.index, method='pad')
+    df_price = ph.vm_price_progressive(freq, df_beta)
     df_price = df_price.resample(conf.pricing_freq, fill_method='pad')
     total_profit = df_price.sum().sum()
     return total_profit

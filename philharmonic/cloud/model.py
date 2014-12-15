@@ -97,6 +97,8 @@ class VM(Machine):
         super(VM, self).__init__(*args)
         self.res = self.spec
         self.price = 0.026 # $/h - default price Amazon US East t2.small
+        # beta or CPU-boundedness: 1. CPU-bounded, towards 0. not CPU-bounded
+        self.beta = 1.
 
     # calling (un)pause or migrate on a VM gets routed to the cloud
     # and then to the current state

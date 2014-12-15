@@ -5,6 +5,7 @@ from mock import patch
 import pandas as pd
 
 from ..evaluator import *
+from ..evaluator import _server_freqs_to_vm_freqs
 from philharmonic import Cloud, Server, VM, Schedule, Migration, \
     IncreaseFreq, DecreaseFreq
 from philharmonic.simulator import inputgen
@@ -209,6 +210,59 @@ def test_calculate_cost_combined_different_freq(mock_conf):
                                            temperature, env.t, env.forecast_end)
     assert_true(0 <= normalised3 < normalised2 < normalised1 <= 1.)
 
+def test_server_freqs_to_vm_freqs():
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+    servers = [s1, s2]
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = [vm1, vm2]
+    cloud = Cloud(servers, VMs)
+
+    cloud.apply(Migration(vm1, s1))
+    cloud.apply(Migration(vm2, s2))
+    cloud.apply(DecreaseFreq(s1))
+    cloud.apply(DecreaseFreq(s2))
+    cloud.apply(DecreaseFreq(s2))
+
+    state = cloud.get_current()
+    server_freq = state.freq_scale
+    #import ipdb; ipdb.set_trace()
+    vm_freq = _server_freqs_to_vm_freqs(state)
+    assert_equals(vm_freq, {vm1 : 0.9, vm2 : 0.8})
+
+def test_calculate_cloud_frequencies_for_vms():
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+    s3 = Server(4000, 4, location='B')
+    servers = [s1, s2, s3]
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = [vm1, vm2]
+    cloud = Cloud(servers, VMs)
+
+    times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+
+    schedule = Schedule()
+    t1 = pd.Timestamp('2010-02-25 8:00')
+    schedule.add(Migration(vm1, s1), t1)
+    schedule.add(Migration(vm2, s1), t1)
+    schedule.add(DecreaseFreq(s1), t1)
+    t2 = pd.Timestamp('2010-02-25 14:00')
+    schedule.add(DecreaseFreq(s2), t2)
+    schedule.add(DecreaseFreq(s2), t2)
+    t3 = pd.Timestamp('2010-02-25 18:00')
+    schedule.add(Migration(vm1, s2), t3)
+    schedule.add(Migration(vm2, s3), t3)
+
+    vm_freq = calculate_cloud_frequencies(cloud, env, schedule, start=times[0],
+                                          end=times[-1], for_vms=True)
+    assert_is_instance(vm_freq, pd.DataFrame)
+    #                                initial, decr, migr, end
+    assert_equals(list(vm_freq[vm1]), [1800, 1800, 1600, 1600])
+    assert_equals(list(vm_freq[vm2]), [1800, 1800, 2000, 2000])
+
 @patch('philharmonic.scheduler.evaluator.conf')
 def test_calculate_service_profit(mock_conf):
     f_max = 3000
@@ -220,29 +274,27 @@ def test_calculate_service_profit(mock_conf):
     mock_conf.P_base = 150
     mock_conf.power_freq = '5min'
     mock_conf.pricing_freq = '1h'
-    s1 = Server(4000, 2, location='A')
+    s1 = Server(4000, 4, location='A')
     s2 = Server(8000, 4, location='B')
     s3 = Server(4000, 4, location='B')
     servers = [s1, s2, s3]
     vm1 = VM(2000, 1);
     vm2 = VM(2000, 2);
     VMs = set([vm1, vm2])
-    cloud = Cloud(servers, VMs)
+    cloud = Cloud(servers, VMs, auto_allocate=True)
 
     times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
     env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
     schedule1 = Schedule()
-    a1 = Migration(vm1, s1)
     t1 = pd.Timestamp('2010-02-25 11:00')
-    schedule1.add(a1, t1)
-    a2 = Migration(vm2, s2)
+    schedule1.add(Migration(vm1, s1), t1)
     t2 = pd.Timestamp('2010-02-25 13:00')
-    schedule1.add(a2, t2)
+    schedule1.add(Migration(vm2, s2), t2)
 
     # same as 1, but with lower frequencies
     schedule2 = copy.copy(schedule1)
     schedule2.add(DecreaseFreq(s1), t1)
-    schedule2.add(DecreaseFreq(s2), t1)
+    schedule2.add(DecreaseFreq(s1), t1)
 
     profit1 = calculate_service_profit(cloud, env, schedule1,
                                      env.t, env.forecast_end)
