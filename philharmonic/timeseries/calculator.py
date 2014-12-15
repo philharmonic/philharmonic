@@ -175,6 +175,18 @@ def calculate_cooling_overhead(power, temperature):
     pPUE = pPUE.reindex(power.index, method='ffill')
     return power * pPUE
 
+def vm_price(freq, C_base=0.0520278, C_dif=0.018, f_min=1000):
+    """Calculate a VM's price based on the frequency. ElasticHosts model."""
+    C = C_base + C_dif * (freq - f_min) / f_min
+    return C
+
+def vm_price_progressive(freq, beta, C_base=0.0520278, C_dif=0.018,
+                         f_min=1000, f_max=3000):
+    """Calculate a VM's price based on the frequency and beta, the VM's
+    CPU boundedness."""
+    C = C_base + C_dif * (beta * freq + (1 - beta) * f_max - f_min) / f_min
+    return C
+
 def joul2kwh(jouls):
     """@Return: equivalent kWh """
     kWh = jouls / _KWH_RATIO

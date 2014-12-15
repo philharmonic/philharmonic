@@ -598,30 +598,34 @@ def calculate_service_profit(cloud, environment, schedule,
                                            start, end)
     else:
         freq = None
-
-    initial_prices = cloud.get_current().calculate_prices()
-    prices_list = [initial_prices]
-    times = [start]
-    for t in schedule.actions.index.unique():
-        if t == start: # we change the initial utilisation right away
-            prices_list = []
-            times = []
-        # TODO: precise indexing, not dict
-        if isinstance(schedule.actions[t], pd.Series):
-            for action in schedule.actions[t].values:
-                cloud.apply(action)
-        else:
-            action = schedule.actions[t]
-            cloud.apply(action)
-        state = cloud.get_current()
-        new_prices = state.calculate_prices()
-        prices_list.append(new_prices)
-        times.append(t)
-    if times[-1] < end:
-        # the last utilisation values hold until the end - duplicate last
-        times.append(end)
-        prices_list.append(prices_list[-1])
-    df_price = pd.DataFrame(prices_list, times)
+    # initial_prices = cloud.get_current().calculate_prices()
+    # prices_list = [initial_prices]
+    # times = [start]
+    # for t in schedule.actions.index.unique():
+    #     if t == start: # we change the initial utilisation right away
+    #         prices_list = []
+    #         times = []
+    #     # TODO: precise indexing, not dict
+    #     if isinstance(schedule.actions[t], pd.Series):
+    #         for action in schedule.actions[t].values:
+    #             cloud.apply(action)
+    #     else:
+    #         action = schedule.actions[t]
+    #         cloud.apply(action)
+    #     state = cloud.get_current()
+    #     new_prices = state.calculate_prices()
+    #     prices_list.append(new_prices)
+    #     times.append(t)
+    # if times[-1] < end:
+    #     # the last utilisation values hold until the end - duplicate last
+    #     times.append(end)
+    #     prices_list.append(prices_list[-1])
+    # df_price = pd.DataFrame(prices_list, times)
+    # TODO: use the above in the future to support different VM prices
+    # we use constant VM prices for now, so this is enough:
+    # TODO: beta from the VM's
+    df_price = ph.vm_price_progressive(freq, 1.)
+    #import ipdb; ipdb.set_trace()
     df_price = df_price.resample(conf.pricing_freq, fill_method='pad')
     total_profit = df_price.sum().sum()
     return total_profit

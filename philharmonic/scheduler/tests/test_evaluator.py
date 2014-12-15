@@ -247,10 +247,10 @@ def test_calculate_service_profit(mock_conf):
     profit1 = calculate_service_profit(cloud, env, schedule1,
                                      env.t, env.forecast_end)
     assert_is_instance(profit1, float)
-    # profit2 = calculate_service_profit(cloud, env, schedule2,
-    #                                  env.t, env.forecast_end)
+    profit2 = calculate_service_profit(cloud, env, schedule2,
+                                     env.t, env.forecast_end)
 
-    # assert_greater(profit1, profit2)
+    assert_greater(profit1, profit2)
 
 def test_calculate_constraint_penalties():
     # some servers
