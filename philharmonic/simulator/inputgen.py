@@ -232,7 +232,7 @@ def normal_vmreqs(start, end, round_to_hour=True, **kwargs):
 def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
     """Generate the VM creation and deletion events for
     uniform VM sizes. Read the CPU-boundedness of each VM
-    from the file specified by WORKLOAD_LOC.
+    from the file specified by USAGE_LOC.
     
     @param start, end - time interval (events within it)
 
@@ -384,7 +384,7 @@ def medium_temperature(start=None):
 import os
 
 def get_workload_loc(filename):
-    return os.path.join(conf.WORKLOAD_LOC, filename)
+    return os.path.join(conf.USAGE_LOC, filename)
 
 def get_data_loc(filename):
     return os.path.join(conf.DATA_LOC, filename)
