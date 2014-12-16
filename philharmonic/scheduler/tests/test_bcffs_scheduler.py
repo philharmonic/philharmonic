@@ -1,5 +1,5 @@
 from nose.tools import *
-from mock import MagicMock
+from mock import MagicMock, patch
 import pandas as pd
 
 from philharmonic import Schedule
@@ -11,7 +11,9 @@ from philharmonic.simulator import inputgen
 from philharmonic import Cloud, VMRequest, \
     VM, Server, State, Migration
 
-def test_bcffs_returns_schedule():
+@patch('philharmonic.scheduler.BCFFSScheduler._schedule_frequency_scaling')
+def test_bcffs_returns_schedule(mock_schedule_frequency_scaling):
+    mock_schedule_frequency_scaling = MagicMock(return_value = None)
     scheduler = BCFFSScheduler()
     scheduler.cloud = Cloud()
     scheduler.environment = FBFSimpleSimulatedEnvironment()
@@ -20,7 +22,9 @@ def test_bcffs_returns_schedule():
     schedule = scheduler.reevaluate()
     assert_is_instance(schedule, Schedule)
 
-def test_bcf_reevaluate_underutilised():
+@patch('philharmonic.scheduler.BCFFSScheduler._schedule_frequency_scaling')
+def test_bcf_reevaluate_underutilised(mock_schedule_frequency_scaling):
+    mock_schedule_frequency_scaling = MagicMock(return_value = None)
     scheduler = BCFFSScheduler()
     scheduler.environment = FBFSimpleSimulatedEnvironment()
     s1, s2 = Server(40000, 12, location='A'), Server(20000, 10, location='A')

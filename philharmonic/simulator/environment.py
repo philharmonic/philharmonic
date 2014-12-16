@@ -110,6 +110,11 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
                 self._requests = requests
             else:
                 self._requests = inputgen.normal_vmreqs(self.start, self.end)
+        else:
+            self._t = 0
+            self._period = 1
+            self.el_prices = []
+            self.temperature = []
         self._forecast_periods = forecast_periods
 
     # TODO: better to make the environment immutable
