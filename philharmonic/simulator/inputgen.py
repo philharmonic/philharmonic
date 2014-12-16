@@ -42,7 +42,7 @@ def synthetic_beta_population(output_size, input_beta_data):
     model = distribution.fit(input_beta_data)#['mean'])
     beta = distribution.rvs(size=output_size, *model)  # rvs generates random variates
     return beta
-    
+
 def normal_population(num, bottom, top, ceil=True):
     """ Return array @ normal distribution.
     bottom, top are approx. min/max values.
@@ -143,7 +143,7 @@ def auto_vmreqs(start, end, max_usage=0.8, round_to_hour=True,
         cpu_size = normal_sample(min_cpu, max_cpu)
         ram_size = normal_sample(min_ram, max_ram)
         duration = normal_sample(min_duration, max_duration)
-       
+
         vm = VM(ram_size, cpu_size)
         for r in vm.resource_types: # add the extra capacity for stop condition
             requested_capacity[r] += vm.res[r]
@@ -233,11 +233,11 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
     """Generate the VM creation and deletion events for
     uniform VM sizes. Read the CPU-boundedness of each VM
     from the file specified by USAGE_LOC.
-    
+
     @param start, end - time interval (events within it)
 
     """
-    
+
     start, end = pd.Timestamp(start), pd.Timestamp(end)
     delta = end - start
     # array of VM sizes
@@ -246,17 +246,18 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
     # duration of VMs
     durations = normal_population(VM_num, min_duration, max_duration)
     # TODO: add price for each VM
-    
-    option = 1 # 1 to generate beta, 2 to read them directly from file and 3 for all beta equal to 1
+
+    # 1 to generate beta, 2 to read them directly from file and
+    # 3 for all beta equal to 1
+    option = 1
     beta_values = generate_beta(option,VM_num)
 
     requests = []
     moments = []
     for cpu_size, ram_size, duration, beta_value in zip(cpu_sizes, ram_sizes,
                                                         durations, beta_values):
-     
         vm = VM(ram_size, cpu_size)
-        vm.beta = beta_value # add CPU-boundedness or performance indicator or beta value
+        vm.beta = beta_value # CPU-boundedness or performance indicator (beta)
         # the moment a VM is created
         offset = pd.offsets.Second(np.random.uniform(0., delta.total_seconds()))
         requests.append(VMRequest(vm, 'boot'))
