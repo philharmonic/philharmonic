@@ -346,6 +346,8 @@ def calculate_migration_overhead(cloud, environment, schedule,
         else:
             actions = [schedule.actions[t]]
         for action in actions:
+            if action.name not in set(['boot', 'delete', 'migrate']):
+                continue # we're not interested in other actions
             before = cloud.get_current()
             host_before = before.allocation(action.vm)
             cloud.apply(action)

@@ -9,7 +9,7 @@ from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 from philharmonic.simulator.simulator import FBFSimulator
 from philharmonic.simulator import inputgen
 from philharmonic import Cloud, VMRequest, \
-    VM, Server, State, Migration
+    VM, Server, State, Migration, Pause
 
 @patch('philharmonic.scheduler.BCFFSScheduler._schedule_frequency_scaling')
 def test_bcffs_returns_schedule(mock_schedule_frequency_scaling):
@@ -86,3 +86,18 @@ def test_bcf_reevaluate_freq_scaling(mock_conf):
     assert_equals(current.allocation(vm1), s1)
     assert_equals(current.allocation(vm2), s1)
     assert_true(current.all_allocated())
+
+# def test_remove_unnecessary_actions():
+#     scheduler = BCFFSScheduler()
+#     scheduler.schedule = Schedule()
+#     t1 = pd.Timestamp('2015-01-01 10:00')
+#     t2 = pd.Timestamp('2015-01-01 11:00')
+#     s1 = Server(2, 4)
+#     p, i1, d1, d2, i2 = Pause(s1), IncreaseFreq(s1), DecreaseFreq(s1), \
+#                         DecreaseFreq(s1), IncreaseFreq(s1)
+#     actions = [p, i1, d1, d2, i2]
+#     times = [t1, t1, t1, t1, t2]
+#     scheduler.schedule.actions = pd.Series(actions, times, name='actions')
+#     scheduler._remove_unnecessary_actions()
+#     assert_equals(list(scheduler.schedule.actions),
+#                   [p, d2, i2])

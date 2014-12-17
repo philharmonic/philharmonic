@@ -30,12 +30,12 @@ class IScheduler(object):
         raise NotImplementedError
 
     def reevaluate(self):
-        '''Look at the current state of the Cloud and Environment
+        """Look at the current state of the Cloud and Environment
         and schedule new/different actions if necessary.
 
         @returns: a Schedule with a time series of actions
 
-        '''
+        """
         raise NotImplementedError
 
 

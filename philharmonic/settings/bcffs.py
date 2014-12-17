@@ -1,6 +1,6 @@
 from .baseprod import *
 
-output_folder = os.path.join(base_output_folder, "BCFFS/")
+output_folder = os.path.join(base_output_folder, "bcffs/")
 
 power_freq_model = True
 

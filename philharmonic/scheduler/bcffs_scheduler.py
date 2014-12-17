@@ -1,3 +1,7 @@
+import copy
+
+import pandas as pd
+
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.scheduler.bcf_scheduler import *
 from philharmonic import Schedule, Migration, IncreaseFreq, DecreaseFreq
@@ -15,55 +19,85 @@ class BCFFSScheduler(BCFScheduler):
     """
 
     def _get_profit_and_cost(self):
-        # - calculate profit (loss)
+        """Shorthand to calculate service profit and energy cost."""
+        # - calculate profit
         profit = ev.calculate_service_profit(self.cloud, self.environment,
-                                             self.schedule, self.t, self.end)
-        # - calculate energy cost (saving)
-        en_cost = ev.combined_cost(self.cloud, self.environment, self.schedule,
-                                   self.el, self.temp, self.t, self.end)
+                                             self.test_schedule,
+                                             self.t, self.end)
+        # - calculate energy cost
+        en_cost = ev.combined_cost(self.cloud, self.environment,
+                                   self.test_schedule, self.el, self.temp,
+                                   self.t, self.end)
         return profit, en_cost
 
+    def _add_freq_to_schedule(self, server):
+        """Add the resulting frequency changes from the counter
+        to the schedule.
+
+        """
+        if self._server_freq_change > 0:
+            action = IncreaseFreq(server)
+        else:
+            action = DecreaseFreq(server)
+            self._server_freq_change = -self._server_freq_change
+        while self._server_freq_change > 0:
+            self.schedule.add(action, self.t)
+            self._server_freq_change -= 1
+
     def _increase_frequency(self, server):
-        incr_freq = IncreaseFreq(server)
-        self.cloud.apply(incr_freq, inplace=True)
-        self.schedule.add(incr_freq)
+        """Increase frequency and note it in the counter."""
+        self.state.transition(IncreaseFreq(server), inplace=True)
+        self.test_schedule.add(IncreaseFreq(server), self.t)
+        self._server_freq_change += 1
 
     def _decrease_frequency(self, server):
-        decr_freq = DecreaseFreq(server)
-        self.cloud.apply(decr_freq, inplace=True)
-        self.schedule.add(decr_freq)
+        """Decrease frequency and note it in the counter."""
+        self.state.transition(DecreaseFreq(server), inplace=True)
+        self.test_schedule.add(DecreaseFreq(server), self.t)
+        self._server_freq_change -= 1
 
     def _reset_to_max_frequency(self, server):
-        state = self.cloud.get_current()
-        while state.freq_scale[server] != conf.freq_scale_max:
-            self._increase_frequency()
+        """Add IncreaseFreq actions until the maximum frequency is reached."""
+        while self.state.freq_scale[server] != conf.freq_scale_max:
+            self._increase_frequency(server)
 
     def _schedule_frequency_scaling(self):
-        # TODO:
-        # - filter out empty PMs
-        # - beginning - reset to f_ma
-        # planned actions for servers
-        self._planned_actions = {s: [] for s in self.cloud.servers}
-        #cloud.get_current
-        for server in self.cloud.servers:
-            profit_initial, en_cost_initial = self._get_profit_and_cost() # for f_current
-            state = self.cloud.get_current()
-            #planned_actions = []
-            while state.freq_scale[server] != conf.freq_scale_min:
-                decr_freq = DecreaseFreq(server)
-                self.cloud.apply(decr_freq, inplace=True)
+        """Add the frequency change actions to the schedule which result in
+        energy savings higher than the profit losses incurred by
+        performance-based pricing.
+
+        """
+        self.test_schedule = copy.copy(self.schedule) # for the evaluator
+        self.state = self.cloud.get_current().copy() # for testing effects
+        active_PMs = [s for s in self.cloud.servers \
+                      if not self.state.server_free(s)]
+        for server in active_PMs:
+            self._server_freq_change = 0 # reset the counter of freq. changes
+            self._reset_to_max_frequency(server)
+            profit_previous, en_cost_previous = self._get_profit_and_cost()
+            while True:
+                self._decrease_frequency(server)
                 # debug beta=1.0, en cost increase
                 profit, en_cost = self._get_profit_and_cost() # for f_current
-                en_savings = en_cost_initial - en_cost
-                profit_loss = profit_initial - profit
-                if en_savings > profit_loss:
-                    #planned_actions.append(decr_freq)
-                    self.schedule.add(decr_freq, self.t)
+                en_savings = en_cost_previous - en_cost
+                profit_loss = profit_previous - profit
+                if profit_loss > en_savings: # not profitable any more
+                    # undo last decrease, add changes to schedule, break loop
+                    self._increase_frequency(server)
+                    self._add_freq_to_schedule(server)
+                    break
                 else:
-                    self.cloud.apply(IncreaseFreq(server), inplace=True)
-                    break # not profitable any more
+                    profit_previous, en_cost_previous = profit, en_cost
+                if self.state.freq_scale[server] == conf.freq_scale_min:
+                    break
 
     def reevaluate(self):
+        """Look at the current state of the Cloud and Environment
+        and schedule new/different actions if necessary.
+
+        @returns: a Schedule with a time series of actions
+
+        """
         self.schedule = Schedule()
         self._original_vm_hosts = {} # stores original VM allocations
         self.t = self.environment.get_time() # current time
