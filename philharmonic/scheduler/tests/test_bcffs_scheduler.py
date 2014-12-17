@@ -101,3 +101,24 @@ def test_bcf_reevaluate_freq_scaling(mock_conf):
 #     scheduler._remove_unnecessary_actions()
 #     assert_equals(list(scheduler.schedule.actions),
 #                   [p, d2, i2])
+
+def test_sort_pms_by_beta():#mock_conf):
+    # TODO: fix this
+    #import ipdb; ipdb.set_trace()
+    #from philharmonic.scheduler.bcffs_scheduler import conf
+    #bcffs_scheduler
+    #conf.freq_breaks_after_nonfeasible = True
+    s1 = Server(4000, 4, location='B')
+    s2 = Server(4000, 4, location='A')
+    s3 = Server(4000, 4, location='B')
+    vm1 = VM(2000, 1); vm1.beta = 1.
+    vm2 = VM(2000, 1); vm2.beta = 0.1
+    vm3 = VM(2000, 1); vm3.beta = 0.2
+    servers = [s2, s3, s1]
+    #state = State(servers, [vm1, vm2, vm3])
+    cloud = Cloud(servers, [vm1, vm2, vm3])
+    cloud.apply(Migration(vm1, s1))
+    cloud.apply(Migration(vm2, s2))
+    state = cloud.apply(Migration(vm3, s2))
+    sorted_pms = sort_pms_by_beta(servers, state)
+    assert_equals(sorted_pms, [s2, s1, s3])

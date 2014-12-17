@@ -1,12 +1,36 @@
 import copy
 
 import pandas as pd
+import numpy as np
 
 from philharmonic.scheduler.ischeduler import IScheduler
 from philharmonic.scheduler.bcf_scheduler import *
 from philharmonic import Schedule, Migration, IncreaseFreq, DecreaseFreq
 from philharmonic import conf
 import evaluator as ev
+
+def _nan_to_high(value):
+    if np.isnan(value):
+        return 999
+    else:
+        return value
+
+def _empty_mean(array):
+    """Sort or set to 999 for empty array."""
+    if len(array) == 0:
+        return 999
+    else:
+        return array.mean()
+
+def sort_pms_by_beta(servers, state):
+    """Sort servers by the average beta of vms assigned to them
+    in @param state.
+
+    """
+    s_beta = {s: _empty_mean(np.array([vm.beta for vm in state.alloc[s]])) \
+              for s in servers}
+    sorted_servers = sorted(servers, key=lambda s : (s_beta[s]))
+    return sorted_servers
 
 class BCFFSScheduler(BCFScheduler):
     """Best Cost Fit Frequency Scaling (BCFFS) scheduling algorithm.
@@ -71,7 +95,9 @@ class BCFFSScheduler(BCFScheduler):
         self.state = self.cloud.get_current().copy() # for testing effects
         active_PMs = [s for s in self.cloud.servers \
                       if not self.state.server_free(s)]
-        for server in active_PMs:
+        sorted_active_PMs = sort_pms_by_beta(active_PMs, self.state)
+        for server in sorted_active_PMs:
+            no_decrease_feasible = True
             self._server_freq_change = 0 # reset the counter of freq. changes
             self._reset_to_max_frequency(server)
             profit_previous, en_cost_previous = self._get_profit_and_cost()
@@ -82,6 +108,7 @@ class BCFFSScheduler(BCFScheduler):
                 en_savings = en_cost_previous - en_cost
                 profit_loss = profit_previous - profit
                 if profit_loss > en_savings: # not profitable any more
+                    no_decrease_feasible = False
                     # undo last decrease, add changes to schedule, break loop
                     self._increase_frequency(server)
                     self._add_freq_to_schedule(server)
@@ -90,6 +117,8 @@ class BCFFSScheduler(BCFScheduler):
                     profit_previous, en_cost_previous = profit, en_cost
                 if self.state.freq_scale[server] == conf.freq_scale_min:
                     break
+            if no_decrease_feasible: #conf.freq_breaks_after_nonfeasible and no_decrease_feasible:
+                break # outer loop - as the servers are sorted by avg. beta
 
     def reevaluate(self):
         """Look at the current state of the Cloud and Environment
