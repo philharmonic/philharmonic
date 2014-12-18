@@ -12,7 +12,9 @@ def test_explore_ga_weights(mock_run):
     conf.parameter_space = 'GAWeights'
     from philharmonic.explorer import explore
     mock_run.return_value = {'Total cost ($)': 0.5}
-    explore()
+    with patch.object(philharmonic.explorer, '_serialise_results',
+                      return_value=None) as mock_serialise:
+        explore()
 
 @patch('philharmonic.simulator.simulator.run')
 def test_explore_time_offsets(mock_run):
@@ -21,7 +23,9 @@ def test_explore_time_offsets(mock_run):
     conf.parameter_space = 'TimeOffsets'
     from philharmonic.explorer import explore
     mock_run.return_value = {'Total cost ($)': 0.5}
-    explore()
+    with patch.object(philharmonic.explorer, '_serialise_results',
+                      return_value=None) as mock_serialise:
+        explore()
 
 def test_time_offsets():
     philharmonic._setup('philharmonic.settings.ga_explore')
