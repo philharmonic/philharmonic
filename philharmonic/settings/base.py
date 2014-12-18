@@ -190,11 +190,13 @@ power_freq = '5min'
 # various power values of the servers in Watts
 P_peak = 200
 P_idle = 100
-P_std = 5
+# the standard deviation of the power signal
+# P_std = 5
+P_std = 0
 P_base=150
 P_dif = 15
 f_max = 2000 # the maximum CPU frequency in MHz
-power_freq_model = False # consider CPU frequency in the power model
+power_freq_model = True # consider CPU frequency in the power model
 # TODO: apply to model
 freq_scale_max = 1.0
 freq_scale_min = 0.4

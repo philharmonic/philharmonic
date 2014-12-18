@@ -2,7 +2,6 @@ from .baseprod import *
 
 output_folder = os.path.join(base_output_folder, "bcffs/")
 
-power_freq_model = True
 freq_breaks_after_nonfeasible = True
 
 factory['scheduler'] = "BCFFSScheduler"
