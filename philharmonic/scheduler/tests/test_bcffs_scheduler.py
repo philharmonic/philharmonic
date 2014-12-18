@@ -11,6 +11,10 @@ from philharmonic.simulator import inputgen
 from philharmonic import Cloud, VMRequest, \
     VM, Server, State, Migration, Pause
 
+import philharmonic.scheduler.bcffs_scheduler
+philharmonic.scheduler.bcffs_scheduler.conf.freq_breaks_after_nonfeasible = True
+
+
 @patch('philharmonic.scheduler.BCFFSScheduler._schedule_frequency_scaling')
 def test_bcffs_returns_schedule(mock_schedule_frequency_scaling):
     mock_schedule_frequency_scaling = MagicMock(return_value = None)
@@ -87,27 +91,7 @@ def test_bcf_reevaluate_freq_scaling(mock_conf):
     assert_equals(current.allocation(vm2), s1)
     assert_true(current.all_allocated())
 
-# def test_remove_unnecessary_actions():
-#     scheduler = BCFFSScheduler()
-#     scheduler.schedule = Schedule()
-#     t1 = pd.Timestamp('2015-01-01 10:00')
-#     t2 = pd.Timestamp('2015-01-01 11:00')
-#     s1 = Server(2, 4)
-#     p, i1, d1, d2, i2 = Pause(s1), IncreaseFreq(s1), DecreaseFreq(s1), \
-#                         DecreaseFreq(s1), IncreaseFreq(s1)
-#     actions = [p, i1, d1, d2, i2]
-#     times = [t1, t1, t1, t1, t2]
-#     scheduler.schedule.actions = pd.Series(actions, times, name='actions')
-#     scheduler._remove_unnecessary_actions()
-#     assert_equals(list(scheduler.schedule.actions),
-#                   [p, d2, i2])
-
-def test_sort_pms_by_beta():#mock_conf):
-    # TODO: fix this
-    #import ipdb; ipdb.set_trace()
-    #from philharmonic.scheduler.bcffs_scheduler import conf
-    #bcffs_scheduler
-    #conf.freq_breaks_after_nonfeasible = True
+def test_sort_pms_by_beta():
     s1 = Server(4000, 4, location='B')
     s2 = Server(4000, 4, location='A')
     s3 = Server(4000, 4, location='B')

@@ -58,7 +58,7 @@ el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 start = pd.Timestamp('2010-06-03 00:00')
 # - two days
 #times = pd.date_range(start, periods=24 * 7, freq='H')
-times = pd.date_range(start, periods=2, freq='H')
+times = pd.date_range(start, periods=24, freq='H')
 end = times[-1]
 
 # plotting results

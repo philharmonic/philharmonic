@@ -117,7 +117,7 @@ class BCFFSScheduler(BCFScheduler):
                     profit_previous, en_cost_previous = profit, en_cost
                 if self.state.freq_scale[server] == conf.freq_scale_min:
                     break
-            if no_decrease_feasible: #conf.freq_breaks_after_nonfeasible and no_decrease_feasible:
+            if conf.freq_breaks_after_nonfeasible and no_decrease_feasible:
                 break # outer loop - as the servers are sorted by avg. beta
 
     def reevaluate(self):
