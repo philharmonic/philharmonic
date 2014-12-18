@@ -100,6 +100,14 @@ class VM(Machine):
         # beta or CPU-boundedness: 1. CPU-bounded, towards 0. not CPU-bounded
         self.beta = 1.
 
+    def __repr__(self):
+        s = "{}:{}".format(self.machine_type, str(self.id))
+        try:
+            s += '^{:.2}'.format(self.beta)
+        except AttributeError: # bug I noticed on some old pickled data
+            pass
+        return s
+
     # calling (un)pause or migrate on a VM gets routed to the cloud
     # and then to the current state
 

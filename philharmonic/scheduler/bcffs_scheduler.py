@@ -97,7 +97,7 @@ class BCFFSScheduler(BCFScheduler):
                       if not self.state.server_free(s)]
         sorted_active_PMs = sort_pms_by_beta(active_PMs, self.state)
         for server in sorted_active_PMs:
-            no_decrease_feasible = True
+            decrease_feasible = False
             self._server_freq_change = 0 # reset the counter of freq. changes
             self._reset_to_max_frequency(server)
             profit_previous, en_cost_previous = self._get_profit_and_cost()
@@ -107,17 +107,24 @@ class BCFFSScheduler(BCFScheduler):
                 profit, en_cost = self._get_profit_and_cost() # for f_current
                 en_savings = en_cost_previous - en_cost
                 profit_loss = profit_previous - profit
-                if profit_loss > en_savings: # not profitable any more
-                    no_decrease_feasible = False
-                    # undo last decrease, add changes to schedule, break loop
-                    self._increase_frequency(server)
-                    self._add_freq_to_schedule(server)
-                    break
-                else:
+                if en_savings > profit_loss: # change is beneficial
+                    decrease_feasible = True # continue trying other servers
                     profit_previous, en_cost_previous = profit, en_cost
-                if self.state.freq_scale[server] == conf.freq_scale_min:
+                else: # not profitable
+                    # undo last decrease, break inner loop
+                    self._increase_frequency(server)
                     break
-            if conf.freq_breaks_after_nonfeasible and no_decrease_feasible:
+                # if profit_loss > en_savings: # not profitable any more
+                #     # undo last decrease, break loop
+                #     self._increase_frequency(server)
+                #     break
+                # else:
+                #     decrease_feasible = True
+                #     profit_previous, en_cost_previous = profit, en_cost
+                if self.state.freq_scale[server] == conf.freq_scale_min:
+                    break # we reached the lowest frequency, break inner loop
+            self._add_freq_to_schedule(server) # add actions to schedule
+            if conf.freq_breaks_after_nonfeasible and not decrease_feasible:
                 break # outer loop - as the servers are sorted by avg. beta
 
     def reevaluate(self):
