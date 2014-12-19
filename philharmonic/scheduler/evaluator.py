@@ -650,7 +650,7 @@ def calculate_service_profit(cloud, environment, schedule,
     df_beta = pd.DataFrame([{vm : vm.beta for vm in cloud.get_current().vms}],
                            [start])
     df_beta = df_beta.reindex(freq.index, method='pad')
-    ram_size_base=1024
+    ram_size_base=1#1024
     ram_index='RAM'
     df_rel_ram = pd.DataFrame([{vm : vm.res[ram_index]/ram_size_base for vm in cloud.get_current().vms}],
                            [start])
