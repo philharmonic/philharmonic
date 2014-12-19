@@ -90,20 +90,27 @@ def serialise_results(cloud, env, schedule):
     info(energy_total.sum() + migration_energy)
     # electricity costs
     #------------------
-    #el_prices = inputgen.simple_el()
+    # TODO: update the dynamic cost calculations to work on the new power model
     el_prices = env.el_prices
-    cost = evaluator.calculate_cloud_cost(power, el_prices)
-    info('Electricity prices ($)')
-    info(cost)
-    info(' - total:')
-    info(cost.sum())
-    cost_total = evaluator.calculate_cloud_cost(power_total, el_prices)
-    info('Electricity prices with cooling ($)')
-    info(cost_total)
-    info(' - total:')
-    info(cost_total.sum())
-    info(' - total with migrations:')
-    info(cost_total.sum() + migration_cost)
+    en_cost_IT = evaluator.calculate_cloud_cost(power, el_prices)
+    info('Electricity costs ($)')
+    info(' - electricity cost without cooling:')
+    info(en_cost_IT)
+    info(' - total electricity cost without cooling:')
+    en_cost_IT_total = evaluator.combined_cost(cloud, env, schedule, el_prices)
+    info(en_cost_IT_total)
+
+    en_cost_with_cooling = evaluator.calculate_cloud_cost(power_total,
+                                                          el_prices)
+    info(' - electricity cost with cooling:')
+    info(en_cost_with_cooling)
+    info(' - total electricity cost with cooling:')
+    en_cost_with_cooling_total = evaluator.combined_cost(cloud, env, schedule,
+                                                         el_prices, temperature)
+    info(en_cost_with_cooling_total)
+    info(' - total electricity cost with migrations:')
+    en_cost_combined = en_cost_with_cooling_total + migration_cost
+    info(en_cost_combined)
     # QoS aspects
     #------------------
     # Capacity constraints
@@ -111,9 +118,9 @@ def serialise_results(cloud, env, schedule):
     # TODO: these two
 
     # aggregated results
-    aggregated = [energy.sum(), cost.sum(),
+    aggregated = [energy.sum(), en_cost_IT_total,
                   energy_total.sum() + migration_energy,
-                  cost_total.sum() + migration_cost]
+                  en_cost_combined]
     aggr_names = ['IT energy (kWh)', 'IT cost ($)',
                   'Total energy (kWh)', 'Total cost ($)']
     aggregated_results = pd.Series(aggregated, aggr_names)
