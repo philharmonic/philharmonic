@@ -107,7 +107,7 @@ class BCFFSScheduler(BCFScheduler):
                 profit, en_cost = self._get_profit_and_cost() # for f_current
                 en_savings = en_cost_previous - en_cost
                 profit_loss = profit_previous - profit
-                if en_savings > profit_loss: # change is beneficial
+                if en_savings >= profit_loss: # change is beneficial
                     decrease_feasible = True # continue trying other servers
                     profit_previous, en_cost_previous = profit, en_cost
                 else: # not profitable
