@@ -153,7 +153,7 @@ inputgen_settings = {
     # cloud's servers
     'location_dataset': temperature_dataset,
     #'server_num': 3,
-    'server_num': 20,
+    'server_num': 1,
     #'server_num': 50,
     #'server_num': 200,
     #'server_num': 2000,
@@ -166,7 +166,7 @@ inputgen_settings = {
     # TODO: auto / manual
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
-    'VM_num': 100,
+    'VM_num': 4,
     #'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
