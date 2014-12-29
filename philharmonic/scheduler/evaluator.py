@@ -125,7 +125,7 @@ def calculate_cloud_cost(power, el_prices):
     for server in power.columns: # this might be very inefficient
         loc = server.loc
         el_prices_loc[server] = el_prices[loc][start:end]
-    cost = ph.calculate_price(power, el_prices_loc)
+    cost = ph.calculate_price(power, el_prices_loc)#ph.calculate_price_mean(power, el_prices_loc)
     return cost
 
 def calculate_cloud_cooling(power, temperature):

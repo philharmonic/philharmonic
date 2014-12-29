@@ -117,6 +117,52 @@ def calculate_price(power, prices, start_date=None):
     #---
     return total_price
 
+
+def calculate_price_mean(power, prices, start_date=None):
+    """Take or parse from a file a series of electricity prices ($/kWh),
+    realign it to start_date (if it's provided) and calculate the price of the
+    energy consumption stored in a time series of power values power (W).
+    Should work for DataFrames too.
+
+    @param power: pandas.TimeSeries of power values
+    @param prices: pandas.TimeSeries of price values or a path to a
+    file to parse it from.
+    @param start_date: Timestamp to which to realign the prices
+    (e.g. the starting index value for the power series)
+
+    @Return: calculated price in $
+
+    """
+    if type(prices)==str: # let me parse that for you
+        prices = parse_prices(prices) # TODO: fix for data frames
+    # Now we say that our energy prices start on this date.
+    if start_date: #TODO: fix for DataFrame
+        prices = realign(prices, start_date)
+    prices = per_kwh2per_joul(prices) # convert into $/J
+
+    #TODO: replace this with resample() and pass integrate as a function
+    # power.resample(prices.index.freq, how=calculate_energy, closed='both')*prices
+    #---
+    #times = list(power.index)
+    #prices_list = [] # here we'll store prices during the experiment
+    #for t in times: # TODO: add a changing h value (per hour) and charge per hour
+    #    prices_list.append(prices.asof(t))
+    prices = prices.reindex(power.index, method='ffill')
+
+    # we don't really know when the last interval ended, so we'll make a guess
+    times = power.index
+    N = float(len(times) + 1)
+    t_0 = times[0]
+    t_N = times[-1]+(times[-1]-times[-2])
+
+    duration = (t_N - t_0)
+    h = duration.total_seconds()/N
+    price = prices.mean()
+    total_price = h * (power * price).sum()
+    #---
+    return total_price
+
+
 def _calculate_series_energy(power, estimate=False):
     """Calculates energy from a time series fo power values."""
     if estimate: # we won't integrate it
