@@ -190,7 +190,7 @@ def generate_beta(option, vm_number):
         all__values = workload_beta()
         values_of_beta=all__values['beta'].values[:VM_num]
     if option == 3: #beta=1 for all VMs
-        values_of_beta[0:VM_num]=1
+        values_of_beta=np.ones(VM_num)
     
     return values_of_beta
 

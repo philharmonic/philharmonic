@@ -109,10 +109,8 @@ def calculate_price(power, prices, start_date=None):
     N = float(len(times) + 1)
     t_0 = times[0]
     t_N = times[-1]+(times[-1]-times[-2])
-
     duration = (t_N - t_0)
     h = duration.total_seconds()/N
-
     total_price = h * (power * prices).sum()
     #---
     return total_price
