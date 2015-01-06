@@ -524,12 +524,14 @@ class IncreaseFreq(Action):
     """Increase a server's CPU frequency if possible."""
     def __init__(self, server):
         self.args = (server,)
+        self.server = server
     name = 'increase_freq'
 
 class DecreaseFreq(Action):
     """Decrease a server's CPU frequency if possible."""
     def __init__(self, server):
         self.args = (server,)
+        self.server = server
     name = 'decrease_freq'
 
 class VMRequest(Action):
@@ -659,6 +661,9 @@ class Cloud():
             machine.cloud = self
         self._real = self._initial.copy()
         self.reset_to_real()
+
+    def __repr__(self):
+        return repr(self.get_current())
 
     # a couple of debugging methods ---
     def show(self):
