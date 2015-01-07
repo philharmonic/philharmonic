@@ -647,7 +647,7 @@ def calculate_service_profit(cloud, environment, schedule,
     # df_price = pd.DataFrame(prices_list, times)
     # TODO: use the above in the future to support different VM prices
     # we use constant VM prices for now, so this is enough:
- 
+
     df_beta = pd.DataFrame([{vm : vm.beta for vm in cloud.get_current().vms}],
                            [start])
     df_beta = df_beta.reindex(freq.index, method='pad')

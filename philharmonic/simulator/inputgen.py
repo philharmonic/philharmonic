@@ -249,7 +249,7 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
 
     # 1 to generate beta, 2 to read them directly from file and
     # 3 for all beta equal to 1
-    option = 1
+    option = 3
     beta_values = generate_beta(option,VM_num)
 
     requests = []
