@@ -44,13 +44,17 @@ DATA_LOC = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                          '../..', DATA_LOC))
 
 # the datasets used in the simulation
-USA = False
+USA = False # USA or world-wide
+FIXED_TEMP = False # fixed el. prices world-wide
 DATA_LOC_USA = os.path.join(DATA_LOC, "usa/")
 DATA_LOC_WORLD = os.path.join(DATA_LOC, "world/")
+DATA_LOC_WORLD_FIXED_EL = os.path.join(DATA_LOC, "world-fixed_el/")
 if USA:
     DATA_LOC = DATA_LOC_USA
 else:
     DATA_LOC = DATA_LOC_WORLD
+    if FIXED_TEMP:
+        DATA_LOC = DATA_LOC_WORLD_FIXED_EL
 temperature_dataset = os.path.join(DATA_LOC, 'temperatures.csv')
 el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 
