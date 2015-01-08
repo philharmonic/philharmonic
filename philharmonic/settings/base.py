@@ -161,6 +161,9 @@ inputgen_settings = {
     'max_server_cpu': 16,
     'min_server_ram': 16,
     'max_server_ram': 32,
+    # 1 to generate beta, 2 to read them directly from file and
+    # 3 for all beta equal to 1
+    'beta_option': 3,
 
     # VM requests
     # TODO: auto / manual

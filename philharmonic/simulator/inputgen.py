@@ -166,7 +166,7 @@ def auto_vmreqs(start, end, max_usage=0.8, round_to_hour=True,
     #TODO: test
     return events.sort_index()
 
-# - global settings, overriden by the config.inputgen ditionary
+# - global settings, **overriden** by the config.inputgen dictionary
 # VM requests
 VM_num = 3
 # e.g. CPUs
@@ -178,6 +178,7 @@ max_ram = 2
 min_duration = 60 * 60 # 1 hour
 max_duration = 60 * 60 * 3 # 3 hours
 #max_duration = 60 * 60 * 24 * 10 # 10 days
+beta_option = 1
 
 def generate_beta(option, vm_number):
     """
@@ -247,10 +248,7 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
     durations = normal_population(VM_num, min_duration, max_duration)
     # TODO: add price for each VM
 
-    # 1 to generate beta, 2 to read them directly from file and
-    # 3 for all beta equal to 1
-    option = 3
-    beta_values = generate_beta(option,VM_num)
+    beta_values = generate_beta(beta_option,VM_num)
 
     requests = []
     moments = []
