@@ -52,13 +52,7 @@ class BCFFSScheduler(BCFScheduler):
         """
         all_servers = self.cloud.servers
         self.cloud.servers = [server]
-        # not necessary now?
-        all_actions = self.test_schedule.actions
-        server_actions = all_actions[all_actions.apply(lambda x : x.server) == \
-                                     server]
-        self.test_schedule.actions = server_actions
         self._all_servers = all_servers
-        self._all_actions = all_actions
         # preserve and limit state
         self._all_servers_real = self.cloud._real
         self.cloud._real = self.cloud._real.copy()
@@ -69,7 +63,6 @@ class BCFFSScheduler(BCFScheduler):
         """Reverse _limit_cloud_to_server."""
         # assemble the cloud and actions back
         self.cloud.servers = self._all_servers
-        self.test_schedule.actions = self._all_actions
         # restore state
         self.cloud._real = self._all_servers_real
 
@@ -77,11 +70,11 @@ class BCFFSScheduler(BCFScheduler):
         """Shorthand to calculate service profit and energy cost."""
         # - calculate profit
         profit = ev.calculate_service_profit(self.cloud, self.environment,
-                                             self.test_schedule,
+                                             self.freq_schedule,
                                              self.t, self.end)
         # - calculate energy cost
         en_cost = ev.combined_cost(self.cloud, self.environment,
-                                   self.test_schedule, self.el, self.temp,
+                                   self.freq_schedule, self.el, self.temp,
                                    self.t, self.end)
         return profit, en_cost
 
@@ -102,13 +95,13 @@ class BCFFSScheduler(BCFScheduler):
     def _increase_frequency(self, server):
         """Increase frequency and note it in the counter."""
         self.state.transition(IncreaseFreq(server), inplace=True)
-        self.test_schedule.add(IncreaseFreq(server), self.t)
+        self.freq_schedule.add(IncreaseFreq(server), self.t)
         self._server_freq_change += 1
 
     def _decrease_frequency(self, server):
         """Decrease frequency and note it in the counter."""
         self.state.transition(DecreaseFreq(server), inplace=True)
-        self.test_schedule.add(DecreaseFreq(server), self.t)
+        self.freq_schedule.add(DecreaseFreq(server), self.t)
         self._server_freq_change -= 1
 
     def _reset_to_max_frequency(self, server):
@@ -128,12 +121,13 @@ class BCFFSScheduler(BCFScheduler):
         self.cloud._real = self.cloud._current
         self.cloud.reset_to_real()
         # schedule of frequency changes for evaluation
-        self.test_schedule = Schedule() # copy.copy(self.schedule)
         active_PMs = [s for s in self.cloud.servers \
                       if not self.cloud.get_current().server_free(s)]
         sorted_active_PMs = sort_pms_by_beta(active_PMs,
                                              self.cloud.get_current())
         for server in sorted_active_PMs:
+            # we store freq. changes for the server in this temporary schedule
+            self.freq_schedule = Schedule()
             self._limit_cloud_to_server(server)
             self.state = self.cloud.get_current() # for testing effects
             decrease_feasible = False
