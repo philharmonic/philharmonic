@@ -40,7 +40,8 @@ def normal_sample(bottom, top, ceil=True):
 def synthetic_beta_population(output_size, input_beta_data):
     distribution = scipy.stats.expon
     model = distribution.fit(input_beta_data)#['mean'])
-    beta = distribution.rvs(size=output_size, *model)  # rvs generates random variates
+    # rvs generates random variates
+    beta = distribution.rvs(size=output_size, *model)
     return beta
 
 def normal_population(num, bottom, top, ceil=True):
@@ -184,22 +185,22 @@ def generate_beta(option, vm_number):
     """
     generate beta values of the vms based on synthetic data
     """
-    if option == 1: #beta is generated based on synthetic data read from a file
+    if option == 1: # beta is generated based on synthetic data read from a file
         all__values = workload_beta_data()
         values_of_beta = synthetic_beta_population(vm_number, all__values)
-    if option == 2: #beta is read directly from a file
+    if option == 2: # beta is read directly from a file
         all__values = workload_beta()
-        values_of_beta=all__values['beta'].values[:VM_num]
-    if option == 3: #beta=1 for all VMs
-        values_of_beta=np.ones(VM_num)
-    
+        values_of_beta = all__values['beta'].values[:VM_num]
+    if option == 3: # beta=1 for all VMs
+        values_of_beta = np.ones(VM_num) * fixed_beta_value
+
     return values_of_beta
 
 def normal_vmreqs(start, end, round_to_hour=True, **kwargs):
     """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
-    
+
     """
     start, end = pd.Timestamp(start), pd.Timestamp(end)
     delta = end - start

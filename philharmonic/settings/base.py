@@ -168,6 +168,7 @@ inputgen_settings = {
     # 1 to generate beta, 2 to read them directly from file and
     # 3 for all beta equal to 1
     'beta_option': 3,
+    'fixed_beta_value': 1.,
 
     # VM requests
     # TODO: auto / manual
