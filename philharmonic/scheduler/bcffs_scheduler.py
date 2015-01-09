@@ -52,6 +52,7 @@ class BCFFSScheduler(BCFScheduler):
         """
         all_servers = self.cloud.servers
         self.cloud.servers = [server]
+        # not necessary now?
         all_actions = self.test_schedule.actions
         server_actions = all_actions[all_actions.apply(lambda x : x.server) == \
                                      server]
@@ -59,9 +60,7 @@ class BCFFSScheduler(BCFScheduler):
         self._all_servers = all_servers
         self._all_actions = all_actions
         # preserve and limit state
-        # TODO: just copy the whole _real and add a method that
-        # limits it to server
-        self._original_real = self.cloud._real
+        self._all_servers_real = self.cloud._real
         self.cloud._real = self.cloud._real.copy()
         self.cloud._real.limit_to_server(server)
         self.cloud.reset_to_real()
@@ -72,7 +71,7 @@ class BCFFSScheduler(BCFScheduler):
         self.cloud.servers = self._all_servers
         self.test_schedule.actions = self._all_actions
         # restore state
-        self.cloud._real = self._original_real
+        self.cloud._real = self._all_servers_real
 
     def _get_profit_and_cost(self):
         """Shorthand to calculate service profit and energy cost."""
@@ -123,13 +122,20 @@ class BCFFSScheduler(BCFScheduler):
         performance-based pricing.
 
         """
-        self.test_schedule = copy.copy(self.schedule) # for the evaluator
-        self.state = self.cloud.get_current().copy() # for testing effects
+        # TODO: implement simpler state checkpoints
+        self._original_real = self.cloud._real # preserve original real
+        # pretend the migrations were really applied
+        self.cloud._real = self.cloud._current
+        self.cloud.reset_to_real()
+        # schedule of frequency changes for evaluation
+        self.test_schedule = Schedule() # copy.copy(self.schedule)
         active_PMs = [s for s in self.cloud.servers \
-                      if not self.state.server_free(s)]
-        sorted_active_PMs = sort_pms_by_beta(active_PMs, self.state)
+                      if not self.cloud.get_current().server_free(s)]
+        sorted_active_PMs = sort_pms_by_beta(active_PMs,
+                                             self.cloud.get_current())
         for server in sorted_active_PMs:
             self._limit_cloud_to_server(server)
+            self.state = self.cloud.get_current() # for testing effects
             decrease_feasible = False
             self._server_freq_change = 0 # reset the counter of freq. changes
             self._reset_to_max_frequency(server)
@@ -153,6 +159,9 @@ class BCFFSScheduler(BCFScheduler):
             self._add_freq_to_schedule(server) # add actions to schedule
             if conf.freq_breaks_after_nonfeasible and not decrease_feasible:
                 break # outer loop - as the servers are sorted by avg. beta
+        # restore the real state
+        self.cloud._real = self._original_real
+        self.cloud.reset_to_real()
 
     def reevaluate(self):
         """Look at the current state of the Cloud and Environment
@@ -174,14 +183,14 @@ class BCFFSScheduler(BCFScheduler):
         VMs.extend(self._remove_vms_from_underutilised_hosts())
         VMs = sort_vms_big_first(VMs)
 
-        # schedule migrations
+        # stage 1: schedule migrations
         for vm in VMs:
             host = self.find_host(vm)
             if host is None:
                 raise Exception("not enough free resources")
             self._place(vm, host, self.t)
 
-        # ...and then frequency scaling
+        # stage 2: schedule frequency scaling
         self._schedule_frequency_scaling()
 
         return self.schedule

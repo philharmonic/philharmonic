@@ -335,7 +335,7 @@ class State(object):
     def limit_to_server(self, server):
         """Modifies itself to only provide information about a single server."""
         self.servers = [server]
-        #self.vms = self._alloc[server]
+        self.vms = self._alloc[server]
         self._alloc = {server : self._alloc[server]}
         self.free_cap = {server : self.free_cap[server]}
         self.cap_df = pd.DataFrame({server: server.cap})
