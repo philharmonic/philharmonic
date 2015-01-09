@@ -42,10 +42,14 @@ class BCFFSScheduler(BCFScheduler):
 
     """
 
-    def _filter_cloud_actions(self, server):
-        """temporarily consider only this server as the cloud for performance"""
-        #TODO: only 1 server in cloud, filter only actions for this server
-        # temporarily consider only this server as the cloud for performance
+    # TODO: these two methods should be a part of the model,
+    # as they touch too many model internals
+    # (available to the scheduler)
+    def _limit_cloud_to_server(self, server):
+        """Temporarily consider only this server as the cloud, filter only
+        actions and state properties for this server (for performance).
+
+        """
         all_servers = self.cloud.servers
         self.cloud.servers = [server]
         all_actions = self.test_schedule.actions
@@ -54,12 +58,21 @@ class BCFFSScheduler(BCFScheduler):
         self.test_schedule.actions = server_actions
         self._all_servers = all_servers
         self._all_actions = all_actions
+        # preserve and limit state
+        # TODO: just copy the whole _real and add a method that
+        # limits it to server
+        self._original_real = self.cloud._real
+        self.cloud._real = self.cloud._real.copy()
+        self.cloud._real.limit_to_server(server)
+        self.cloud.reset_to_real()
 
     def _restore_cloud_actions(self):
-        """reverse _filter_cloud_actions"""
+        """Reverse _limit_cloud_to_server."""
         # assemble the cloud and actions back
         self.cloud.servers = self._all_servers
         self.test_schedule.actions = self._all_actions
+        # restore state
+        self.cloud._real = self._original_real
 
     def _get_profit_and_cost(self):
         """Shorthand to calculate service profit and energy cost."""
@@ -116,7 +129,7 @@ class BCFFSScheduler(BCFScheduler):
                       if not self.state.server_free(s)]
         sorted_active_PMs = sort_pms_by_beta(active_PMs, self.state)
         for server in sorted_active_PMs:
-            self._filter_cloud_actions(server)
+            self._limit_cloud_to_server(server)
             decrease_feasible = False
             self._server_freq_change = 0 # reset the counter of freq. changes
             self._reset_to_max_frequency(server)

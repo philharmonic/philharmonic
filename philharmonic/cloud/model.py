@@ -173,6 +173,9 @@ class State(object):
         return State([Server(2,2), Server(4,4)], [VM(1,1), VM(1,1)])
 
     def __init__(self, servers=[], vms=set(), auto_allocate=False):
+        # When adding new properties also change:
+        # - the copy method
+        # - the limit_to_server method
         self.servers = servers
         self.vms = vms
         self._alloc = {} # servers -> allocated machines
@@ -328,6 +331,17 @@ class State(object):
         new_state.suspended = copy.copy(self.suspended)
         new_state.freq_scale = copy.copy(self.freq_scale)
         return new_state
+
+    def limit_to_server(self, server):
+        """Modifies itself to only provide information about a single server."""
+        self.servers = [server]
+        #self.vms = self._alloc[server]
+        self._alloc = {server : self._alloc[server]}
+        self.free_cap = {server : self.free_cap[server]}
+        self.cap_df = pd.DataFrame({server: server.cap})
+        self.paused = self.paused & set([server])
+        self.suspended = self.suspended & set([server])
+        self.freq_scale = {server : self.freq_scale[server]}
 
     # creates a new VMs list
     def transition(self, action, inplace=False):

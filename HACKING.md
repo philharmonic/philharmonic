@@ -24,7 +24,7 @@ Profiling
 ---------
 From the terminal run:
 
-    ipython -- simulate.py profile --conf=philharmonic.settings.bcf -l 20
+    python simulate.py profile --conf=philharmonic.settings.bcf -l 20 -s cumtime
 
 where `conf` is the configuration you would like to analyse.
 
