@@ -190,9 +190,9 @@ def generate_beta(option, vm_number):
         values_of_beta = synthetic_beta_population(vm_number, all__values)
     if option == 2: # beta is read directly from a file
         all__values = workload_beta()
-        values_of_beta = all__values['beta'].values[:VM_num]
+        values_of_beta = all__values['beta'].values[:vm_number]
     if option == 3: # beta=1 for all VMs
-        values_of_beta = np.ones(VM_num) * fixed_beta_value
+        values_of_beta = np.ones(vm_number) * fixed_beta_value
 
     return values_of_beta
 

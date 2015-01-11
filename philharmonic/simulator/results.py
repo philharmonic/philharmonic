@@ -36,6 +36,12 @@ def serialise_results(cloud, env, schedule):
     ax = plt.subplot(nplots, 1, 2)
     ax.set_title('Temperature (C)')
     env.temperature.plot(ax=ax)
+
+    # pm frequencies
+    info(' - PM frequencies')
+    pm_freqs = evaluator.calculate_cloud_frequencies(cloud, env, schedule)
+    info(pm_freqs)
+
     # cloud utilisation
     #------------------
     evaluator.precreate_synth_power(env.start, env.end, cloud.servers)
@@ -112,6 +118,10 @@ def serialise_results(cloud, env, schedule):
     en_cost_combined = en_cost_with_cooling_total + migration_cost
     info(en_cost_combined)
     # QoS aspects
+    info(' - total profit from users')
+    serv_profit = evaluator.calculate_service_profit(cloud, env, schedule)
+    info(serv_profit)
+
     #------------------
     # Capacity constraints
     #---------------------
