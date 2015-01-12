@@ -119,7 +119,8 @@ def _calculate_series_energy(power, estimate=False):
     """Calculates energy from a time series fo power values."""
     if estimate: # we won't integrate it
         return power.mean() * len(power.resample('s'))
-    # we don't really know when the last interval ended (and at what value), so we'll make a guess
+    # we don't really know when the last interval ended (and at what value),
+    # so we'll make a guess
     # TODO: replace this using resample(closed='both')
     new_tick = power.index[-1]+(power.index[-1]-power.index[-2])
     power = power.append(pd.Series({new_tick: power[-1]}))
@@ -187,9 +188,11 @@ def vm_price_progressive(freq, beta, C_base=0.0520278, C_dif=0.018,
 
 def vm_price_cpu_ram(rel_ram_size, freq, beta, C_base=0.027028, C_dif_cpu=0.018,
                          f_min=1000, f_max=3000, C_dif_ram=0.025):
-    """Calculate a VM's price based on the relative memory size, the frequency and beta, the VM's
-    CPU boundedness."""
-    C = C_base + C_dif_cpu * (beta * freq + (1 - beta) * f_max - f_min) / f_min + C_dif_ram * rel_ram_size
+    """Calculate a VM's price based on the relative memory size, the frequency
+    and beta, the VM's CPU boundedness."""
+    C = C_base + \
+        C_dif_cpu * (beta * freq + (1 - beta) * f_max - f_min) / f_min + \
+        C_dif_ram * rel_ram_size
     return C
 
 def joul2kwh(jouls):

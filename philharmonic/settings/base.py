@@ -22,7 +22,7 @@ save_power = False
 #----------------------
 
 # stop and check settings with user (only initially)
-prompt_configuration = True
+prompt_configuration = False# True
 # interval at which to print cloud usage: pd.offsets.* or None
 show_cloud_interval = pd.offsets.Hour(1)
 # stop the simulation for inspection?
@@ -62,7 +62,8 @@ el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 start = pd.Timestamp('2010-06-03 00:00')
 # - two days
 #times = pd.date_range(start, periods=24 * 7, freq='H')
-times = pd.date_range(start, periods=24, freq='H')
+#times = pd.date_range(start, periods=24, freq='H')
+times = pd.date_range(start, periods=5, freq='H')
 end = times[-1]
 
 # plotting results
@@ -161,9 +162,10 @@ inputgen_settings = {
     #'server_num': 50,
     #'server_num': 200,
     #'server_num': 2000,
-    'min_server_cpu': 8,
+    #'min_server_cpu': 8,
+    'min_server_cpu': 16,
     'max_server_cpu': 16,
-    'min_server_ram': 16,
+    'min_server_ram': 32,
     'max_server_ram': 32,
     # 1 to generate beta, 2 to read them directly from file and
     # 3 for all beta equal to 1
@@ -174,14 +176,14 @@ inputgen_settings = {
     # TODO: auto / manual
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
-    'VM_num': 4,
+    'VM_num': 1,
     #'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
-    'min_cpu': 1,
-    'max_cpu': 2,
-    'min_ram': 2,
-    'max_ram': 4,
+    'min_cpu': 16,
+    'max_cpu': 16,
+    'min_ram': 32,
+    'max_ram': 32,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
@@ -203,6 +205,11 @@ P_idle = 100
 P_std = 0
 P_base=150
 P_dif = 15
+# VM cost components
+C_base=0.0520278
+C_dif_cpu=0.018
+C_dif_ram=0.025
+# CPU frequency parameters
 f_max = 2000 # the maximum CPU frequency in MHz
 power_freq_model = True # consider CPU frequency in the power model
 # TODO: apply to model
@@ -210,6 +217,9 @@ freq_scale_max = 1.0
 freq_scale_min = 0.4
 freq_scale_delta = 0.1
 freq_scale_digits = 1
+f_min = f_max * freq_scale_min
+f_base = 1000
+
 # freq_scales = np.round(frange(freq_scale_max, freq_scale_min,
 #                                  delta=-freq_scale_delta),
 #                        freq_scale_digits)

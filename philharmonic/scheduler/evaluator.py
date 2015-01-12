@@ -107,8 +107,10 @@ def generate_cloud_power(util, start=None, end=None,
     # calculate on a sparse util DataFrame
     if power_freq_model:
         #TODO: get frequencies from the servers
-        power = ph.calculate_power_freq(util, f=freq, P_idle=conf.P_idle,
-                                        P_base=conf.P_base, P_dif=conf.P_dif)
+        power = ph.calculate_power_freq(
+            util, f=freq, P_idle=conf.P_idle, P_base=conf.P_base,
+            P_dif=conf.P_dif, f_base=conf.f_base
+        )
     else:
         power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
     # fill it out to the full frequency
@@ -656,8 +658,14 @@ def calculate_service_profit(cloud, environment, schedule,
     df_rel_ram = pd.DataFrame([{vm : vm.res[ram_index] / ram_size_base \
                                 for vm in cloud.get_current().vms}], [start])
     df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
-    df_price = ph.vm_price_cpu_ram(df_rel_ram, freq, df_beta)
-    #df_price = ph.vm_price_progressive(freq, df_beta)
+    # df_price = ph.vm_price_progressive(
+    #     freq, df_beta, C_base=conf.C_base, C_dif=conf.C_dif_cpu,
+    #     f_min=conf.f_min, f_max=conf.f_max
+    # )
+    df_price = ph.vm_price_cpu_ram(
+        df_rel_ram, freq, df_beta, C_base=conf.C_base, C_dif_cpu=conf.C_dif_cpu,
+        C_dif_ram=conf.C_dif_ram, f_min=conf.f_min, f_max=conf.f_max
+    )
     df_price = df_price.resample(conf.pricing_freq, fill_method='pad')
     total_profit = df_price.sum().sum()
     return total_profit
