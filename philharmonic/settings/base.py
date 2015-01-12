@@ -210,11 +210,11 @@ C_base=0.0520278
 C_dif_cpu=0.018
 C_dif_ram=0.025
 # CPU frequency parameters
-f_max = 2000 # the maximum CPU frequency in MHz
+f_max = 2600 # the maximum CPU frequency in MHz
 power_freq_model = True # consider CPU frequency in the power model
 # TODO: apply to model
 freq_scale_max = 1.0
-freq_scale_min = 0.4
+freq_scale_min = 0.7
 freq_scale_delta = 0.1
 freq_scale_digits = 1
 f_min = f_max * freq_scale_min
