@@ -305,7 +305,7 @@ def before_start(simulator):
 
 def run(steps=None, custom_scheduler=None):
     """Run the simulation."""
-    info('SETTINGS\n########\n')
+    info('\nSETTINGS\n########\n')
 
     # create simulator from the conf
     #-------------------------------
@@ -315,11 +315,11 @@ def run(steps=None, custom_scheduler=None):
 
     # run the simulation
     #-------------------
-    info('\nSIMULATION\n##########')
+    info('\nSIMULATION\n##########\n')
     start_time = datetime.now()
     info('Simulation started at time: {}'.format(start_time))
     cloud, env, schedule = simulator.run(steps)
-    info('DONE\n####\n\n')
+    info('RESULTS\n#######\n')
 
     # serialise and log the results
     #------------------------------
@@ -327,7 +327,7 @@ def run(steps=None, custom_scheduler=None):
 
     end_time = datetime.now()
     info('Simulation finished at time: {}'.format(end_time))
-    info('Duration: {}'.format(end_time - start_time))
+    info('Duration: {}\n'.format(end_time - start_time))
     return results
 
 if __name__ == "__main__":
