@@ -162,12 +162,12 @@ def serialise_results(cloud, env, schedule):
 
     # frequency savings
     info(' - frequency scaling savings (compared to no scaling):')
-    en_cost_cooling_unscaled = evaluator.combined_cost(
+    en_cost_combined_unscaled = evaluator.combined_cost(
         cloud, env, schedule_unscaled, env.el_prices, env.temperature
     )
-    scaling_savings_abs = en_cost_cooling_unscaled - en_cost_with_cooling_total
+    scaling_savings_abs = en_cost_combined_unscaled - en_cost_combined
     info('${}'.format(scaling_savings_abs))
-    scaling_savings_rel = scaling_savings_abs / en_cost_cooling_unscaled
+    scaling_savings_rel = scaling_savings_abs / en_cost_combined_unscaled
     info('{:.2%}'.format(scaling_savings_rel))
 
     #------------------
@@ -177,10 +177,14 @@ def serialise_results(cloud, env, schedule):
 
     # aggregated results
     aggregated = [energy, en_cost_IT_total,
-                  energy_total + migration_energy,
-                  en_cost_combined]
+                  energy_total + migration_energy, en_cost_combined,
+                  serv_profit, serv_profit - en_cost_combined]
     aggr_names = ['IT energy (kWh)', 'IT cost ($)',
-                  'Total energy (kWh)', 'Total cost ($)']
+                  'Total energy (kWh)', 'Total cost ($)',
+                  'Service revenue ($)', 'Gross profit ($)']
+    # http://en.wikipedia.org/wiki/Gross_profit
+    # Towards Profitable Virtual Machine Placement in the Data Center Shi
+    # and Hong 2011 - total profit, revenue and operational cost
     aggregated_results = pd.Series(aggregated, aggr_names)
     aggregated_results.to_pickle(loc('results.pkl'))
     #aggregated_results.plot(kind='bar')
