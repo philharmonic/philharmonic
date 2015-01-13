@@ -150,6 +150,15 @@ def test_calculate_cost_combined():
 def test_calculate_cost_combined_different_freq(mock_conf):
     f_max = 3000
     mock_conf.f_max = f_max
+    mock_conf.f_min = 1000
+    mock_conf.f_base = 1000
+    mock_conf.C_base = 0.0520278
+    mock_conf.C_dif_cpu = 0.018
+    mock_conf.C_dif_ram = 0.025
+    mock_conf.freq_scale_max = 1.0
+    mock_conf.freq_scale_min = 0.7
+    mock_conf.freq_scale_delta = 0.1
+    mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
@@ -231,7 +240,26 @@ def test_server_freqs_to_vm_freqs():
     vm_freq = _server_freqs_to_vm_freqs(state)
     assert_equals(vm_freq, {vm1 : 0.9, vm2 : 0.8})
 
-def test_calculate_cloud_frequencies_for_vms():
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_calculate_cloud_frequencies_for_vms(mock_conf):
+    mock_conf.f_max = 2000
+    mock_conf.f_min = 1000
+    mock_conf.f_base = 1000
+    mock_conf.C_base = 0.0520278
+    mock_conf.C_dif_cpu = 0.018
+    mock_conf.C_dif_ram = 0.025
+    mock_conf.freq_scale_max = 1.0
+    mock_conf.freq_scale_min = 0.7
+    mock_conf.freq_scale_delta = 0.1
+    mock_conf.freq_scale_digits = 1
+    mock_conf.power_freq_model = True
+    mock_conf.P_idle = 100
+    mock_conf.P_std = 5
+    mock_conf.P_dif = 15
+    mock_conf.P_base = 150
+    mock_conf.power_freq = '5min'
+    mock_conf.pricing_freq = '1h'
+
     s1 = Server(4000, 2, location='A')
     s2 = Server(8000, 4, location='B')
     s3 = Server(4000, 4, location='B')
@@ -265,8 +293,16 @@ def test_calculate_cloud_frequencies_for_vms():
 
 @patch('philharmonic.scheduler.evaluator.conf')
 def test_calculate_service_profit(mock_conf):
-    f_max = 3000
-    mock_conf.f_max = f_max
+    mock_conf.f_max = 3000
+    mock_conf.f_min = 1000
+    mock_conf.f_base = 1000
+    mock_conf.C_base = 0.0520278
+    mock_conf.C_dif_cpu = 0.018
+    mock_conf.C_dif_ram = 0.025
+    mock_conf.freq_scale_max = 1.0
+    mock_conf.freq_scale_min = 0.7
+    mock_conf.freq_scale_delta = 0.1
+    mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
@@ -274,6 +310,7 @@ def test_calculate_service_profit(mock_conf):
     mock_conf.P_base = 150
     mock_conf.power_freq = '5min'
     mock_conf.pricing_freq = '1h'
+
     s1 = Server(4000, 4, location='A')
     s2 = Server(8000, 4, location='B')
     s3 = Server(4000, 4, location='B')

@@ -176,18 +176,18 @@ inputgen_settings = {
     # TODO: auto / manual
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
-    'VM_num': 1,
+    'VM_num': 4,
     #'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
-    'min_cpu': 16,
-    'max_cpu': 16,
-    'min_ram': 32,
-    'max_ram': 32,
+    'min_cpu': 4,
+    'max_cpu': 4,
+    'min_ram': 8,
+    'max_ram': 8,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
-    #'max_duration': 60 * 60 * 3, # 3 hours
-    'max_duration': 60 * 60 * 24 * 3, # 2 days
+    'max_duration': 60 * 60 * 3, # 3 hours
+    #'max_duration': 60 * 60 * 24 * 3, # 2 days
     #'max_duration': 60 * 60 * 24 * 10, # 10 days
     #'max_duration': 60 * 60 * 24 * 90, # 90 days
 }
@@ -203,12 +203,12 @@ P_idle = 100
 # the standard deviation of the power signal
 # P_std = 5
 P_std = 0
-P_base=150
+P_base = 150
 P_dif = 15
 # VM cost components
-C_base=0.0520278
-C_dif_cpu=0.018
-C_dif_ram=0.025
+C_base = 0.0520278
+C_dif_cpu = 0.018
+C_dif_ram = 0.025
 # CPU frequency parameters
 f_max = 2600 # the maximum CPU frequency in MHz
 power_freq_model = True # consider CPU frequency in the power model

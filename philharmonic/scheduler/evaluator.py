@@ -618,45 +618,27 @@ def calculate_service_profit(cloud, environment, schedule,
                              start=None, end=None):
     """Calculate the profit for the cloud provider for hosting the VMs."""
 
-    start, end = _reset_cloud_state(cloud, environment, start, end)
     if conf.power_freq_model:
         freq = calculate_cloud_frequencies(cloud, environment, schedule,
                                            start, end, for_vms=True)
     else:
         freq = None
-    # initial_prices = cloud.get_current().calculate_prices()
-    # prices_list = [initial_prices]
-    # times = [start]
-    # for t in schedule.actions.index.unique():
-    #     if t == start: # we change the initial utilisation right away
-    #         prices_list = []
-    #         times = []
-    #     # TODO: precise indexing, not dict
-    #     if isinstance(schedule.actions[t], pd.Series):
-    #         for action in schedule.actions[t].values:
-    #             cloud.apply(action)
-    #     else:
-    #         action = schedule.actions[t]
-    #         cloud.apply(action)
-    #     state = cloud.get_current()
-    #     new_prices = state.calculate_prices()
-    #     prices_list.append(new_prices)
-    #     times.append(t)
-    # if times[-1] < end:
-    #     # the last utilisation values hold until the end - duplicate last
-    #     times.append(end)
-    #     prices_list.append(prices_list[-1])
-    # df_price = pd.DataFrame(prices_list, times)
-    # TODO: use the above in the future to support different VM prices
-    # we use constant VM prices for now, so this is enough:
+    whole_timeline = (start is None) # called for whole simulation timeline
+    start, end = _reset_cloud_state(cloud, environment, start, end)
+    # TODO: test both cases
+    if whole_timeline:
+        considered_vms = set(environment._requests.apply(lambda a : a.vm))
+    else:
+        considered_vms = cloud.get_current().vms
 
-    df_beta = pd.DataFrame([{vm : vm.beta for vm in cloud.get_current().vms}],
-                           [start])
+    df_beta = pd.DataFrame(
+        [{vm : vm.beta for vm in considered_vms}], [start]
+    )
     df_beta = df_beta.reindex(freq.index, method='pad')
-    ram_size_base = 1#1000#1024
+    ram_size_base = 1 # 1000 # 1024
     ram_index = 'RAM'
     df_rel_ram = pd.DataFrame([{vm : vm.res[ram_index] / ram_size_base \
-                                for vm in cloud.get_current().vms}], [start])
+                                for vm in considered_vms}], [start])
     df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
     # df_price = ph.vm_price_progressive(
     #     freq, df_beta, C_base=conf.C_base, C_dif=conf.C_dif_cpu,

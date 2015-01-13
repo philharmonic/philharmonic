@@ -57,6 +57,15 @@ def test_bcf_reevaluate_underutilised(mock_schedule_frequency_scaling):
 def test_bcf_reevaluate_freq_scaling(mock_conf):
     f_max = 3000
     mock_conf.f_max = f_max
+    mock_conf.f_min = 1000
+    mock_conf.f_base = 1000
+    mock_conf.C_base = 0.0520278
+    mock_conf.C_dif_cpu = 0.018
+    mock_conf.C_dif_ram = 0.025
+    mock_conf.freq_scale_max = 1.0
+    mock_conf.freq_scale_min = 0.7
+    mock_conf.freq_scale_delta = 0.1
+    mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
@@ -95,6 +104,15 @@ def test_bcf_reevaluate_freq_scaling(mock_conf):
 def test_bcf_reevaluate_freq_scaling_beta_0(mock_conf):
     f_max = 3000
     mock_conf.f_max = f_max
+    mock_conf.f_min = 1000
+    mock_conf.f_base = 1000
+    mock_conf.C_base = 0.0520278
+    mock_conf.C_dif_cpu = 0.018
+    mock_conf.C_dif_ram = 0.025
+    mock_conf.freq_scale_max = 1.0
+    mock_conf.freq_scale_min = 0.7
+    mock_conf.freq_scale_delta = 0.1
+    mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
@@ -133,8 +151,8 @@ def test_bcf_reevaluate_freq_scaling_beta_0(mock_conf):
     assert_equals(current.allocation(vm3), s1)
     assert_true(current.all_allocated())
 
-    assert_equals(current.freq_scale[s1], 0.4)
-    assert_equals(current.freq_scale[s2], 0.4)
+    assert_equals(current.freq_scale[s1], mock_conf.freq_scale_min)
+    assert_equals(current.freq_scale[s2], mock_conf.freq_scale_min)
 
 def test_sort_pms_by_beta():
     s1 = Server(4000, 4, location='B')

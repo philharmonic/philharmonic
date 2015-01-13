@@ -25,6 +25,11 @@ class Environment(object):
     def __init__(self):
         pass
 
+    def __repr__(self):
+        return repr({'start': self.start, 'end': self.end,
+                     'period': self.period,
+                     '_forecast_periods': self._forecast_periods})
+
     def current_data(self):
         """return all the current data for all the locations"""
         raise NotImplemented
