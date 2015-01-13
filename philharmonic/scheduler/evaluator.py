@@ -218,6 +218,34 @@ def normalised_combined_cost(cloud, environment, schedule,
     normalised = best_cost + actual_cost/worst_cost
     return normalised
 
+def combined_energy(cloud, environment, schedule, temperature=None,
+                    start=None, end=None):
+    """Calculate energy of IT equipment and cooling if temperature provided.
+
+    @returns: energy in kWh
+
+    """
+
+    # we first calculate utilisation with start, end = None / some timestamp
+    # this way it knows which state to start from
+    # (this is a temp. hack until cloud states get timestamped)
+    util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
+    if start is None:
+        start = environment.start
+    if end is None:
+        end = environment.end
+    if conf.power_freq_model:
+        freq = calculate_cloud_frequencies(cloud, environment, schedule,
+                                           start, end)
+    else:
+        freq = None
+    power = generate_cloud_power(util, freq=freq)
+    if temperature is not None:
+        power = calculate_cloud_cooling(power, temperature[start:end])
+    energy = ph.calculate_energy(power)
+    energy_total = energy.sum() # for the whole cloud
+    energy_total = ph.joul2kwh(energy_total)
+    return energy_total
 
 #------------------------
 # constraint_penalties
@@ -329,6 +357,8 @@ def calculate_migration_overhead(cloud, environment, schedule,
     @param start, end: if given, only this period will be counted,
     cloud model starts from _real. If not, whole environment.start-end
     counted and the first state is _initial.
+
+    @returns: energy in kWh, cost in $
 
     """
     if start is None:

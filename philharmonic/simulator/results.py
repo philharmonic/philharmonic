@@ -21,7 +21,7 @@ def pickle_results(schedule):
     schedule.actions.to_pickle(loc('schedule.pkl'))
 
 def generate_series_results(cloud, env, schedule, nplots):
-    info('Dynamic results\n---------------')
+    info('\nDynamic results\n---------------')
     # cloud utilisation
     #------------------
     # evaluator.precreate_synth_power(env.start, env.end, cloud.servers)
@@ -38,6 +38,7 @@ def generate_series_results(cloud, env, schedule, nplots):
 
     # cloud power consumption
     #------------------
+    # TODO: add frequency to this power calculation
     power = evaluator.generate_cloud_power(util)
     if conf.save_power:
         power.to_pickle(loc('power.pkl'))
@@ -45,10 +46,10 @@ def generate_series_results(cloud, env, schedule, nplots):
     ax.set_title('Computational power (W)')
     power.plot(ax=ax)
     energy = ph.joul2kwh(ph.calculate_energy(power))
-    info('\nEnergy (kWh)')
-    info(energy)
-    info(' - total:')
-    info(energy.sum())
+    # info('\nEnergy (kWh)')
+    # info(energy)
+    # info(' - total:')
+    # info(energy.sum())
 
     # cooling overhead
     #-----------------
@@ -60,13 +61,13 @@ def generate_series_results(cloud, env, schedule, nplots):
     if conf.save_power:
         power_total.to_pickle(loc('power_total.pkl'))
     energy_total = ph.joul2kwh(ph.calculate_energy(power_total))
-    info('\nEnergy with cooling (kWh)')
-    info(energy_total)
-    info(' - total:')
-    info(energy_total.sum())
+    # info('\nEnergy with cooling (kWh)')
+    # info(energy_total)
+    # info(' - total:')
+    # info(energy_total.sum())
 
     # pm frequencies
-    info('\nPM frequencies')
+    info('\nPM frequencies (MHz)')
     pm_freqs = evaluator.calculate_cloud_frequencies(cloud, env, schedule)
     info(pm_freqs)
 
@@ -93,8 +94,9 @@ def serialise_results(cloud, env, schedule):
     #----------------
     generate_series_results(cloud, env, schedule, nplots)
 
-    energy = -1
-    energy_total = -1
+    energy = evaluator.combined_energy(cloud, env, schedule)
+    energy_total = evaluator.combined_energy(cloud, env, schedule,
+                                             env.temperature)
 
     # Aggregated results
     #===================
