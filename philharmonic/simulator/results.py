@@ -15,6 +15,7 @@ import philharmonic as ph
 from philharmonic.logger import *
 from philharmonic.scheduler import evaluator
 from philharmonic.utils import loc, common_loc
+from philharmonic import Schedule
 
 def pickle_results(schedule):
     schedule.actions.to_pickle(loc('schedule.pkl'))
@@ -137,10 +138,35 @@ def serialise_results(cloud, env, schedule):
     info(' - total electricity cost with migrations:')
     en_cost_combined = en_cost_with_cooling_total + migration_cost
     info(en_cost_combined)
+
+    # the schedule if we did not apply any frequency scaling
+    schedule_unscaled = Schedule()
+    schedule_unscaled.actions = schedule.actions[
+        schedule.actions.apply(lambda a : not a.name.endswith('freq'))
+    ]
+
     # QoS aspects
-    info(' - total profit from users')
+    info(' - total profit from users:')
     serv_profit = evaluator.calculate_service_profit(cloud, env, schedule)
-    info(serv_profit)
+    info('${}'.format(serv_profit))
+    info(' - profit loss due to scaling:')
+    serv_profit_unscaled = evaluator.calculate_service_profit(
+        cloud, env, schedule_unscaled
+    )
+    scaling_profit_loss = serv_profit_unscaled - serv_profit
+    scaling_profit_loss_rel = scaling_profit_loss / serv_profit_unscaled
+    info('${}'.format(scaling_profit_loss))
+    info('{:.2%}'.format(scaling_profit_loss_rel))
+
+    # frequency savings
+    info(' - frequency scaling savings (compared to no scaling):')
+    en_cost_cooling_unscaled = evaluator.combined_cost(
+        cloud, env, schedule_unscaled, env.el_prices, env.temperature
+    )
+    scaling_savings_abs = en_cost_cooling_unscaled - en_cost_with_cooling_total
+    info('${}'.format(scaling_savings_abs))
+    scaling_savings_rel = scaling_savings_abs / en_cost_cooling_unscaled
+    info('{:.2%}'.format(scaling_savings_rel))
 
     #------------------
     # Capacity constraints
@@ -156,6 +182,7 @@ def serialise_results(cloud, env, schedule):
     aggregated_results = pd.Series(aggregated, aggr_names)
     aggregated_results.to_pickle(loc('results.pkl'))
     #aggregated_results.plot(kind='bar')
+    info('\n')
     info(aggregated_results)
 
     if conf.liveplot:
