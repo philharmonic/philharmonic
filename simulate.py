@@ -32,6 +32,15 @@ def cli_inputgen(conf):
     from philharmonic.simulator.inputgen import generate_fixed_input
     generate_fixed_input()
 
+@cli.command()
+@click.option('--conf', default='philharmonic.settings.base',
+              help='The main conf module to load.')
+def inputmod(conf):
+    """modify the already generated input"""
+    philharmonic._setup(conf)
+    from philharmonic.simulator.inputgen import modify_existing_input
+    modify_existing_input()
+
 @cli.command('explore')
 @click.option('--conf', default='philharmonic.settings.ga_explore',
               help='The main conf module to load.')

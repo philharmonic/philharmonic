@@ -191,7 +191,7 @@ def generate_beta(option, vm_number):
     if option == 2: # beta is read directly from a file
         all__values = workload_beta()
         values_of_beta = all__values['beta'].values[:vm_number]
-    if option == 3: # beta=1 for all VMs
+    if option == 3: # beta=fixed_beta_value for all VMs
         values_of_beta = np.ones(vm_number) * fixed_beta_value
 
     return values_of_beta
@@ -512,6 +512,24 @@ def temperature_from_conf():
     temperature = parse_dataset(conf.temperature_dataset)
     return temperature
 
+def _override_settings():
+    """override module settings with the config file"""
+    for key, value in conf.inputgen_settings.iteritems():
+        globals()[key] = value
+
+def modify_existing_input():
+    """Entry function to modify the already existing input."""
+    _override_settings()
+    requests = pd.read_pickle(common_loc('workload/requests.pkl'))
+    beta_values = generate_beta(beta_option, len(requests))
+    for req, beta in zip(requests, beta_values):
+        req.vm.beta = beta
+    requests.to_pickle(common_loc('workload/requests.pkl'))
+    info('Modified requests and wrote them to {}'.format(
+        common_loc('workload/requests.pkl'))
+    )
+    info(requests)
+
 # initial input generation
 #--------------------------
 
@@ -522,9 +540,7 @@ def generate_fixed_input():
     on the desired simulation time period and locations.
 
     """
-    # override module settings with the config file
-    for key, value in conf.inputgen_settings.iteritems():
-        globals()[key] = value
+    _override_settings()
     df = parse_dataset(location_dataset)
     locations = df.columns.values
     start, end = conf.start, conf.end
