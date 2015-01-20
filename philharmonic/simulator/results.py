@@ -164,7 +164,7 @@ def serialise_results(cloud, env, schedule):
     info(' - frequency scaling savings (compared to no scaling):')
     en_cost_combined_unscaled = evaluator.combined_cost(
         cloud, env, schedule_unscaled, env.el_prices, env.temperature
-    )
+    ) + migration_cost
     scaling_savings_abs = en_cost_combined_unscaled - en_cost_combined
     info('${}'.format(scaling_savings_abs))
     scaling_savings_rel = scaling_savings_abs / en_cost_combined_unscaled

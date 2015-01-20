@@ -169,20 +169,21 @@ def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
     """Calculate energy costs including IT equipment energy cooling overhead and
     the real-time electricity price."""
 
-    # we first calculate utilisation with start, end = None / some timestamp
+    # we first calculate utilisation/freq with start, end = None / timestamp
     # this way it knows which state to start from
     # (this is a temp. hack until cloud states get timestamped)
     util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
+    if conf.power_freq_model:
+        freq = calculate_cloud_frequencies(
+            cloud, environment, schedule, start, end
+        )
+    else:
+        freq = None
+    power = generate_cloud_power(util, freq=freq)
     if start is None:
         start = environment.start
     if end is None:
         end = environment.end
-    if conf.power_freq_model:
-        freq = calculate_cloud_frequencies(cloud, environment, schedule,
-                                           start, end)
-    else:
-        freq = None
-    power = generate_cloud_power(util, freq=freq)
     if temperature is not None:
         power = calculate_cloud_cooling(power, temperature[start:end])
     cost = calculate_cloud_cost(power, el_prices[start:end])
