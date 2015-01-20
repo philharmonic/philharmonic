@@ -62,8 +62,8 @@ el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 start = pd.Timestamp('2010-06-03 00:00')
 # - two days
 #times = pd.date_range(start, periods=24 * 7, freq='H')
-#times = pd.date_range(start, periods=24, freq='H')
-times = pd.date_range(start, periods=5, freq='H')
+times = pd.date_range(start, periods=24, freq='H')
+#times = pd.date_range(start, periods=5, freq='H')
 end = times[-1]
 
 # plotting results
@@ -158,35 +158,38 @@ inputgen_settings = {
     # cloud's servers
     'location_dataset': temperature_dataset,
     #'server_num': 3,
-    'server_num': 1,
+    #'server_num': 1,
+    'server_num': 120,
     #'server_num': 50,
     #'server_num': 200,
     #'server_num': 2000,
     #'min_server_cpu': 8,
-    'min_server_cpu': 16,
-    'max_server_cpu': 16,
+    'min_server_cpu': 8,
+    'max_server_cpu': 8,
     'min_server_ram': 32,
     'max_server_ram': 32,
     # 1 to generate beta, 2 to read them directly from file and
     # 3 for all beta equal to 1
     'beta_option': 3,
     'fixed_beta_value': 1.,
+    'max_cloud_usage': 0.8,
 
     # VM requests
     # TODO: auto / manual
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
-    'VM_num': 4,
+    'VM_num': 200,
     #'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
-    'min_cpu': 4,
-    'max_cpu': 4,
-    'min_ram': 8,
-    'max_ram': 8,
+    'min_cpu': 1,
+    'max_cpu': 1,
+    'min_ram': 2,
+    'max_ram': 28,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
-    'max_duration': 60 * 60 * 3, # 3 hours
+    #'max_duration': 60 * 60 * 3, # 3 hours
+    'max_duration': 60 * 60 * 24, # 24 hours
     #'max_duration': 60 * 60 * 24 * 3, # 2 days
     #'max_duration': 60 * 60 * 24 * 10, # 10 days
     #'max_duration': 60 * 60 * 24 * 90, # 90 days

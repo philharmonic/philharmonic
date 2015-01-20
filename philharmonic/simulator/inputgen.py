@@ -120,16 +120,31 @@ def normal_infrastructure(locations=['A', 'B'],
 #------------
 # simulate how users will use our cloud
 
-def within_cloud_capacity(cloud_capacity, requested_capacity, max_usage):
+# - global settings, **overriden** by the config.inputgen dictionary
+# VM requests
+VM_num = 3
+# e.g. CPUs
+min_cpu = 1
+max_cpu = 2
+min_ram = 1
+max_ram = 2
+# e.g. seconds
+min_duration = 60 * 60 # 1 hour
+max_duration = 60 * 60 * 3 # 3 hours
+#max_duration = 60 * 60 * 24 * 10 # 10 days
+beta_option = 1
+max_cloud_usage = 0.8
+
+def within_cloud_capacity(cloud_capacity, requested_capacity, max_cloud_usage):
     for res, capacity in cloud_capacity.items():
-        if requested_capacity[res] > capacity * max_usage:
+        if requested_capacity[res] > capacity * max_cloud_usage:
             return False
     return True
 
-def auto_vmreqs(start, end, max_usage=0.8, round_to_hour=True,
+def auto_vmreqs(start, end, round_to_hour=True,
                 servers=[], **kwargs):
     """Generate VMRequests s.t. the requested resources do not exceed
-    (on the average) @param max_cloud_usage of the available cloud capacity.
+    (on the average) max_cloud_usage of the available cloud capacity.
 
     """
     start, end = pd.Timestamp(start), pd.Timestamp(end)
@@ -140,7 +155,8 @@ def auto_vmreqs(start, end, max_usage=0.8, round_to_hour=True,
     requested_capacity = {res : 0. for res in servers[0].resource_types}
     requests = []
     moments = []
-    while within_cloud_capacity(cloud_capacity, requested_capacity, max_usage):
+    while within_cloud_capacity(cloud_capacity, requested_capacity,
+                                max_cloud_usage):
         cpu_size = normal_sample(min_cpu, max_cpu)
         ram_size = normal_sample(min_ram, max_ram)
         duration = normal_sample(min_duration, max_duration)
@@ -164,22 +180,20 @@ def auto_vmreqs(start, end, max_usage=0.8, round_to_hour=True,
                 t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
             moments.append(t)
     events = pd.TimeSeries(data=requests, index=moments)
-    #TODO: test
     return events.sort_index()
 
-# - global settings, **overriden** by the config.inputgen dictionary
-# VM requests
-VM_num = 3
-# e.g. CPUs
-min_cpu = 1
-max_cpu = 2
-min_ram = 1
-max_ram = 2
-# e.g. seconds
-min_duration = 60 * 60 # 1 hour
-max_duration = 60 * 60 * 3 # 3 hours
-#max_duration = 60 * 60 * 24 * 10 # 10 days
-beta_option = 1
+def auto_vmreqs_beta_variation(start, end, round_to_hour=True,
+                               servers=[], **kwargs):
+    """Generate VMRequests s.t. the requested resources do not exceed
+    (on the average) max_cloud_usage of the available cloud capacity
+    and that their beta values are varied based on the beta_option.
+
+    """
+    events = auto_vmreqs(start, end, round_to_hour, servers, **kwargs)
+    beta_values = generate_beta(beta_option, len(events))
+    for i, e in enumerate(events):
+        e.vm.beta = beta_values[i]
+    return events
 
 def generate_beta(option, vm_number):
     """
