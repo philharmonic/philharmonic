@@ -394,7 +394,11 @@ def calculate_migration_overhead(cloud, environment, schedule,
                 mean_el_price = (price_before + price_after) / 2.
 
                 memory = action.vm.res['RAM'] * 1000 # MB
-                n = int(math.ceil(math.log(V_thd/float(memory), D/float(R))))
+                try:
+                    n = int(math.ceil(math.log(V_thd/float(memory),
+                                               D/float(R))))
+                except ZeroDivisionError:
+                    n = 1 # TODO: check what raises this error
                 migration_data = V_mig(memory, R, D, n)
                 energy = E_mig(migration_data) # Joules
                 energy = ph.joul2kwh(energy) # kWh
