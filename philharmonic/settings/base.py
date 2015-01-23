@@ -209,7 +209,7 @@ P_std = 0
 P_base = 150
 P_dif = 15
 # VM cost components
-C_base = 0.0520278
+C_base = 0.0520278  # in future use C_base = 0.027028
 C_dif_cpu = 0.018
 C_dif_ram = 0.025
 # CPU frequency parameters
