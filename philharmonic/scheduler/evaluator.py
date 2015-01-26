@@ -681,7 +681,7 @@ def calculate_service_profit(cloud, environment, schedule,
     # )
     df_price = ph.vm_price_cpu_ram(
         df_rel_ram, freq, df_beta, C_base=conf.C_base, C_dif_cpu=conf.C_dif_cpu,
-        C_dif_ram=conf.C_dif_ram, f_min=conf.f_min, f_max=conf.f_max
+        C_dif_ram=conf.C_dif_ram, f_base=conf.f_base, f_max=conf.f_max
     )
     df_price = df_price.resample(conf.pricing_freq, fill_method='pad')
     total_profit = df_price.sum().sum()
