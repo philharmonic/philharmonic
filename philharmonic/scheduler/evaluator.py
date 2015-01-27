@@ -677,7 +677,7 @@ def calculate_service_profit(cloud, environment, schedule,
     df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
     # df_price = ph.vm_price_progressive(
     #     freq, df_beta, C_base=conf.C_base, C_dif=conf.C_dif_cpu,
-    #     f_min=conf.f_min, f_max=conf.f_max
+    #     f_base=conf.f_base, f_max=conf.f_max
     # )
     df_price = ph.vm_price_cpu_ram(
         df_rel_ram, freq, df_beta, C_base=conf.C_base, C_dif_cpu=conf.C_dif_cpu,
