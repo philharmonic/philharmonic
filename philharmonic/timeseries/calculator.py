@@ -33,6 +33,7 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
     J.-M. Pierson and H. Casanova, "On the Utility of DVFS for Power-Aware Job
     Placement in Clusters", in Euro-Par 2011 Parallel Processing, E. Jeannot,
     R. Namyst, and J. Roman, Eds. Springer Berlin Heidelberg, 2011, pp. 255-266.
+    Modelled for f_base=1000, valid for freq.range: 1800-2600 MHz
 
     """
     P = ut * (P_base + P_dif * ((f - float(f_base)) / f_base)**3 - P_idle)
@@ -189,7 +190,13 @@ def vm_price_progressive(freq, beta, C_base=0.0520278, C_dif=0.018,
 def vm_price_cpu_ram(rel_ram_size, freq, beta, C_base=0.027028, C_dif_cpu=0.018,
                          f_base=1000, f_max=3000, C_dif_ram=0.025):
     """Calculate a VM's price based on the relative memory size, the frequency
-    and beta, the VM's CPU boundedness."""
+    and beta, the VM's CPU boundedness.
+
+    source: http://www.elastichosts.co.uk/calculator: 
+    modelled for f_max:3000, f_base=1000MHz, RAM size base:1024MB, 
+    and 20GB HDD and 10 GB Data for the fixed cost of other resources
+
+    """
     C = C_base + \
         C_dif_cpu * (beta * freq + (1 - beta) * f_max - f_base) / f_base + \
         C_dif_ram * rel_ram_size
