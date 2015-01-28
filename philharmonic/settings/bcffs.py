@@ -2,7 +2,11 @@ from .baseprod import *
 
 output_folder = os.path.join(base_output_folder, "bcffs/")
 
-freq_breaks_after_nonfeasible = True
+# If the scheduler should stop after no freq. decrease was feasible for one
+# of the PMs (for performance reasons). This should always be False in the
+# current implementation, because freq. resetting should happen as a pre-step
+# and this requires more complicated changes to the state transitioning.
+freq_breaks_after_nonfeasible = False
 
 factory['scheduler'] = "BCFFSScheduler"
 factory['forecast_periods'] = 1 # we make decisions at runtime
