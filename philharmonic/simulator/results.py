@@ -71,6 +71,22 @@ def generate_series_results(cloud, env, schedule, nplots):
     pm_freqs = evaluator.calculate_cloud_frequencies(cloud, env, schedule)
     info(pm_freqs)
 
+    # PM avgutilization
+    #info('\nPM Avg.Utilization')
+    #info(util.mean())
+
+    info('\nMax of Avg. PM Utilization')
+    info(util.mean().max())
+
+
+    # mean utilization
+    info('\nAvg.Utilization')
+    info(util.mean().mean())
+
+    info('\nMax Utilization')
+    info(util.max().max())
+
+
 def serialise_results(cloud, env, schedule):
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)

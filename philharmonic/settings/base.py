@@ -159,15 +159,15 @@ inputgen_settings = {
     'location_dataset': temperature_dataset,
     #'server_num': 3,
     #'server_num': 1,
-    'server_num': 120,
+    'server_num': 1200,
     #'server_num': 50,
     #'server_num': 200,
     #'server_num': 2000,
     #'min_server_cpu': 8,
-    'min_server_cpu': 8,
-    'max_server_cpu': 8,
-    'min_server_ram': 32,
-    'max_server_ram': 32,
+    'min_server_cpu': 2,#16,
+    'max_server_cpu': 4,#16,
+    'min_server_ram': 16,#32,
+    'max_server_ram': 16,#32,
     # 1 to generate beta, 2 to read them directly from file and
     # 3 for all beta equal to 1
     'beta_option': 3,
@@ -178,14 +178,14 @@ inputgen_settings = {
     # TODO: auto / manual
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
-    'VM_num': 200,
+    'VM_num': 2000,
     #'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
-    'min_cpu': 1,
-    'max_cpu': 1,
-    'min_ram': 2,
-    'max_ram': 28,
+    'min_cpu': 1,#8,
+    'max_cpu': 1,#8,
+    'min_ram': 1,#2,
+    'max_ram': 12,#28,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
@@ -217,8 +217,8 @@ f_max = 2600 # the maximum CPU frequency in MHz
 power_freq_model = True # consider CPU frequency in the power model
 # TODO: apply to model
 freq_scale_max = 1.0
-freq_scale_min = 0.7
-freq_scale_delta = 0.1
+freq_scale_min = 1800./2600#0.7
+freq_scale_delta = (f_max-f_max*freq_scale_min)/5#0.1
 freq_scale_digits = 1
 f_min = f_max * freq_scale_min
 f_base = 1000
