@@ -218,7 +218,7 @@ power_freq_model = True # consider CPU frequency in the power model
 # TODO: apply to model
 freq_scale_max = 1.0
 freq_scale_min = 1800./2600#0.7
-freq_scale_delta = (f_max-f_max*freq_scale_min)/5#0.1
+freq_scale_delta = (f_max-f_max*freq_scale_min)/4#0.1
 freq_scale_digits = 1
 f_min = f_max * freq_scale_min
 f_base = 1000
