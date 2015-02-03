@@ -279,7 +279,10 @@ def log_config_info(simulator):
         #pprint.pformat(simulator.cloud.servers)
         #simulator.cloud.show_usage()
     ))
-    info('Requests ({} -> will copy to: {})\n--------\n{}\n'.format(
+    info('- freq. scale from {} to {} by {}.'.format(
+        conf.freq_scale_min, conf.freq_scale_max, conf.freq_scale_delta
+    ))
+    info('\nRequests ({} -> will copy to: {})\n--------\n{}\n'.format(
         common_loc('workload/requests.pkl'),
         os.path.relpath(loc('../requests.pkl')),
         simulator.requests)

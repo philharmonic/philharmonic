@@ -127,6 +127,7 @@ class Server(Machine):
     machine_type = 'PM'
     _new_id = itertools.count(start=1).next
     # freq_scale parameters can be overridden
+    # TODO: these values should probably be specific to individual servers
     freq_scale_max = 1.0
     freq_scale_min = 0.4
     freq_scale_delta = 0.1
