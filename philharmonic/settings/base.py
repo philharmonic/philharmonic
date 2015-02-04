@@ -184,7 +184,7 @@ inputgen_settings = {
     'min_cpu': 1, # 8,
     'max_cpu': 1, # 8,
     'min_ram': 1, # 2,
-    'max_ram': 12, # 28,
+    'max_ram': 14, # 28,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
