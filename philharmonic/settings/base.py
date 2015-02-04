@@ -155,6 +155,11 @@ underutilised_threshold = 0.5
 #==================
 
 inputgen_settings = {
+    # general settings
+    #  - the statistical distribution to draw resources and duration from
+    #    ( uniform or normal)
+    'resource_distribution': 'uniform',
+    
     # cloud's servers
     'location_dataset': temperature_dataset,
     #'server_num': 3,

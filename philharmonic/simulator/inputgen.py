@@ -18,25 +18,6 @@ from philharmonic.logger import *
 # Cummon functionality
 #---------------------
 
-def normal_sample(bottom, top, ceil=True):
-    """ Return sample from a normal distribution.
-    bottom, top are approx. min/max values.
-
-    """
-    half = (top - bottom)/2.0
-    # we want 99% of the population to enter the [min,max] interval
-    sigma = half/3.0
-    mu = bottom + half
-    #print(mu, sigma)
-
-    value = mu + sigma * np.random.randn()
-    # negative to zero
-    if value < 0:
-        value = 0
-    if ceil:
-        value = int(math.ceil(value))
-    return value
-
 def synthetic_beta_population(output_size, input_beta_data):
     distribution = scipy.stats.expon
     model = distribution.fit(input_beta_data)#['mean'])
@@ -62,6 +43,25 @@ def normal_population(num, bottom, top, ceil=True):
         values = np.ceil(values).astype(int)
     return values
 
+def normal_sample(bottom, top, ceil=True):
+    """ Return a single sample from a normal distribution.
+    bottom, top are approx. min/max values.
+
+    """
+    return normal_population(1, bottom, top, ceil)[0]
+
+def distribution_population(num, bottom, top, ceil=True, distribution='normal'):
+    """ Draw array from @param distribution.
+    bottom, top are approx. min/max values.
+
+    """
+    if distribution == 'normal':
+        return normal_population(num, bottom, top, ceil)
+    elif distribution == 'uniform':
+        if ceil:
+            return np.random.randint(bottom, top + 1, num)
+        else:
+            return np.random.uniform(bottom, top, num)
 
 # DC description
 #---------------
@@ -104,10 +104,12 @@ def normal_infrastructure(locations=['A', 'B'],
 
     """
     # array of server sizes
-    cpu_sizes = normal_population(server_num, min_server_cpu,
-                                  max_server_cpu)
-    ram_sizes = normal_population(server_num, min_server_ram,
-                                  max_server_ram)
+    cpu_sizes = distribution_population(
+        server_num, min_server_cpu, max_server_cpu,
+        distribution=resource_distribution)
+    ram_sizes = distribution_population(
+        server_num, min_server_ram, max_server_ram,
+        distribution=resource_distribution)
 
     servers = []
     for cpu_size, ram_size in zip(cpu_sizes, ram_sizes):
@@ -121,6 +123,10 @@ def normal_infrastructure(locations=['A', 'B'],
 # simulate how users will use our cloud
 
 # - global settings, **overriden** by the config.inputgen dictionary
+# general stuff
+# - the statistical distribution to draw resources and duration from
+resource_distribution = 'normal'
+
 # VM requests
 VM_num = 3
 # e.g. CPUs
@@ -157,9 +163,13 @@ def auto_vmreqs(start, end, round_to_hour=True,
     moments = []
     while within_cloud_capacity(cloud_capacity, requested_capacity,
                                 max_cloud_usage):
-        cpu_size = normal_sample(min_cpu, max_cpu)
-        ram_size = normal_sample(min_ram, max_ram)
-        duration = normal_sample(min_duration, max_duration)
+        cpu_size = distribution_population(
+            1, min_cpu, max_cpu, distribution=resource_distribution)[0]
+        ram_size = distribution_population(
+            1, min_ram, max_ram, distribution=resource_distribution)[0]
+        duration = distribution_population(
+            1, min_duration, max_duration,
+            distribution=resource_distribution)[0]
 
         vm = VM(ram_size, cpu_size)
         for r in vm.resource_types: # add the extra capacity for stop condition
@@ -219,10 +229,13 @@ def normal_vmreqs(start, end, round_to_hour=True, **kwargs):
     start, end = pd.Timestamp(start), pd.Timestamp(end)
     delta = end - start
     # array of VM sizes
-    cpu_sizes = normal_population(VM_num, min_cpu, max_cpu)
-    ram_sizes = normal_population(VM_num, min_ram, max_ram)
+    cpu_sizes = distribution_population(VM_num, min_cpu, max_cpu,
+                                        distribution=resource_distribution)
+    ram_sizes = distribution_population(VM_num, min_ram, max_ram,
+                                        distribution=resource_distribution)
     # duration of VMs
-    durations = normal_population(VM_num, min_duration, max_duration)
+    durations = distribution_population(VM_num, min_duration, max_duration,
+                                        distribution=resource_distribution)
     requests = []
     moments = []
     for cpu_size, ram_size, duration in zip(cpu_sizes, ram_sizes, durations):
@@ -257,10 +270,13 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
     start, end = pd.Timestamp(start), pd.Timestamp(end)
     delta = end - start
     # array of VM sizes
-    cpu_sizes = normal_population(VM_num, min_cpu, max_cpu)
-    ram_sizes = normal_population(VM_num, min_ram, max_ram)
+    cpu_sizes = distribution_population(VM_num, min_cpu, max_cpu,
+                                        distribution=resource_distribution)
+    ram_sizes = distribution_population(VM_num, min_ram, max_ram,
+                                        distribution=resource_distribution)
     # duration of VMs
-    durations = normal_population(VM_num, min_duration, max_duration)
+    durations = distribution_population(VM_num, min_duration, max_duration,
+                                        distribution=resource_distribution)
     # TODO: add price for each VM
 
     beta_values = generate_beta(beta_option,VM_num)

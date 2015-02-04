@@ -28,6 +28,11 @@ def test_normal_sample():
     assert_greater_equal(value, 0)
     assert_is_instance(value, int)
 
+def test_distribution_population():
+    values = distribution_population(100, 1, 4, distribution='uniform')
+    for i in range(1, 5):
+        assert_in(i, values)
+
 def test_auto_vmreqs():
     start = pd.Timestamp('2010-01-01')
     end = pd.Timestamp('2010-01-31')
