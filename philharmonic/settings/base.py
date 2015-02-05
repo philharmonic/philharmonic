@@ -22,7 +22,7 @@ save_power = False
 #----------------------
 
 # stop and check settings with user (only initially)
-prompt_configuration = True
+prompt_configuration = False
 # interval at which to print cloud usage: pd.offsets.* or None
 show_cloud_interval = pd.offsets.Hour(1)
 # stop the simulation for inspection?
@@ -60,10 +60,13 @@ el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 
 # the time period of the simulation
 start = pd.Timestamp('2010-06-03 00:00')
+
+# - five hours
+#times = pd.date_range(start, periods=6, freq='H')
 # - one day
-times = pd.date_range(start, periods=24, freq='H')
+#times = pd.date_range(start, periods=24, freq='H')
 # - one week
-#times = pd.date_range(start, periods=24 * 7, freq='H')
+times = pd.date_range(start, periods=24 * 7, freq='H')
 end = times[-1]
 
 # plotting results
@@ -159,20 +162,22 @@ inputgen_settings = {
     #  - the statistical distribution to draw resources and duration from
     #    ( uniform or normal)
     'resource_distribution': 'uniform',
-    
+
     # cloud's servers
     'location_dataset': temperature_dataset,
     #'server_num': 3,
     #'server_num': 1,
-    'server_num': 1200,
     #'server_num': 50,
+    #'server_num': 100,
     #'server_num': 200,
+    'server_num': 1200,
     #'server_num': 2000,
     #'min_server_cpu': 8,
-    'min_server_cpu': 2, # 16,
+    'min_server_cpu': 1, # 16,
     'max_server_cpu': 4, # 16,
+    #'max_server_cpu': 4, # 16,
     'min_server_ram': 16, # 32,
-    'max_server_ram': 16, # 32,
+    'max_server_ram': 32, # 32,
     # 1 to generate beta, 2 to read them directly from file and
     # 3 for all beta equal to 1
     'beta_option': 3,
@@ -188,11 +193,12 @@ inputgen_settings = {
     # e.g. CPUs
     'min_cpu': 1, # 8,
     'max_cpu': 1, # 8,
-    'min_ram': 1, # 2,
-    'max_ram': 14, # 28,
+    'min_ram': 8, # 2,
+    'max_ram': 32, # 28,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
+    #'max_duration': 60 * 60 * 6, # 6 hours
     #'max_duration': 60 * 60 * 24, # 24 hours
     #'max_duration': 60 * 60 * 24 * 3, # 2 days
     'max_duration': 60 * 60 * 24 * 7, # one week

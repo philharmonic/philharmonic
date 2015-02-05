@@ -8,7 +8,9 @@ factory['scheduler'] = "BCFFSScheduler"
 factory['forecast_periods'] = 1 # we make decisions at runtime
 
 inputgen_settings['VM_request_generation_method'] = \
-    'uniform_vmreqs_beta_variation' # 'auto_vmreqs_beta_variation'
+    'uniform_vmreqs_beta_variation'
+    #'auto_vmreqs_beta_variation'
+    #'uniform_vmreqs_beta_variation'
 
 # 1 to generate beta, 2 to read them directly from file and
 # 3 for all beta equal to fixed_beta_value
