@@ -141,6 +141,12 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
         idx = pd.date_range(start=self.start, end=self.end, freq=self.period)
         return idx
 
+    def forecast_window_index(self):
+        """Return a pandas Index from t to forecast_end"""
+        idx = pd.date_range(start=self.t, end=self.forecast_end,
+                            freq=self.period)
+        return idx
+
     def get_requests(self):
         start = self.get_time()
         justabit = pd.offsets.Micro(1)

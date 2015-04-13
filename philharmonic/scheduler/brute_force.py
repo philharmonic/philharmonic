@@ -14,6 +14,7 @@ class BruteForceScheduler(IScheduler):
         self.schedule = Schedule()
 
         # enumerate times
+        times = self.environment.forecast_window_index()
 
         # enumerate actions
         # - nothing

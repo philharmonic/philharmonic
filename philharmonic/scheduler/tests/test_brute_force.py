@@ -8,9 +8,15 @@ from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
 
 def test_brute_force_returns_schedule():
     scheduler = BruteForceScheduler()
-    scheduler.environment = FBFSimpleSimulatedEnvironment()
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 01:00')
+    t3 = pd.Timestamp('2013-02-25 02:00')
+    scheduler.environment = FBFSimpleSimulatedEnvironment(times=[t1, t2, t3],
+                                                          forecast_periods=1)
     scheduler.environment.get_requests = MagicMock(return_value = [])
-    scheduler.environment.get_time = MagicMock(return_value = 1)
+    scheduler.environment.get_time = MagicMock(
+        return_value = pd.Timestamp('2013-02-25 00:00')
+    )
     scheduler.cloud = MagicMock()
     schedule = scheduler.reevaluate()
     assert_is_instance(schedule, Schedule)
@@ -18,7 +24,12 @@ def test_brute_force_returns_schedule():
 def test_brute_force_run():
     mock_schedule_frequency_scaling = MagicMock(return_value = None)
     scheduler = BruteForceScheduler()
-    scheduler.environment = FBFSimpleSimulatedEnvironment()
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 01:00')
+    t3 = pd.Timestamp('2013-02-25 02:00')
+    request_times = [t1, t2]
+    scheduler.environment = FBFSimpleSimulatedEnvironment(times=[t1, t2, t3],
+                                                          forecast_periods=1)
     s1, s2 = Server(40000, 12, location='A'), Server(20000, 10, location='A')
     vm1 = VM(2000, 1)
     vm2 = VM(2000, 1)
@@ -26,7 +37,6 @@ def test_brute_force_run():
     cloud = Cloud([s1, s2], [vm1, vm2])
     scheduler.cloud = cloud
     scheduler.environment.get_requests = MagicMock(return_value = [r2])
-    scheduler.environment.t = 1
     el = pd.DataFrame({'A': [0.08], 'B': [0.08]}, [1])
     temp = pd.DataFrame({'A': [15], 'B': [15]}, [1])
     scheduler.environment.current_data = MagicMock(return_value = (el, temp))
