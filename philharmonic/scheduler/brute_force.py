@@ -12,4 +12,13 @@ class BruteForceScheduler(IScheduler):
 
         """
         self.schedule = Schedule()
+
+        # enumerate times
+
+        # enumerate actions
+        # - nothing
+        # - migration
+        #  - what
+        #  - where
+
         return self.schedule
