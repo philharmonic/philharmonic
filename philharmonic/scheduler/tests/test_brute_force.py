@@ -4,7 +4,10 @@ from mock import MagicMock
 from philharmonic import Schedule, Server, VM, VMRequest, Cloud, Migration
 import pandas as pd
 from philharmonic.scheduler import BruteForceScheduler
-from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment
+from philharmonic.simulator.environment import FBFSimpleSimulatedEnvironment, \
+    GASimpleSimulatedEnvironment
+from philharmonic.simulator import inputgen
+from philharmonic.scheduler import evaluator
 
 def test_brute_force_returns_schedule():
     scheduler = BruteForceScheduler()
@@ -48,3 +51,43 @@ def test_brute_force_run():
     for action in schedule.actions:
         cloud.apply_real(action)
     current = cloud.get_current()
+
+def test_evaluate_schedule():
+    schedule = Schedule()
+    scheduler = BruteForceScheduler()
+    scheduler.no_temperature = False
+    scheduler.no_el_price = False
+
+    #import ipdb; ipdb.set_trace()
+    # cloud
+    vm1 = VM(4,2)
+    server1 = Server(8,4, location="A")
+    server2 = Server(8,4, location="B")
+    servers = [server1, server2]
+    scheduler.cloud = Cloud(servers, [vm1])
+
+    # actions
+    t1 = pd.Timestamp('2013-02-25 00:00')
+    t2 = pd.Timestamp('2013-02-25 13:00')
+    times = [t1, t2]
+    actions = [Migration(vm1, server1), Migration(vm1, server2)]
+    schedule.actions = pd.Series(actions, times)
+
+    # environment
+    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+    env = GASimpleSimulatedEnvironment(times, forecast_periods=24)
+    env.t = t1
+    env.el_prices = inputgen.simple_el()
+    env.temperature = inputgen.simple_temperature()
+    scheduler.environment = env
+
+    evaluator.precreate_synth_power(env.start, env.end, servers)
+    fitness = scheduler._evaluate_schedule(schedule)
+    assert_is_instance(fitness, float)
+
+    t3 = pd.Timestamp('2013-02-25 20:00')
+    schedule2 = Schedule()
+    schedule2.actions = pd.Series(actions, [t1, t3])
+    fitness2 = scheduler._evaluate_schedule(schedule2)
+    assert_true(fitness < fitness2,
+                'schedule migrates to cheaper location earlier')

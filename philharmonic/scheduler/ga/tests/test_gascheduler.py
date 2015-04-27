@@ -47,7 +47,7 @@ def test_fitness():
     unit2.actions = pd.Series(actions, [t1, t3])
     unit2.environment = env
     fitness2 = unit2.calculate_fitness()
-    assert_true(fitness < fitness2, 'unit migrates to cheaper location faster')
+    assert_true(fitness < fitness2, 'unit migrates to cheaper location earlier')
 
 def test_mutation():
     unit = ScheduleUnit()
