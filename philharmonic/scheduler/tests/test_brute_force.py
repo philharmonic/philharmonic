@@ -17,7 +17,9 @@ def test_brute_force_returns_schedule():
     scheduler.environment.get_time = MagicMock(
         return_value = pd.Timestamp('2013-02-25 00:00')
     )
-    scheduler.cloud = MagicMock()
+    scheduler.cloud = Cloud()
+    scheduler.cloud.vms = ['vm1']
+    scheduler.cloud.servers = ['s1']
     schedule = scheduler.reevaluate()
     assert_is_instance(schedule, Schedule)
 
