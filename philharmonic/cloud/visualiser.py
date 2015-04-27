@@ -40,7 +40,7 @@ def show_unallocated_vms(cloud, state):
 def show_usage(cloud, state):
     locations = get_locations(cloud)
     for location in locations:
-        info("\n{}\n---------------".format(location))
+        info("\n{}\n".format(location) + len(location) * '-')
         servers = servers_at_location(cloud, location)
         for server in servers:
             server_str = server.full_info(location=False)

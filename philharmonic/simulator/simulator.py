@@ -41,7 +41,7 @@ from philharmonic.manager.imanager import IManager
 from philharmonic.scheduler import NoScheduler
 from philharmonic.scheduler.peak_pauser.peak_pauser import PeakPauser
 from environment import SimulatedEnvironment, PPSimulatedEnvironment
-from philharmonic.utils import loc, common_loc
+from philharmonic.utils import loc, common_loc, input_loc
 
 
 # old scheduler design...
@@ -272,19 +272,20 @@ def log_config_info(simulator):
             pprint.pformat(conf.factory['scheduler_conf'])
         ))
 
-    info('\nServers ({} -> will copy to: {})\n-------\n{}\n'.format(
+    info('\nServers ({} -> will copy to: {})\n-------\n{}'.format(
         common_loc('workload/servers.pkl'),
-        os.path.relpath(loc('../servers.pkl')),
+        os.path.relpath(input_loc('servers.pkl')),
         simulator.cloud.servers
         #pprint.pformat(simulator.cloud.servers)
         #simulator.cloud.show_usage()
     ))
-    info('- freq. scale from {} to {} by {}.'.format(
-        conf.freq_scale_min, conf.freq_scale_max, conf.freq_scale_delta
-    ))
+    if conf.power_freq_model is not False:
+        info('\n- freq. scale from {} to {} by {}.'.format(
+            conf.freq_scale_min, conf.freq_scale_max, conf.freq_scale_delta
+        ))
     info('\nRequests ({} -> will copy to: {})\n--------\n{}\n'.format(
         common_loc('workload/requests.pkl'),
-        os.path.relpath(loc('../requests.pkl')),
+        os.path.relpath(input_loc('requests.pkl')),
         simulator.requests)
     )
     if conf.prompt_configuration:
@@ -292,9 +293,9 @@ def log_config_info(simulator):
 
 def archive_inputs(simulator):
     """copy input files together with the results (for archive reasons)"""
-    with open(loc('../servers.pkl'), 'w') as pkl_srv:
+    with open(input_loc('servers.pkl'), 'w') as pkl_srv:
         pickle.dump(simulator.cloud, pkl_srv)
-    simulator.requests.to_pickle(loc('../requests.pkl'))
+    simulator.requests.to_pickle(input_loc('requests.pkl'))
 
 def before_start(simulator):
     log_config_info(simulator)

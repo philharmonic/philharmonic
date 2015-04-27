@@ -14,7 +14,7 @@ from philharmonic import conf
 import philharmonic as ph
 from philharmonic.logger import *
 from philharmonic.scheduler import evaluator
-from philharmonic.utils import loc, common_loc
+from philharmonic.utils import loc
 from philharmonic import Schedule
 
 def pickle_results(schedule):
@@ -54,7 +54,10 @@ def generate_series_results(cloud, env, schedule, nplots):
     # cooling overhead
     #-----------------
     #temperature = inputgen.simple_temperature()
-    power_total = evaluator.calculate_cloud_cooling(power, env.temperature)
+    if env.temperature is not None:
+        power_total = evaluator.calculate_cloud_cooling(power, env.temperature)
+    else:
+        power_total = power
     ax = plt.subplot(nplots, 1, 4)
     ax.set_title('Total power (W)')
     power_total.plot(ax=ax)
@@ -102,9 +105,11 @@ def serialise_results(cloud, env, schedule):
     ax = plt.subplot(nplots, 1, 1)
     ax.set_title('Electricity prices ($/kWh)')
     env.el_prices.plot(ax=ax)
-    ax = plt.subplot(nplots, 1, 2)
-    ax.set_title('Temperature (C)')
-    env.temperature.plot(ax=ax)
+
+    if env.temperature is not None:
+        ax = plt.subplot(nplots, 1, 2)
+        ax.set_title('Temperature (C)')
+        env.temperature.plot(ax=ax)
 
     # dynamic results
     #----------------

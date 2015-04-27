@@ -669,16 +669,20 @@ def calculate_service_profit(cloud, environment, schedule,
     df_beta = pd.DataFrame(
         [{vm : vm.beta for vm in considered_vms}], [start]
     )
-    df_beta = df_beta.reindex(freq.index, method='pad')
+    if conf.power_freq_model:
+        df_beta = df_beta.reindex(freq.index, method='pad')
     ram_size_base = 1 # 1000 # 1024
     ram_index = 'RAM'
     df_rel_ram = pd.DataFrame([{vm : vm.res[ram_index] / ram_size_base \
                                 for vm in considered_vms}], [start])
-    df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
+    if conf.power_freq_model:
+        df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
     # df_price = ph.vm_price_progressive(
     #     freq, df_beta, C_base=conf.C_base, C_dif=conf.C_dif_cpu,
     #     f_base=conf.f_base, f_max=conf.f_max
     # )
+    if not conf.power_freq_model:
+        freq = 0
     df_price = ph.vm_price_cpu_ram(
         df_rel_ram, freq, df_beta, C_base=conf.C_base, C_dif_cpu=conf.C_dif_cpu,
         C_dif_ram=conf.C_dif_ram, f_base=conf.f_base, f_max=conf.f_max

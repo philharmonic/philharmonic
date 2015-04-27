@@ -82,10 +82,12 @@ class SimulatedEnvironment(Environment):
             el_prices = self.forecast_el[self.t:self.forecast_end]
         else:
             el_prices = self.el_prices[self.t:self.forecast_end]
-        if forecast and hasattr(self, 'forecast_temp'):
-            temperature = self.forecast_temp[self.t:self.forecast_end]
-        else:
-            temperature = self.temperature[self.t:self.forecast_end]
+
+        if self.temperature is not None:
+            if forecast and hasattr(self, 'forecast_temp'):
+                temperature = self.forecast_temp[self.t:self.forecast_end]
+            else:
+                temperature = self.temperature[self.t:self.forecast_end]
         return el_prices, temperature
 
     def _generate_forecast(self, data, SD):
@@ -93,7 +95,8 @@ class SimulatedEnvironment(Environment):
 
     def model_forecast_errors(self, SD_el, SD_temp):
         self.forecast_el = self._generate_forecast(self.el_prices, SD_el)
-        self.forecast_temp = self._generate_forecast(self.temperature, SD_temp)
+        if not self.temperature is None:
+            self.forecast_temp = self._generate_forecast(self.temperature, SD_temp)
 
 class PPSimulatedEnvironment(SimulatedEnvironment):
     """Peak pauser simulation scenario with one location, el price"""

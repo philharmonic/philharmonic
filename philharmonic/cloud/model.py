@@ -17,6 +17,12 @@ from philharmonic.utils import deprecated, CommonEqualityMixin
 from . import visualiser
 
 def format_spec(spec):
+    """Return a string containing the resource
+    key-value pairs in spec (valid for PM and VM)
+
+    Sample output:
+    {RAM:28 #CPUs:3}
+    """
     s = "{"
     separator = " "
     for key, value in spec.iteritems():

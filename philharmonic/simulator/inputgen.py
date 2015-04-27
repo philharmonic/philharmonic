@@ -100,7 +100,7 @@ max_server_ram = 8
 def normal_infrastructure(locations=['A', 'B'],
                           round_to_hour=True):
     """Generate the cloud's servers with random specs and
-    uniformly distributed over all the locations
+    uniformly or normally distributed over all the locations
 
     """
     # array of server sizes
@@ -113,7 +113,7 @@ def normal_infrastructure(locations=['A', 'B'],
 
     servers = []
     for cpu_size, ram_size in zip(cpu_sizes, ram_sizes):
-        location = random.sample(locations, 1)[0]
+        location = random.sample(locations, 1)[0] # return a random sample from all locations
         server = Server(ram_size, cpu_size, location=location)
         servers.append(server)
     return Cloud(servers=servers)
@@ -142,6 +142,7 @@ beta_option = 1
 max_cloud_usage = 0.8
 
 def within_cloud_capacity(cloud_capacity, requested_capacity, max_cloud_usage):
+    """Iterate through each resource and its (total) capacity"""
     for res, capacity in cloud_capacity.items():
         if requested_capacity[res] > capacity * max_cloud_usage:
             return False

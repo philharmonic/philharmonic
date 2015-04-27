@@ -48,6 +48,7 @@ class FBFScheduler(IScheduler):
         #    import ipdb; ipdb.set_trace()
         for request in requests:
             if request.what == 'boot':
+
                 server = self.find_host(request.vm)
                 if server is None:
                     raise Exception("not enough free resources")
