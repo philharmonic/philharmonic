@@ -44,6 +44,7 @@ class BruteForceScheduler(IScheduler):
 
         """
 
+        best_fitness = 1
         # enumerate times
         times = self.environment.forecast_window_index()
         t = times[0]
@@ -58,8 +59,12 @@ class BruteForceScheduler(IScheduler):
                 schedule = Schedule()
                 schedule.add(Migration(vm, server), t)
                 # - evaluate it
+                fitness = self._evaluate_schedule(schedule)
                 # - if better than best, keep it
+                if fitness < best_fitness:
+                    best_fitness = fitness
+                    best_schedule = schedule
         #  - what
         #  - where
 
-        return schedule
+        return best_schedule

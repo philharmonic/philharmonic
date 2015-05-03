@@ -20,6 +20,7 @@ def test_brute_force_returns_schedule():
     scheduler.environment.get_time = MagicMock(
         return_value = pd.Timestamp('2013-02-25 00:00')
     )
+    scheduler._evaluate_schedule = MagicMock(return_value = 0.5)
     scheduler.cloud = Cloud()
     scheduler.cloud.vms = ['vm1']
     scheduler.cloud.servers = ['s1']
@@ -29,11 +30,15 @@ def test_brute_force_returns_schedule():
 def test_brute_force_run():
     mock_schedule_frequency_scaling = MagicMock(return_value = None)
     scheduler = BruteForceScheduler()
+    scheduler.no_temperature = False
+    scheduler.no_el_price = False
+    scheduler._evaluate_schedule = MagicMock(return_value = 0.5)
     t1 = pd.Timestamp('2013-02-25 00:00')
     t2 = pd.Timestamp('2013-02-25 01:00')
     t3 = pd.Timestamp('2013-02-25 02:00')
     request_times = [t1, t2]
-    scheduler.environment = FBFSimpleSimulatedEnvironment(times=[t1, t2, t3],
+    times = [t1, t2, t3]
+    scheduler.environment = FBFSimpleSimulatedEnvironment(times=times,
                                                           forecast_periods=1)
     s1, s2 = Server(40000, 12, location='A'), Server(20000, 10, location='A')
     vm1 = VM(2000, 1)
@@ -42,8 +47,8 @@ def test_brute_force_run():
     cloud = Cloud([s1, s2], [vm1, vm2])
     scheduler.cloud = cloud
     scheduler.environment.get_requests = MagicMock(return_value = [r2])
-    el = pd.DataFrame({'A': [0.08], 'B': [0.08]}, [1])
-    temp = pd.DataFrame({'A': [15], 'B': [15]}, [1])
+    el = pd.DataFrame({'A': [0.08], 'B': [0.08]}, times)
+    temp = pd.DataFrame({'A': [15], 'B': [15]}, times)
     scheduler.environment.current_data = MagicMock(return_value = (el, temp))
     # the initial state is a VM hosted on an underutilised PM
     cloud.apply_real(Migration(vm1, s2))
@@ -58,7 +63,6 @@ def test_evaluate_schedule():
     scheduler.no_temperature = False
     scheduler.no_el_price = False
 
-    #import ipdb; ipdb.set_trace()
     # cloud
     vm1 = VM(4,2)
     server1 = Server(8,4, location="A")
