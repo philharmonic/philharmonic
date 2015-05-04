@@ -51,15 +51,19 @@ class BruteForceScheduler(IScheduler):
 
         actions = []
         # enumerate actions
-        # - nothing
-        # - migration
         for vm in self.cloud.vms:
-            for server in self.cloud.servers:
+            # - nothing
+            vm_actions = [None]
+            # - migration
+            vm_actions.extend(Migration(vm, s) for s in self.cloud.servers)
+            for action in vm_actions:
                 # - generate schedule instance
                 schedule = Schedule()
-                schedule.add(Migration(vm, server), t)
+                if action is not None:
+                    schedule.add(action, t)
                 # - evaluate it
                 fitness = self._evaluate_schedule(schedule)
+                print(schedule)
                 # - if better than best, keep it
                 if fitness < best_fitness:
                     best_fitness = fitness
