@@ -47,28 +47,26 @@ class BruteForceScheduler(IScheduler):
         best_fitness = 1
         # enumerate times
         times = self.environment.forecast_window_index()
-        t = times[0]
-
-        actions = []
-        # enumerate actions
-        for vm in self.cloud.vms:
-            # - nothing
-            vm_actions = [None]
-            # - migration
-            vm_actions.extend(Migration(vm, s) for s in self.cloud.servers)
-            for action in vm_actions:
-                # - generate schedule instance
-                schedule = Schedule()
-                if action is not None:
-                    schedule.add(action, t)
-                # - evaluate it
-                fitness = self._evaluate_schedule(schedule)
-                print(schedule)
-                # - if better than best, keep it
-                if fitness < best_fitness:
-                    best_fitness = fitness
-                    best_schedule = schedule
-        #  - what
-        #  - where
+        schedule = Schedule()
+        for t in times:
+            # enumerate actions
+            #  - what
+            for vm in self.cloud.vms:
+                # - nothing
+                vm_actions = [None]
+                # - migration
+                #   - where
+                vm_actions.extend(Migration(vm, s) for s in self.cloud.servers)
+                for action in vm_actions:
+                    if action is not None:
+                        schedule.add(action, t)
+                        # - evaluate it
+                        fitness = self._evaluate_schedule(schedule)
+                        print(schedule)
+                        # - if better than best, keep it
+                        if fitness < best_fitness:
+                            best_fitness = fitness
+                            # TODO: schedule.copy
+                            best_schedule = schedule
 
         return best_schedule
