@@ -572,6 +572,9 @@ class Schedule(object):
         self.actions = pd.TimeSeries()
         self.actions.name = 'actions'
 
+    def copy(self):
+        return copy.copy(self)
+
     def sort(self):
         # - actions in the current time have to be sorted by Action.rank()
         # - sort_index has to be stable - not sure if it is

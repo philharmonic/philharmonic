@@ -66,7 +66,6 @@ class BruteForceScheduler(IScheduler):
                         # - if better than best, keep it
                         if fitness < best_fitness:
                             best_fitness = fitness
-                            # TODO: schedule.copy
-                            best_schedule = schedule
+                            best_schedule = schedule.copy()
 
         return best_schedule

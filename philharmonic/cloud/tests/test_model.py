@@ -642,6 +642,24 @@ def test_schedule():
     schedule.add(a1, t1)
     assert_true((schedule.actions == pd.Series({t1: a1, t2: a2})).all())
 
+def test_schedule_copy():
+    vm1 = VM(2000, 1);
+    a1 = Pause(vm1)
+    t1 = pd.datetime.now()
+    a2 = Unpause(vm1)
+    t2 = t1 + pd.offsets.Hour(1)
+    schedule = Schedule()
+    schedule.add(a2, t2)
+    schedule.add(a1, t1)
+    schedule2 = schedule.copy()
+    a3 = Pause(vm1)
+    t3 = t1 + pd.offsets.Hour(2)
+    schedule2.add(a3, t3)
+    assert_true((schedule.actions == pd.Series({t1: a1, t2: a2})).all())
+    assert_true(
+        (schedule2.actions == pd.Series({t1: a1, t2: a2, t3: a3})).all()
+    )
+
 def test_schedule_add_first_replaced():
     vm1 = VM(2000, 1);
     s1 = Server(5000, 2);
