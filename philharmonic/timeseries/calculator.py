@@ -41,6 +41,38 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
     P[P>0] += P_idle
     return P
 
+
+
+def calculate_util(active_cores, util_active_cores):
+    c=sum(util_active_cores)/active_cores
+    return c
+
+def calculate_idlepower_freq(q, \
+                         p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01):
+   P_fixed=p00+p10*q+p20*(q**2)+p30*(q**3)
+   return P_fixed
+
+def calculate_peakpower_freq(q, c, \
+                         p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01):
+    P=p00+p10*q+p01*c+p20*(q**2)+p11*q*c+p30*(q**3)+p21*(q**2)*c
+    return P
+
+def calculate_power_multicore(freq_scale, active_cores, max_cores, util_cores, max_capacity=8, \
+                         p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01):
+    #max_capacity=8:unitless utilization between 1 to 8
+    util_calculated=calculate_util(active_cores, util_cores)
+    c=(active_cores/max_cores)*max_capacity#current utilization for fully utilized cores
+    max_power=calculate_peakpower_freq(freq_scale,c)#peak power when a number of cores are active at a frequency assuming they are fully utilized
+    idle_power=calculate_idlepower_freq(freq_scale, \
+                         p00, p10, p01, p20, p11, p30, p21)#from the model of Holmbacka et al extract the idle part of the power
+   
+    total_power=idle_power+(max_power-idle_power)*util_calculated#take into account the utilization of the active cores
+   
+    return total_power
+
+
+
+
 def calculate_price_old(power, price_file, start_date=None, old_parser=False):
     """parse prices from a price_file ($/kWh), realign it to start_date
     (if it's provided) and calculate the price of the energy consumption
@@ -200,6 +232,19 @@ def vm_price_cpu_ram(rel_ram_size, freq, beta, C_base=0.027028, C_dif_cpu=0.018,
     C = C_base + \
         C_dif_cpu * (beta * freq + (1 - beta) * f_max - f_base) / f_base + \
         C_dif_ram * rel_ram_size
+    return C
+
+def vm_multicore_price(rel_ram_size, f_vms, beta_vms, C_base=0.027028, C_dif_cpu=0.018, \
+                       f_base=1000, f_max=3000, C_dif_ram=0.025):
+    f_max_array = np.ones(len(f_vms))*f_max#f_max in pricing model
+    f_base_array = np.ones(len(f_vms))*f_base#f_min in pricing model
+ 
+    #total cpus used of a VM taking into account beta
+    cpu_size=(beta_vms*f_vms + (np.ones(len(f_vms)) - beta_vms) * f_max_array - f_base_array)/ f_base_array
+
+    #overall price of a VM: sum of the cpu cost, the fixed cost and ram cost
+    C = C_base + C_dif_cpu *sum(cpu_size) + C_dif_ram * rel_ram_size
+    
     return C
 
 def joul2kwh(jouls):
