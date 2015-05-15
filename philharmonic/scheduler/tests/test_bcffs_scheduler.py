@@ -67,6 +67,7 @@ def test_bcf_reevaluate_freq_scaling(mock_conf):
     mock_conf.freq_scale_delta = 0.1
     mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
+    mock_conf.power_model = "freq"
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
     mock_conf.P_dif = 15
@@ -114,6 +115,7 @@ def test_bcf_reevaluate_freq_scaling_beta_0(mock_conf):
     mock_conf.freq_scale_delta = 0.1
     mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
+    mock_conf.power_model = "freq"
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
     mock_conf.P_dif = 15

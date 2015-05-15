@@ -240,7 +240,15 @@ C_dif_cpu = 0.018
 C_dif_ram = 0.025
 # CPU frequency parameters
 f_max = 2600 # the maximum CPU frequency in MHz
-power_freq_model = True # consider CPU frequency in the power model
+
+# The type of power model to use. Available options:
+# - "basic" - utilisation-based
+# - "freq" - utilisation and frequency-based for a single core
+# - "multicore" - utilisation and frequency-based for multiple CPU cores
+power_model = "freq"
+
+# deprecated, use power_model instead
+power_freq_model = (power_model == "freq") # consider CPU frequency in the power model
 
 # VM cost components for ElasticHosts
 #C_base = 0.004529 # $/hour #C_base=0.012487, C_dif_ram=0 if we don't vary memory

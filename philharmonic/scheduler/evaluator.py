@@ -98,21 +98,25 @@ def precreate_synth_power(start, end, servers):
 
 # TODO: get rid of this globals nonsense and create a Class (or a generator)
 def generate_cloud_power(util, start=None, end=None,
-                         power_freq_model=None, freq=None):
+                         power_model=None, freq=None):
     """Create power signals from varying utilisation rates."""
-    if power_freq_model is None:
-        power_freq_model = conf.power_freq_model
+    if power_model is None:
+        power_model = conf.power_model
     if freq is None:
         freq = 2000
-    # calculate on a sparse util DataFrame
-    if power_freq_model:
+    if power_model == "base":
+        power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
+    elif power_model == "freq":
         #TODO: get frequencies from the servers
+        # calculate on a sparse util DataFrame
         power = ph.calculate_power_freq(
             util, f=freq, P_idle=conf.P_idle, P_base=conf.P_base,
             P_dif=conf.P_dif, f_base=conf.f_base
         )
+    elif power_model == "multicore":
+        pass #TODO
     else:
-        power = ph.calculate_power(util, conf.P_idle, conf.P_peak)
+        raise ValueError("Power model {} not supported.".format(power_model))
     # fill it out to the full frequency
     power = power.resample(conf.power_freq, fill_method='pad')
     # add random noise

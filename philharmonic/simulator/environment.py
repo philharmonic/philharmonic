@@ -111,6 +111,7 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
         if not times is None:
             self._times = times
             self._period = times[1] - times[0]
+            #self._period = pd. # TODO: switch to above when issue with pandas fixed
             self._t = self._times[0]
             self.start = self._times[0]
             self.end = self._times[-1]
@@ -142,12 +143,14 @@ class FBFSimpleSimulatedEnvironment(SimulatedEnvironment):
     def times_index(self):
         """Return a pandas Index based on the set times"""
         idx = pd.date_range(start=self.start, end=self.end, freq=self.period)
+        # TODO: figure out how to turn self.period into a DateOffset
         return idx
 
     def forecast_window_index(self):
         """Return a pandas Index from t to forecast_end"""
-        idx = pd.date_range(start=self.t, end=self.forecast_end,
-                            freq=self.period)
+        #idx = pd.date_range(start=self.t, end=self.forecast_end,
+        #                    freq=self.period)
+        idx = self.times_index()[self.t, self.forecast_end]
         return idx
 
     def get_requests(self):

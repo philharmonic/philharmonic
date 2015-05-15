@@ -8,8 +8,12 @@ temperature time series datao. Additionally some functions for converting
 currencies etc.
 '''
 
-from historian import *
+import copy
+from datetime import timedelta
+
 from scipy import integrate
+
+from historian import *
 
 _KWH_RATIO = 3.6e6
 
