@@ -256,11 +256,15 @@ power_freq_model = (power_model == "freq") # consider CPU frequency in the power
 #C_dif_ram=0.007958 # $/hour
 #rel_ram_size=2 #at least 2: min ram size charged
 
-# TODO: apply to model
+# applied to model in philharmonic/__init__.py
+freq_abs_min = 1800.
+freq_abs_max = 2600
+freq_abs_delta = 200
+freq_abs_steps = int((freq_abs_max - freq_abs_min) / freq_abs_delta) + 1
 freq_scale_max = 1.0
 freq_scale_digits = 5
-freq_scale_min = round(1800./2600, 1) # = 0.7
-freq_scale_delta = round((freq_scale_max - freq_scale_min) / 4,
+freq_scale_min = round(freq_abs_min/freq_abs_max, 1) # = 0.7
+freq_scale_delta = round((freq_scale_max - freq_scale_min) / (freq_abs_steps - 1),
                          freq_scale_digits) # = 0.075
 f_min = f_max * freq_scale_min
 f_base = 1000

@@ -98,7 +98,7 @@ def precreate_synth_power(start, end, servers):
 
 # TODO: get rid of this globals nonsense and create a Class (or a generator)
 def generate_cloud_power(util, start=None, end=None,
-                         power_model=None, freq=None):
+                         power_model=None, freq=None, active_cores=None): # TODO: generate active_cores
     """Create power signals from varying utilisation rates."""
     if power_model is None:
         power_model = conf.power_model
@@ -114,7 +114,10 @@ def generate_cloud_power(util, start=None, end=None,
             P_dif=conf.P_dif, f_base=conf.f_base
         )
     elif power_model == "multicore":
-        pass #TODO
+        # TODO: generate active_cores DataFrame
+        power = ph.calculate_power_multicore(freq, active_cores, max_cores, util_cores,
+                                             freq_abs_min=conf.freq_abs_min,
+                                             freq_abs_delta=conf.freq_abs_delta)
     else:
         raise ValueError("Power model {} not supported.".format(power_model))
     # fill it out to the full frequency

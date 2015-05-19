@@ -72,6 +72,7 @@ class TestCalculator(unittest.TestCase):
         p_total = ph.calculate_cooling_overhead(power, temperature)
         self.assertTrue((p_total > power).all(), 'cooling adds to power')
         self.assertTrue(p_total[3] < p_total[23], 'colder == more efficient')
+
     def test_calculate_cooling_overhead_df(self):
         n = 32
         power_samples1 = [100] * n
@@ -134,6 +135,26 @@ def test_calculate_power_freq_different_freqs():
     assert_equals(list(power['s1'][:num]), [0] * num)
     assert_almost_equals(list(power['s1'][num:]), [125.48] * num)
     assert_almost_equals(list(power['s2']), [139.93] * 2 * num)
+    
+def test_calculate_power_multicore():
+    index = pd.date_range('2013-01-01', periods=6, freq='H')
+    num = len(index)/2
+    util = pd.Series([0]*num + [0.5]*num, index)
+    util = pd.DataFrame({'s1': util, 's2': [0.75] * 2 * num})
+    freq = pd.Series([1.]*num + [0.7]*num, index)
+    freq  = pd.DataFrame({'s1': freq, 's2': [0.775] * 2 * num})
+    freq = freq * 2600
+    active_cores = pd.Series([3]*num + [4]*num, index)
+    active_cores = pd.DataFrame({'s1': active_cores, 's2': [0] * 2 * num})
+    max_cores = pd.Series([4]*2*num, index)
+    max_cores = pd.DataFrame({'s1': max_cores, 's2': [4] * 2 * num})
+    
+    power = ph.calculate_power_multicore(freq, active_cores, max_cores, 0.5)
+    #power = ph.calculate_power_multicore(util, f=2000, P_idle=100, P_base=150,
+    #                                P_dif=15, f_base=1000)
+    #assert_equals(list(power['s1'][:num]), [0] * num)
+    #assert_equals(list(power['s1'][num:]), [132.5] * num)
+    #assert_equals(list(power['s2']), [148.75] * 2 * num)
 
 def test_vm_price():
     cost = ph.vm_price(2000)

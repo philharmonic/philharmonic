@@ -47,34 +47,50 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
 
 
 
-def calculate_util(active_cores, util_active_cores):
-    c=sum(util_active_cores)/active_cores
+# multicore model
+##################
+
+def _calculate_core_util_multicore(beta):
+    # model fit from odroid
+    pass
+
+def _calculate_util_multicore(active_cores, util_beta):
+    # expression with gama (core utilisation)
+    return 0.5 # TODO: finish this
+    c = (active_cores * util_beta).sum(axis=1) / (active_cores.sum(axis=1))
     return c
 
-def calculate_idlepower_freq(q, \
-                         p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01):
-   P_fixed=p00+p10*q+p20*(q**2)+p30*(q**3)
-   return P_fixed
-
-def calculate_peakpower_freq(q, c, \
-                         p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01):
+def _calculate_peakpower_freq_multicore(q, c, \
+                         p00, p10, p01, p20, p11, p30, p21):
     P=p00+p10*q+p01*c+p20*(q**2)+p11*q*c+p30*(q**3)+p21*(q**2)*c
     return P
 
-def calculate_power_multicore(freq_scale, active_cores, max_cores, util_cores, max_capacity=8, \
-                         p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01):
-    #max_capacity=8:unitless utilization between 1 to 8
-    util_calculated=calculate_util(active_cores, util_cores)
-    c=(active_cores/max_cores)*max_capacity#current utilization for fully utilized cores
-    max_power=calculate_peakpower_freq(freq_scale,c)#peak power when a number of cores are active at a frequency assuming they are fully utilized
-    idle_power=calculate_idlepower_freq(freq_scale, \
-                         p00, p10, p01, p20, p11, p30, p21)#from the model of Holmbacka et al extract the idle part of the power
+def calculate_power_multicore(freq, active_cores, max_cores, util_beta, max_capacity=8, \
+                              p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01,
+                              freq_abs_min=1800, freq_abs_delta=200):
+    """@param freq: DataFrame of absolute frequencies for servers over time
+    max_capacity: if e.g. 8, unitless core utilisation moves from 1 to 8. 8 = all cores utilised
+    
+    """
+    freq_discr = ((freq - freq_abs_min).astype(int) / freq_abs_delta) + 1 # convert to Simon's discrete freq. steps
+    # utilisation
+    utilisation = _calculate_util_multicore(active_cores, util_beta)
+    
+    # mapping between actual active cores and a discrete parameter for Simon's optimisation
+    c = (active_cores / max_cores) * max_capacity # current utilization for fully utilized cores
+    
+    max_power = _calculate_peakpower_freq_multicore(
+        freq_discr, c, p00, p10, p01, p20, p11, p30, p21
+    ) #peak power when a number of cores are active at a frequency assuming they are fully utilized
+    idle_power =  _calculate_peakpower_freq_multicore(
+        freq_discr, 0, p00, p10, p01, p20, p11, p30, p21
+    ) # from the model of Holmbacka et al extract the idle part of the power
    
-    total_power=idle_power+(max_power-idle_power)*util_calculated#take into account the utilization of the active cores
+    total_power = idle_power + (max_power - idle_power) * utilisation # take into account the utilization of the active cores
    
     return total_power
 
-
+##################
 
 
 def calculate_price_old(power, price_file, start_date=None, old_parser=False):
