@@ -364,10 +364,7 @@ class State(object):
         apply_effect(*action.args)
         return state
 
-    def utilisation(self, s, weights=None):
-        """Utilisation ratio of a server s."""
-        if weights is None:
-            weights = Machine.weights
+    def _utilisation_basic(self, s, weights):
         total_utilisation = 0.
         for r in s.resource_types:
             used = s.cap[r] - self.free_cap[s][r]
@@ -376,6 +373,31 @@ class State(object):
                 utilisation = 1
             total_utilisation += weights[r] * utilisation
         return total_utilisation
+
+    def _utilisation_multicore(self, s, weights):
+        cores = s.spec['#CPUs']
+        active_cores = cores - self.free_cap[s]['#CPUs']
+        util = 0
+        for vm in self.alloc[s]:
+            vm_cores = vm.spec['#CPUs']
+            util += float(vm.beta) * vm_cores / active_cores
+        return util
+
+    def utilisation(self, s, weights=None, method="basic"):
+        """Utilisation ratio of a server s.
+        
+        @param method: weighted average of servers if "basic"
+        or looking at per-core utiilsation if "multicore".
+
+        """
+        if weights is None:
+            weights = Machine.weights
+        if method == "basic":
+            return self._utilisation_basic(s, weights)
+        elif method == "multicore":
+            return self._utilisation_multicore(s, weights)
+        else:
+            raise ValueError("unknown utilisation calculation method")
 
     def calculate_utilisations(self):
         """Return dict server -> utilisation rate."""

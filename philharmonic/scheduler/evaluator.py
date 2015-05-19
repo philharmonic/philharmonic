@@ -115,9 +115,10 @@ def generate_cloud_power(util, start=None, end=None,
         )
     elif power_model == "multicore":
         # TODO: generate active_cores DataFrame
-        power = ph.calculate_power_multicore(freq, active_cores, max_cores, util_cores,
-                                             freq_abs_min=conf.freq_abs_min,
-                                             freq_abs_delta=conf.freq_abs_delta)
+        power = ph.calculate_power_multicore(
+            freq, active_cores, max_cores, util_cores,
+            freq_abs_min=conf.freq_abs_min, freq_abs_delta=conf.freq_abs_delta
+        )
     else:
         raise ValueError("Power model {} not supported.".format(power_model))
     # fill it out to the full frequency
@@ -180,10 +181,13 @@ def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
     # this way it knows which state to start from
     # (this is a temp. hack until cloud states get timestamped)
     util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
-    if conf.power_freq_model:
+    if conf.power_model == "freq" or conf.power_model == "multicore":
         freq = calculate_cloud_frequencies(
             cloud, environment, schedule, start, end
         )
+        if conf.power_model == "multicore":
+            # calculate everything necessary for the multicore power model
+            pass
     else:
         freq = None
     power = generate_cloud_power(util, freq=freq)
