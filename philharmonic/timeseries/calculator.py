@@ -270,17 +270,14 @@ def vm_price_cpu_ram(rel_ram_size, freq, beta, C_base=0.027028, C_dif_cpu=0.018,
         C_dif_ram * rel_ram_size
     return C
 
-def vm_multicore_price(rel_ram_size, f_vms, beta_vms, C_base=0.027028, C_dif_cpu=0.018, \
+def vm_price_multicore(rel_ram_size, active_cores, f_vms, beta_vms, \
+                       C_base=0.027028, C_dif_cpu=0.018, \
                        f_base=1000, f_max=3000, C_dif_ram=0.025):
-    f_max_array = np.ones(len(f_vms))*f_max#f_max in pricing model
-    f_base_array = np.ones(len(f_vms))*f_base#f_min in pricing model
- 
-    #total cpus used of a VM taking into account beta
-    cpu_size=(beta_vms*f_vms + (np.ones(len(f_vms)) - beta_vms) * f_max_array - f_base_array)/ f_base_array
-
-    #overall price of a VM: sum of the cpu cost, the fixed cost and ram cost
-    C = C_base + C_dif_cpu *sum(cpu_size) + C_dif_ram * rel_ram_size
-    
+    # cpu_size: cpu used of a VM taking into account beta
+    f_cpu = beta_vms * f_vms + (1 - beta_vms) * f_max - f_base
+    cpu_size = active_cores * f_cpu / f_base 
+    # C: overall price of a VM: sum of the cpu cost, the fixed cost and ram cost
+    C = C_base + C_dif_cpu * cpu_size + C_dif_ram * rel_ram_size
     return C
 
 def joul2kwh(jouls):

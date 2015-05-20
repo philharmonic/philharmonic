@@ -171,6 +171,26 @@ def test_vm_price_progressive():
     assert_greater(cost2, cost1)
     assert_greater(cost3, cost1)
     assert_equals(cost4, cost5)
+    
+def test_vm_price_cpu_ram():
+    cost1 = ph.vm_price_cpu_ram(2, 2000, 1.)
+    cost2 = ph.vm_price_cpu_ram(2, 3000, 1.)
+    cost3 = ph.vm_price_cpu_ram(2, 2000, .5)
+    cost4 = ph.vm_price_cpu_ram(2, 2000, 0)
+    cost5 = ph.vm_price_cpu_ram(2, 3000, 0)
+    assert_greater(cost2, cost1)
+    assert_greater(cost3, cost1)
+    assert_equals(cost4, cost5)
+    
+def test_vm_price_multicore():
+    cost1 = ph.vm_price_multicore(2, 2, 2000, 1.)
+    cost2 = ph.vm_price_multicore(2, 2, 3000, 1.)
+    cost3 = ph.vm_price_multicore(2, 2, 2000, .5)
+    cost4 = ph.vm_price_multicore(2, 2, 2000, 0)
+    cost5 = ph.vm_price_multicore(2, 2, 3000, 0)
+    assert_greater(cost2, cost1)
+    assert_greater(cost3, cost1)
+    assert_equals(cost4, cost5)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testEnergyPrice']
