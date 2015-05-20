@@ -572,8 +572,12 @@ def test_utilisation_multicore():
     cloud = Cloud([s], [vm])
     assert_equals(cloud.get_current().utilisation(s, method="multicore"), 0)
     cloud.apply(Migration(vm, s))
-    # assert_equals(cloud.get_current().utilisation(s, method="multicore"), 0.1)
-    # TODO: check!!!
+    assert_equals(cloud.get_current().utilisation(s, method="multicore"), 1.0)
+
+def test_utilisation_unknown():
+    cloud = Cloud([], [])
+    with assert_raises(ValueError):
+        cloud.get_current().utilisation(None, method="bla")
 
 def test_underutilised():
     vm = VM(2000, 1)

@@ -50,44 +50,60 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
 # multicore model
 ##################
 
-def _calculate_core_util_multicore(beta):
-    # model fit from odroid
-    pass
+# These functions for operating on DataFrames are unused for now,
+# since we're calculating the utilisation in model.py, but rethink
+# that, as these would be faster.
+# def _calculate_core_util_multicore(beta):
+#     # model fit from odroid
+#     pass
 
-def _calculate_util_multicore(active_cores, util_beta):
-    # expression with gama (core utilisation)
-    return 0.5 # TODO: finish this
-    c = (active_cores * util_beta).sum(axis=1) / (active_cores.sum(axis=1))
-    return c
+# def _calculate_util_multicore(active_cores, util_beta):
+#     # expression with gama (core utilisation)
+#     return 0.5 # TODO: finish this
+#     c = (active_cores * util_beta).sum(axis=1) / (active_cores.sum(axis=1))
+#     return c
 
-def _calculate_peakpower_freq_multicore(q, c, \
-                         p00, p10, p01, p20, p11, p30, p21):
+def _calculate_peakpower_freq_multicore(
+        q, c, p00, p10, p01, p20, p11, p30, p21):
     P=p00+p10*q+p01*c+p20*(q**2)+p11*q*c+p30*(q**3)+p21*(q**2)*c
     return P
 
-def calculate_power_multicore(freq, active_cores, max_cores, util_beta, max_capacity=8, \
-                              p00=2.34, p10=0.598, p01=0.058, p20=-0.16, p11=-0.025, p30=0.012, p21=0.01,
-                              freq_abs_min=1800, freq_abs_delta=200):
-    """@param freq: DataFrame of absolute frequencies for servers over time
-    max_capacity: if e.g. 8, unitless core utilisation moves from 1 to 8. 8 = all cores utilised
-    
+# TODO: p00..p30 as some kind of dict or list
+def calculate_power_multicore(
+        util, freq, active_cores, max_cores, max_capacity=8, freq_abs_min=1800,
+        freq_abs_delta=200, p00=2.34, p10=0.598, p01=0.058, p20=-0.16,
+        p11=-0.025, p30=0.012, p21=0.01):
+    """@param util: utilisation (multicore) based on per-core utilisations
+    @param freq: DataFrame of absolute frequencies for servers over time
+    @param max_capacity: maximum utilisation in Simon's unitless notation
+    (e.g. cores used from 1 to 8, which might not mean the real number of cores)
+
     """
-    freq_discr = ((freq - freq_abs_min).astype(int) / freq_abs_delta) + 1 # convert to Simon's discrete freq. steps
-    # utilisation
-    utilisation = _calculate_util_multicore(active_cores, util_beta)
-    
-    # mapping between actual active cores and a discrete parameter for Simon's optimisation
-    c = (active_cores / max_cores) * max_capacity # current utilization for fully utilized cores
-    
+
+    # convert to Simon's discrete freq. steps
+    try:
+        freq_discr = ((freq - freq_abs_min).astype(int) / freq_abs_delta) + 1
+    except AttributeError: # it's a scalar - TODO: find more elegant way
+        freq_discr = ((freq - freq_abs_min) / freq_abs_delta) + 1
+    # utilisation - this is not calculated here right now, but in evaluator.py
+    # util = _calculate_util_multicore(active_cores, util_beta)
+
+    # mapping between actual active cores and a discrete parameter
+    # for Simon's optimisation
+    # c = (active_cores / max_cores) * max_capacity
+    c = active_cores
+    # peak power when a number of cores are active at a frequency assuming
+    # they are fully utilized
     max_power = _calculate_peakpower_freq_multicore(
         freq_discr, c, p00, p10, p01, p20, p11, p30, p21
-    ) #peak power when a number of cores are active at a frequency assuming they are fully utilized
+    )
+    # from the model of Holmbacka et al extract the idle part of the power
     idle_power =  _calculate_peakpower_freq_multicore(
         freq_discr, 0, p00, p10, p01, p20, p11, p30, p21
-    ) # from the model of Holmbacka et al extract the idle part of the power
-   
-    total_power = idle_power + (max_power - idle_power) * utilisation # take into account the utilization of the active cores
-   
+    )
+    # take into account the utilization of the active cores
+    total_power = idle_power + (max_power - idle_power) * util
+
     return total_power
 
 ##################

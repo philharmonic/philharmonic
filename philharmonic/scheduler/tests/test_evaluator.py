@@ -111,6 +111,35 @@ def test_calculate_cloud_simultaneous_actions():
     assert_equals(len(df_util[s1]), 3, 'duplicate actions must be combined')
     #assert_true((df_util[s1] == [0., 0.5, 0.5, 0.5]).all())
 
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_calculate_cloud_active_cores(mock_conf):
+    # some servers
+    s1 = Server(4000, 2)
+    s2 = Server(8000, 4)
+    s3 = Server(4000, 2)
+    servers = [s1, s2, s3]
+    cloud = Cloud(servers)
+
+    times = pd.date_range('2010-02-26 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+    env.t = times[0]
+    schedule = Schedule()
+    a1 = DecreaseFreq(s1)
+    t1 = pd.Timestamp('2010-02-26 11:00')
+    schedule.add(a1, t1)
+    a2 = DecreaseFreq(s2)
+    t2 = pd.Timestamp('2010-02-26 13:00')
+    schedule.add(a2, t2)
+
+    f_max = 3000.
+    f_lower = 2700.
+    mock_conf.f_max = f_max
+    active_cores = calculate_cloud_active_cores(cloud, env, schedule)
+    assert_is_instance(active_cores, pd.DataFrame)
+    # assert_true((freq[s1] == [f_max] + [f_lower] * 3).all())
+    # assert_true((freq[s2] == [f_max] * 2 + [f_lower] * 2).all())
+    # assert_true((freq[s3] == [f_max] * 4).all())
+
 def test_generate_cloud_power():
     index = pd.date_range('2013-01-01', periods=6, freq='H')
     num = len(index)/2
@@ -118,6 +147,20 @@ def test_generate_cloud_power():
     util = pd.DataFrame({'s1': util})
     precreate_synth_power(index[0], index[-1], ['s1'])
     power = generate_cloud_power(util)
+
+def test_generate_cloud_power_multicore():
+    index = pd.date_range('2013-01-01', periods=6, freq='H')
+    num = len(index)/2
+    util = pd.Series([0]*num + [0.5]*num, index)
+    util = pd.DataFrame({'s1': util})
+    precreate_synth_power(index[0], index[-1], ['s1'])
+    active_cores = pd.Series([0] * num + [2] * num, index)
+    active_cores = pd.DataFrame({'s1': active_cores})
+    max_cores = pd.Series([4] * 2 * num, index)
+    max_cores = pd.DataFrame({'s1': max_cores})
+    power = generate_cloud_power(util, power_model="multicore",
+                                 active_cores=active_cores,
+                                 max_cores=max_cores)
 
 def test_calculate_cost():
     s1 = Server(4000, 2, location='A')
@@ -166,6 +209,11 @@ def test_calculate_cost_combined():
     normalised = normalised_combined_cost(cloud, env, schedule, el_prices,
                                           temperature, env.t, env.forecast_end)
     assert_true(0 <= normalised <= 1.)
+
+    cost_mc = combined_cost(cloud, env, schedule, el_prices,
+                            temperature, env.t, env.forecast_end,
+                            power_model="multicore")
+    assert_is_instance(cost_mc, float)
 
 @patch('philharmonic.scheduler.evaluator.conf')
 def test_calculate_cost_combined_different_freq(mock_conf):

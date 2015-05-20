@@ -34,7 +34,7 @@ def print_history(cloud, environment, schedule):
 # TODO: add optional start, end limiters for evaluating a certain period
 
 def calculate_cloud_utilisation(cloud, environment, schedule,
-                                start=None, end=None):
+                                start=None, end=None, method="basic"):
     """Calculate utilisations of all servers based on the given schedule.
 
     @param start, end: if given, only this period will be counted,
@@ -52,7 +52,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
     #TODO: use more precise pandas methods for indexing (performance)
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: see where schedule window should be propagated - here or Scheduler?
-    initial_utilisations = cloud.get_current().calculate_utilisations()
+    initial_utilisations = cloud.get_current().calculate_utilisations(method)
     utilisations_list = [initial_utilisations]
     times = [start]
     for t in schedule.actions.index.unique():
@@ -67,7 +67,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
-        new_utilisations = state.calculate_utilisations()
+        new_utilisations = state.calculate_utilisations(method)
         utilisations_list.append(new_utilisations)
         times.append(t)
     if times[-1] < end:
@@ -97,9 +97,10 @@ def precreate_synth_power(start, end, servers):
     globals()['cached_end'] = None
 
 # TODO: get rid of this globals nonsense and create a Class (or a generator)
-def generate_cloud_power(util, start=None, end=None,
-                         power_model=None, freq=None, active_cores=None): # TODO: generate active_cores
+def generate_cloud_power(util, freq=None, active_cores=None, max_cores=None,
+                         power_model=None, start=None, end=None):
     """Create power signals from varying utilisation rates."""
+    # TODO: generate active_cores
     if power_model is None:
         power_model = conf.power_model
     if freq is None:
@@ -116,7 +117,7 @@ def generate_cloud_power(util, start=None, end=None,
     elif power_model == "multicore":
         # TODO: generate active_cores DataFrame
         power = ph.calculate_power_multicore(
-            freq, active_cores, max_cores, util_cores,
+            util, freq, active_cores, max_cores,
             freq_abs_min=conf.freq_abs_min, freq_abs_delta=conf.freq_abs_delta
         )
     else:
@@ -173,7 +174,7 @@ def _worst_case_power(cloud, environment, start, end): # TODO: use this
     full_power = generate_cloud_power(full_util, freq=full_freq)
 
 def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
-                  start=None, end=None):
+                  start=None, end=None, power_model=None):
     """Calculate energy costs including IT equipment energy cooling overhead and
     the real-time electricity price."""
 
@@ -181,16 +182,25 @@ def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
     # this way it knows which state to start from
     # (this is a temp. hack until cloud states get timestamped)
     util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
-    if conf.power_model == "freq" or conf.power_model == "multicore":
+    freq = None
+    active_cores = None
+    max_cores = None
+    if power_model is None:
+        power_model = conf.power_model
+    if power_model == "freq" or power_model == "multicore":
         freq = calculate_cloud_frequencies(
             cloud, environment, schedule, start, end
         )
-        if conf.power_model == "multicore":
+        if power_model == "multicore":
             # calculate everything necessary for the multicore power model
-            pass
-    else:
-        freq = None
-    power = generate_cloud_power(util, freq=freq)
+            active_cores = calculate_cloud_active_cores(
+                cloud, environment, schedule, start, end
+            )
+            max_cores = {s: s.cap['#CPUs'] for s in cloud.servers}
+            max_cores = pd.DataFrame(max_cores, index=active_cores.index)
+
+    power = generate_cloud_power(util, freq=freq, active_cores=active_cores,
+                                 max_cores=max_cores)
     if start is None:
         start = environment.start
     if end is None:
@@ -659,6 +669,48 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
     # convert freq_scale to absolute value in Hz
     df_freq_hz = conf.f_max * df_freq
     return df_freq_hz
+
+def  _get_active_cores(state):
+    return {server:server.cap['#CPUs'] - res['#CPUs'] \
+            for server, res in state.free_cap.items()}
+
+# TODO: this pattern is being repeated much too often.
+# It should be extracted somehow. Ideally using DataFrames/Panels
+# and not for loops
+def calculate_cloud_active_cores(cloud, environment, schedule,
+                                 start=None, end=None):
+    """Calculate number of active cores of all servers over time
+    based on the given schedule.
+
+    @param start, end: if given, only this period will be counted,
+    cloud model starts from _real. If not, whole environment.start-end
+    counted and the first state is _initial.
+
+    """
+    start, end = _reset_cloud_state(cloud, environment, start, end)
+    initial_cores = _get_active_cores(cloud.get_current())
+    cores_list = [initial_cores]
+    times = [start]
+    for t in schedule.actions.index.unique():
+        if t == start:
+            cores_list = []
+            times = []
+        # TODO: precise indexing, not dict
+        if isinstance(schedule.actions[t], pd.Series):
+            for action in schedule.actions[t].values:
+                cloud.apply(action)
+        else:
+            action = schedule.actions[t]
+            cloud.apply(action)
+        state = cloud.get_current()
+        new_cores = _get_active_cores(cloud.get_current())
+        cores_list.append(new_cores)
+        times.append(t)
+    if times[-1] < end:
+        times.append(end)
+        cores_list.append(cores_list[-1])
+    df_cores = pd.DataFrame(cores_list, times)
+    return df_cores
 
 def calculate_service_profit(cloud, environment, schedule,
                              start=None, end=None):
