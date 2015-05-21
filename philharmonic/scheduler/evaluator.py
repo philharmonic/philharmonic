@@ -52,7 +52,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
     #TODO: use more precise pandas methods for indexing (performance)
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: see where schedule window should be propagated - here or Scheduler?
-    initial_utilisations = cloud.get_current().calculate_utilisations(method)
+    initial_utilisations = cloud.get_current().calculate_utilisations(method, conf.utilisation_weights)
     utilisations_list = [initial_utilisations]
     times = [start]
     for t in schedule.actions.index.unique():
@@ -67,7 +67,7 @@ def calculate_cloud_utilisation(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
-        new_utilisations = state.calculate_utilisations(method)
+        new_utilisations = state.calculate_utilisations(method, conf.utilisation_weights)
         utilisations_list.append(new_utilisations)
         times.append(t)
     if times[-1] < end:
@@ -123,7 +123,8 @@ def generate_cloud_power(util, freq=None, active_cores=None, max_cores=None,
         # TODO: generate active_cores DataFrame
         power = ph.calculate_power_multicore(
             util, freq, active_cores, max_cores,
-            freq_abs_min=conf.freq_abs_min, freq_abs_delta=conf.freq_abs_delta
+            freq_abs_min=conf.freq_abs_min, freq_abs_delta=conf.freq_abs_delta,
+            power_weights=conf.power_weights
         )
     else:
         raise ValueError("Power model {} not supported.".format(power_model))
@@ -490,7 +491,7 @@ def evaluate(cloud, environment, schedule,
     #TODO: use more precise pandas methods for indexing (performance)
     #TODO: maybe move some of this state iteration functionality into Cloud
     #TODO: see where schedule window should be propagated - here or Scheduler?
-    initial_utilisations = cloud.get_current().calculate_utilisations()
+    initial_utilisations = cloud.get_current().calculate_utilisations(weights=conf.utilisation_weights)
     utilisations_list = [initial_utilisations]
     times = [start]
 
@@ -531,7 +532,7 @@ def evaluate(cloud, environment, schedule,
                 raise
             cloud.apply(action, inplace=True)
         state = cloud.get_current()
-        new_utilisations = state.calculate_utilisations()
+        new_utilisations = state.calculate_utilisations(weights=conf.utilisation_weights)
         utilisations_list.append(new_utilisations)
         times.append(t)
 
@@ -741,10 +742,16 @@ def calculate_service_profit(cloud, environment, schedule,
     else:
         considered_vms = cloud.get_current().vms
 
-    df_beta = pd.DataFrame(
-        [{vm : vm.beta for vm in considered_vms}], [start]
-    )
-    df_beta = df_beta.reindex(freq.index, method='pad')
+
+    if conf.pricing_model == "performance_pricing":
+        df_beta = 1.
+    elif conf.pricing_model == "perceived_perf_pricing":
+        df_beta = pd.DataFrame(
+            [{vm : vm.beta for vm in considered_vms}], [start]
+        )
+        df_beta = df_beta.reindex(freq.index, method='pad')
+    else:
+        raise ValueError("Unknown pricing model")
     ram_size_base = 1 # 1000 # 1024
     ram_index = 'RAM'
     df_rel_ram = pd.DataFrame([{vm : vm.res[ram_index] / ram_size_base \

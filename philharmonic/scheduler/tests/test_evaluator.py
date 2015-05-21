@@ -18,12 +18,15 @@ def _configure(mock_conf):
     mock_conf.C_base = 0.0520278
     mock_conf.C_dif_cpu = 0.018
     mock_conf.C_dif_ram = 0.025
+    mock_conf.pricing_model = "perceived_perf_pricing"
     mock_conf.freq_scale_max = 1.0
     mock_conf.freq_scale_min = 0.7
     mock_conf.freq_scale_delta = 0.1
     mock_conf.freq_scale_digits = 1
     mock_conf.power_freq_model = True
     mock_conf.power_model = "freq"
+    mock_conf.utilisation_weights = None
+    mock_conf.power_weights = None
     mock_conf.P_idle = 100
     mock_conf.P_std = 5
     mock_conf.P_dif = 15
@@ -148,7 +151,11 @@ def test_generate_cloud_power():
     precreate_synth_power(index[0], index[-1], ['s1'])
     power = generate_cloud_power(util)
 
-def test_generate_cloud_power_multicore():
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_generate_cloud_power_multicore(mock_conf):
+    mock_conf = _configure(mock_conf)
+    mock_conf.power_model = "multicore"
+    mock_conf.power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137, 0.0004377, 0.007106]
     index = pd.date_range('2013-01-01', periods=6, freq='H')
     num = len(index)/2
     util = pd.Series([0]*num + [0.5]*num, index)
@@ -158,9 +165,10 @@ def test_generate_cloud_power_multicore():
     active_cores = pd.DataFrame({'s1': active_cores})
     max_cores = pd.Series([4] * 2 * num, index)
     max_cores = pd.DataFrame({'s1': max_cores})
-    power = generate_cloud_power(util, power_model="multicore",
-                                 active_cores=active_cores,
-                                 max_cores=max_cores)
+    power = generate_cloud_power(
+        util, power_model="multicore", active_cores=active_cores,
+        max_cores=max_cores
+    )
 
 def test_calculate_cost():
     s1 = Server(4000, 2, location='A')

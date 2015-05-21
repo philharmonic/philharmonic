@@ -63,16 +63,15 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
 #     c = (active_cores * util_beta).sum(axis=1) / (active_cores.sum(axis=1))
 #     return c
 
-def _calculate_peakpower_freq_multicore(
-        q, c, p00, p10, p01, p20, p11, p30, p21):
+def _calculate_peakpower_freq_multicore(q, c, power_weights):
+    p00, p10, p01, p20, p11, p30, p21 = power_weights
     P=p00+p10*q+p01*c+p20*(q**2)+p11*q*c+p30*(q**3)+p21*(q**2)*c
     return P
 
 # TODO: p00..p30 as some kind of dict or list
 def calculate_power_multicore(
         util, freq, active_cores, max_cores, max_capacity=8, freq_abs_min=1800,
-        freq_abs_delta=200, p00=2.34, p10=0.598, p01=0.058, p20=-0.16,
-        p11=-0.025, p30=0.012, p21=0.01):
+        freq_abs_delta=200, power_weights=None):
     """@param util: utilisation (multicore) based on per-core utilisations
     @param freq: DataFrame of absolute frequencies for servers over time
     @param max_capacity: maximum utilisation in Simon's unitless notation
@@ -94,13 +93,9 @@ def calculate_power_multicore(
     c = active_cores
     # peak power when a number of cores are active at a frequency assuming
     # they are fully utilized
-    max_power = _calculate_peakpower_freq_multicore(
-        freq_discr, c, p00, p10, p01, p20, p11, p30, p21
-    )
+    max_power = _calculate_peakpower_freq_multicore(freq_discr, c, power_weights)
     # from the model of Holmbacka et al extract the idle part of the power
-    idle_power =  _calculate_peakpower_freq_multicore(
-        freq_discr, 0, p00, p10, p01, p20, p11, p30, p21
-    )
+    idle_power =  _calculate_peakpower_freq_multicore(freq_discr, 0, power_weights)
     # take into account the utilization of the active cores
     total_power = idle_power + (max_power - idle_power) * util
 

@@ -148,8 +148,10 @@ def test_calculate_power_multicore():
     active_cores = pd.DataFrame({'s1': active_cores, 's2': [0] * 2 * num})
     max_cores = pd.Series([4]*2*num, index)
     max_cores = pd.DataFrame({'s1': max_cores, 's2': [4] * 2 * num})
-
-    power = ph.calculate_power_multicore(freq, active_cores, max_cores, 0.5)
+    power = ph.calculate_power_multicore(
+        freq, active_cores, max_cores, 0.5,
+        power_weights=[1.318, 0.03559, 0.2243, -0.003184, 0.03137, 0.0004377, 0.007106]
+    )
     #power = ph.calculate_power_multicore(util, f=2000, P_idle=100, P_base=150,
     #                                P_dif=15, f_base=1000)
     #assert_equals(list(power['s1'][:num]), [0] * num)

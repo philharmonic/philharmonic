@@ -570,9 +570,12 @@ def test_utilisation_multicore():
     vm = VM(2000, 1)
     s = Server(20000, 10)
     cloud = Cloud([s], [vm])
-    assert_equals(cloud.get_current().utilisation(s, method="multicore"), 0)
+    w = [-1.362, 2.798, 1.31, 2.8]
+    ut = cloud.get_current().utilisation(s, weights=w, method="multicore")
+    assert_true(0. <= ut < 0.1)
     cloud.apply(Migration(vm, s))
-    assert_equals(cloud.get_current().utilisation(s, method="multicore"), 1.0)
+    ut = cloud.get_current().utilisation(s, weights=w, method="multicore")
+    assert_true(0.9 < ut <= 1.)
 
 def test_utilisation_unknown():
     cloud = Cloud([], [])

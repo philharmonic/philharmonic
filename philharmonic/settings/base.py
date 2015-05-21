@@ -238,6 +238,23 @@ P_dif = 15
 C_base = 0.027028 #0.0520278  # in future use C_base = 0.027028
 C_dif_cpu = 0.018
 C_dif_ram = 0.025
+
+# VM pricing:
+# - perceived_perf_pricing
+# - performance_pricing
+pricing_model = "perceived_perf_pricing"
+cloud_provider = "elastic_hosts"
+          
+if cloud_provider == "elastic_hosts":
+    C_base = 0.027028
+    C_dif_cpu = 0.018
+    C_dif_ram = 0.025
+
+if cloud_provider == "cloud_sigma":
+    C_base = 0.004529
+    C_dif_cpu = 0.001653
+    C_dif_ram = 0.003979
+            
 # CPU frequency parameters
 f_max = 2600 # the maximum CPU frequency in MHz
 
@@ -247,6 +264,14 @@ f_max = 2600 # the maximum CPU frequency in MHz
 # - "multicore" - utilisation and frequency-based for multiple CPU cores
 power_model = "freq"
 
+if power_model == "multicore":
+    # last value of utilisation weights should be maximum power consumption of 1 core
+    utilisation_weights = [-1.362, 2.798, 1.31, 2.8] # p0, p1, p2 for gamma
+    power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137, 0.0004377, 0.007106]
+    #p00, p10, p01, p20, p11, p30, p21 in power model
+else: #optional parameters only for multicore
+    utilisation_weights = None
+    power_weights = None
 # deprecated, use power_model instead
 power_freq_model = (power_model == "freq") # consider CPU frequency in the power model
 

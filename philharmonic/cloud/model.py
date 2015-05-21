@@ -380,7 +380,11 @@ class State(object):
         util = 0
         for vm in self.alloc[s]:
             vm_cores = vm.spec['#CPUs']
-            util += float(vm.beta) * vm_cores / active_cores
+            #gamma = float(vm.beta) 
+            gamma = (weights[0] * float(vm.beta)
+                     + weights[1] * float(vm.beta)**2 + weights[2]) / float(weights[3])
+            util += gamma * vm_cores / active_cores
+            #util += float(vm.beta) * vm_cores / active_cores
         return util
 
     def utilisation(self, s, weights=None, method="basic"):
@@ -400,9 +404,9 @@ class State(object):
         else:
             raise ValueError("unknown utilisation calculation method")
 
-    def calculate_utilisations(self, method="basic"):
+    def calculate_utilisations(self, method="basic", weights=None):
         """Return dict server -> utilisation rate."""
-        return {server: self.utilisation(server, method=method) \
+        return {server: self.utilisation(server, weights, method) \
                 for server in self.servers}
 
     def calculate_prices(self):
