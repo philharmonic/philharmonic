@@ -103,6 +103,7 @@ def generate_cloud_power(util, freq=None, active_cores=None, max_cores=None,
     # TODO: generate active_cores
     if power_model is None:
         power_model = conf.power_model
+    # setting to fixed variables for older models/tests
     if freq is None:
         freq = 2000
     if power_model == "base":
@@ -115,6 +116,10 @@ def generate_cloud_power(util, freq=None, active_cores=None, max_cores=None,
             P_dif=conf.P_dif, f_base=conf.f_base
         )
     elif power_model == "multicore":
+        if active_cores is None:
+            active_cores = 1
+        if max_cores is None:
+            max_cores = 1
         # TODO: generate active_cores DataFrame
         power = ph.calculate_power_multicore(
             util, freq, active_cores, max_cores,
@@ -670,17 +675,22 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
     df_freq_hz = conf.f_max * df_freq
     return df_freq_hz
 
-def  _get_active_cores(state):
-    return {server:server.cap['#CPUs'] - res['#CPUs'] \
-            for server, res in state.free_cap.items()}
+def  _get_active_cores(state, for_vms=False):
+    if for_vms:
+        return {vm: vm.res['#CPUs'] for vm in state.vms}
+    else:
+        return {server:server.cap['#CPUs'] - res['#CPUs'] \
+                for server, res in state.free_cap.items()}
 
 # TODO: this pattern is being repeated much too often.
 # It should be extracted somehow. Ideally using DataFrames/Panels
 # and not for loops
 def calculate_cloud_active_cores(cloud, environment, schedule,
-                                 start=None, end=None):
+                                 start=None, end=None, for_vms=False):
     """Calculate number of active cores of all servers over time
     based on the given schedule.
+
+    @param for_vms: if True return active_cores for VMs, otherwise for servers
 
     @param start, end: if given, only this period will be counted,
     cloud model starts from _real. If not, whole environment.start-end
@@ -688,7 +698,7 @@ def calculate_cloud_active_cores(cloud, environment, schedule,
 
     """
     start, end = _reset_cloud_state(cloud, environment, start, end)
-    initial_cores = _get_active_cores(cloud.get_current())
+    initial_cores = _get_active_cores(cloud.get_current(), for_vms)
     cores_list = [initial_cores]
     times = [start]
     for t in schedule.actions.index.unique():
@@ -703,7 +713,7 @@ def calculate_cloud_active_cores(cloud, environment, schedule,
             action = schedule.actions[t]
             cloud.apply(action)
         state = cloud.get_current()
-        new_cores = _get_active_cores(cloud.get_current())
+        new_cores = _get_active_cores(cloud.get_current(), for_vms)
         cores_list.append(new_cores)
         times.append(t)
     if times[-1] < end:
@@ -712,11 +722,13 @@ def calculate_cloud_active_cores(cloud, environment, schedule,
     df_cores = pd.DataFrame(cores_list, times)
     return df_cores
 
+# TODO: make option for whether profit is calculated in results
 def calculate_service_profit(cloud, environment, schedule,
                              start=None, end=None):
     """Calculate the profit for the cloud provider for hosting the VMs."""
 
-    if conf.power_freq_model:
+    # TODO: we need this if?
+    if conf.power_model == "freq" or conf.power_model == "multicore":
         freq = calculate_cloud_frequencies(cloud, environment, schedule,
                                            start, end, for_vms=True)
     else:
@@ -732,24 +744,34 @@ def calculate_service_profit(cloud, environment, schedule,
     df_beta = pd.DataFrame(
         [{vm : vm.beta for vm in considered_vms}], [start]
     )
-    if conf.power_freq_model:
-        df_beta = df_beta.reindex(freq.index, method='pad')
+    df_beta = df_beta.reindex(freq.index, method='pad')
     ram_size_base = 1 # 1000 # 1024
     ram_index = 'RAM'
     df_rel_ram = pd.DataFrame([{vm : vm.res[ram_index] / ram_size_base \
                                 for vm in considered_vms}], [start])
-    if conf.power_freq_model:
-        df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
+    df_rel_ram = df_rel_ram.reindex(freq.index, method='pad')
     # df_price = ph.vm_price_progressive(
     #     freq, df_beta, C_base=conf.C_base, C_dif=conf.C_dif_cpu,
     #     f_base=conf.f_base, f_max=conf.f_max
     # )
-    if not conf.power_freq_model:
-        freq = 0
-    df_price = ph.vm_price_cpu_ram(
-        df_rel_ram, freq, df_beta, C_base=conf.C_base, C_dif_cpu=conf.C_dif_cpu,
-        C_dif_ram=conf.C_dif_ram, f_base=conf.f_base, f_max=conf.f_max
-    )
+    if conf.power_model == "multicore":
+        active_cores = calculate_cloud_active_cores(cloud, environment,
+                                                    schedule, start, end,
+                                                    for_vms=True)
+    if conf.power_model == "freq" or conf.power_model == "basic":
+        df_price = ph.vm_price_cpu_ram(
+            df_rel_ram, freq, df_beta, C_base=conf.C_base,
+            C_dif_cpu=conf.C_dif_cpu, C_dif_ram=conf.C_dif_ram,
+            f_base=conf.f_base, f_max=conf.f_max
+        )
+    elif conf.power_model == "multicore":
+        df_price = ph.vm_price_multicore(
+            df_rel_ram, active_cores, freq, df_beta, C_base=conf.C_base,
+            C_dif_cpu=conf.C_dif_cpu, C_dif_ram=conf.C_dif_ram,
+            f_base=conf.f_base, f_max=conf.f_max
+        )
+    else:
+        raise ValueError("Unknown conf.power_model")
     df_price = df_price.resample(conf.pricing_freq, fill_method='pad')
     total_profit = df_price.sum().sum()
     return total_profit

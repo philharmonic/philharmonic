@@ -411,6 +411,41 @@ def test_calculate_service_profit(mock_conf):
 
     assert_greater(profit1, profit2)
 
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_calculate_service_profit_multicore(mock_conf):
+    mock_conf = _configure(mock_conf)
+    mock_conf.power_model = "multicore"
+
+    s1 = Server(4000, 4, location='A')
+    s2 = Server(8000, 4, location='B')
+    s3 = Server(4000, 4, location='B')
+    servers = [s1, s2, s3]
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = set([vm1, vm2])
+    cloud = Cloud(servers, VMs, auto_allocate=True)
+
+    times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+    schedule1 = Schedule()
+    t1 = pd.Timestamp('2010-02-25 11:00')
+    schedule1.add(Migration(vm1, s1), t1)
+    t2 = pd.Timestamp('2010-02-25 13:00')
+    schedule1.add(Migration(vm2, s2), t2)
+
+    # same as 1, but with lower frequencies
+    schedule2 = copy.copy(schedule1)
+    schedule2.add(DecreaseFreq(s1), t1)
+    schedule2.add(DecreaseFreq(s1), t1)
+
+    profit1 = calculate_service_profit(cloud, env, schedule1,
+                                     env.t, env.forecast_end)
+    assert_is_instance(profit1, float)
+    profit2 = calculate_service_profit(cloud, env, schedule2,
+                                     env.t, env.forecast_end)
+
+    assert_greater(profit1, profit2)
+
 def test_calculate_constraint_penalties():
     # some servers
     s1 = Server(4000, 2)

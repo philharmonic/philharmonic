@@ -27,7 +27,7 @@ def calculate_power(util, P_idle=100, P_peak=200):
     """
     P = util * (P_peak - P_idle) # dynamic part
     # a server with no load is suspended (otherwise idle power applies)
-    P[P>0] += P_idle
+    P[P > 0] += P_idle
     return P
 
 def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
@@ -256,12 +256,12 @@ def vm_price_progressive(freq, beta, C_base=0.0520278, C_dif=0.018,
     return C
 
 def vm_price_cpu_ram(rel_ram_size, freq, beta, C_base=0.027028, C_dif_cpu=0.018,
-                         f_base=1000, f_max=3000, C_dif_ram=0.025):
+                     f_base=1000, f_max=3000, C_dif_ram=0.025):
     """Calculate a VM's price based on the relative memory size, the frequency
     and beta, the VM's CPU boundedness.
 
-    source: http://www.elastichosts.co.uk/calculator: 
-    modelled for f_max:3000, f_base=1000MHz, RAM size base:1024MB, 
+    source: http://www.elastichosts.co.uk/calculator:
+    modelled for f_max:3000, f_base=1000MHz, RAM size base:1024MB,
     and 20GB HDD and 10 GB Data for the fixed cost of other resources
 
     """
@@ -273,9 +273,13 @@ def vm_price_cpu_ram(rel_ram_size, freq, beta, C_base=0.027028, C_dif_cpu=0.018,
 def vm_price_multicore(rel_ram_size, active_cores, f_vms, beta_vms, \
                        C_base=0.027028, C_dif_cpu=0.018, \
                        f_base=1000, f_max=3000, C_dif_ram=0.025):
+    """Calculate a VM's price based on the relative memory size,
+    its number CPU cores, the CPU frequency and beta, the VM's CPU boundedness.
+
+    """
     # cpu_size: cpu used of a VM taking into account beta
     f_cpu = beta_vms * f_vms + (1 - beta_vms) * f_max - f_base
-    cpu_size = active_cores * f_cpu / f_base 
+    cpu_size = active_cores * f_cpu / f_base
     # C: overall price of a VM: sum of the cpu cost, the fixed cost and ram cost
     C = C_base + C_dif_cpu * cpu_size + C_dif_ram * rel_ram_size
     return C

@@ -39,6 +39,7 @@ def generate_series_results(cloud, env, schedule, nplots):
     # cloud power consumption
     #------------------
     # TODO: add frequency to this power calculation
+    # Don't use this result for freq/multicore yet!!!
     power = evaluator.generate_cloud_power(util)
     if conf.save_power:
         power.to_pickle(loc('power.pkl'))

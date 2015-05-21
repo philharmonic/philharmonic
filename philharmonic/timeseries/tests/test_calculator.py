@@ -135,7 +135,7 @@ def test_calculate_power_freq_different_freqs():
     assert_equals(list(power['s1'][:num]), [0] * num)
     assert_almost_equals(list(power['s1'][num:]), [125.48] * num)
     assert_almost_equals(list(power['s2']), [139.93] * 2 * num)
-    
+
 def test_calculate_power_multicore():
     index = pd.date_range('2013-01-01', periods=6, freq='H')
     num = len(index)/2
@@ -148,7 +148,7 @@ def test_calculate_power_multicore():
     active_cores = pd.DataFrame({'s1': active_cores, 's2': [0] * 2 * num})
     max_cores = pd.Series([4]*2*num, index)
     max_cores = pd.DataFrame({'s1': max_cores, 's2': [4] * 2 * num})
-    
+
     power = ph.calculate_power_multicore(freq, active_cores, max_cores, 0.5)
     #power = ph.calculate_power_multicore(util, f=2000, P_idle=100, P_base=150,
     #                                P_dif=15, f_base=1000)
@@ -171,7 +171,7 @@ def test_vm_price_progressive():
     assert_greater(cost2, cost1)
     assert_greater(cost3, cost1)
     assert_equals(cost4, cost5)
-    
+
 def test_vm_price_cpu_ram():
     cost1 = ph.vm_price_cpu_ram(2, 2000, 1.)
     cost2 = ph.vm_price_cpu_ram(2, 3000, 1.)
@@ -181,7 +181,7 @@ def test_vm_price_cpu_ram():
     assert_greater(cost2, cost1)
     assert_greater(cost3, cost1)
     assert_equals(cost4, cost5)
-    
+
 def test_vm_price_multicore():
     cost1 = ph.vm_price_multicore(2, 2, 2000, 1.)
     cost2 = ph.vm_price_multicore(2, 2, 3000, 1.)
