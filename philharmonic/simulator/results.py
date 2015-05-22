@@ -20,28 +20,30 @@ from philharmonic import Schedule
 def pickle_results(schedule):
     schedule.actions.to_pickle(loc('schedule.pkl'))
 
+ev = evaluator
+
 def generate_series_results(cloud, env, schedule, nplots):
     info('\nDynamic results\n---------------')
-    # cloud utilisation
-    #------------------
-    # evaluator.precreate_synth_power(env.start, env.end, cloud.servers)
-    util = evaluator.calculate_cloud_utilisation(cloud, env, schedule,
-                                                 method=conf.power_model)
+    util, power, power_total, freq = ev.calculate_components(
+        cloud, env, schedule, env.el_prices, env.temperature,
+        power_model=conf.power_model
+    )
     info('Utilisation (%)')
     info(str(util * 100))
-    #print('- weighted mean per no')
+    # print('- weighted mean per no')
     # weighted_mean(util[util>0])
-    #util[util>0].mean().dropna().mean() * 100
+    # util[util>0].mean().dropna().mean() * 100
     # TODO: maybe weighted mean for non-zero util
     # ax = plt.subplot(nplots, 1, 1)
     # ax.set_title('Utilisation (%)')
     # util.plot(ax=ax)
 
-    # cloud power consumption
-    #------------------
-    # TODO: add frequency to this power calculation
-    # Don't use this result for freq/multicore yet!!!
-    power = evaluator.generate_cloud_power(util)
+    # frequency & power
+    #-----------------
+    if freq is not None:
+        info('\nPM frequencies (MHz)')
+        info(freq)
+
     if conf.save_power:
         power.to_pickle(loc('power.pkl'))
     ax = plt.subplot(nplots, 1, 3)
@@ -55,11 +57,6 @@ def generate_series_results(cloud, env, schedule, nplots):
 
     # cooling overhead
     #-----------------
-    #temperature = inputgen.simple_temperature()
-    if env.temperature is not None:
-        power_total = evaluator.calculate_cloud_cooling(power, env.temperature)
-    else:
-        power_total = power
     ax = plt.subplot(nplots, 1, 4)
     ax.set_title('Total power (W)')
     power_total.plot(ax=ax)
@@ -71,12 +68,8 @@ def generate_series_results(cloud, env, schedule, nplots):
     # info(' - total:')
     # info(energy_total.sum())
 
-    # pm frequencies
-    info('\nPM frequencies (MHz)')
-    pm_freqs = evaluator.calculate_cloud_frequencies(cloud, env, schedule)
-    info(pm_freqs)
-
-    # PM avgutilization
+    # PM utilisation
+    #---------------
     #info('\nPM Avg.Utilization')
     #info(util.mean())
 
@@ -92,6 +85,7 @@ def generate_series_results(cloud, env, schedule, nplots):
     info(util.max().max())
 
 
+# TODO: split into smaller functions
 def serialise_results(cloud, env, schedule):
     fig = plt.figure(1)#, figsize=(10, 15))
     fig.subplots_adjust(bottom=0.2, top=0.9, hspace=0.5)

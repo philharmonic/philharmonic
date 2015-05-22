@@ -20,16 +20,16 @@ def print_history(cloud, environment, schedule):
         period = environment.get_period()
         actions = schedule.filter_current_actions(t, period)
 
-        print('---t={}----'.format(t))
+        info('---t={}----'.format(t))
         if len(requests) > 0:
-            print(" - requests:")
-            print("    {}".format(str(requests.values)))
+            info(" - requests:")
+            info("    {}".format(str(requests.values)))
         # only take non-request actions (migrations)
         actions = [a for a in actions.values if a.name not in request_names]
         if len(actions) > 0:
-            print(" - actions:")
-            print("    {}".format(str(actions)))
-            print('')
+            info(" - actions:")
+            info("    {}".format(str(actions)))
+            info('')
 
 # TODO: add optional start, end limiters for evaluating a certain period
 
@@ -179,11 +179,11 @@ def _worst_case_power(cloud, environment, start, end): # TODO: use this
         full_freq = None
     full_power = generate_cloud_power(full_util, freq=full_freq)
 
-def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
-                  start=None, end=None, power_model=None):
-    """Calculate energy costs including IT equipment energy cooling overhead and
-    the real-time electricity price."""
-
+def calculate_components(cloud, environment, schedule, el_prices,
+                         temperature=None, start=None, end=None,
+                         power_model=None):
+    """Calculate all the components that can be gathered based on the
+    power model, whether or not we use temperatures etc."""
     if power_model is None:
         power_model = conf.power_model
     # we first calculate utilisation/freq with start, end = None / timestamp
@@ -206,14 +206,26 @@ def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
             max_cores = {s: s.cap['#CPUs'] for s in cloud.servers}
             max_cores = pd.DataFrame(max_cores, index=active_cores.index)
 
-    power = generate_cloud_power(util, freq=freq, active_cores=active_cores,
+    power_IT = generate_cloud_power(util, freq=freq, active_cores=active_cores,
                                  max_cores=max_cores)
     if start is None:
         start = environment.start
     if end is None:
         end = environment.end
     if temperature is not None:
-        power = calculate_cloud_cooling(power, temperature[start:end])
+        power_total = calculate_cloud_cooling(power_IT, temperature[start:end])
+    else:
+        power_total = power_IT
+
+    return util, power_IT, power_total, freq
+
+def combined_cost(cloud, environment, schedule, el_prices, temperature=None,
+                  start=None, end=None, power_model=None):
+    """Calculate energy costs including IT equipment energy cooling overhead and
+    the real-time electricity price."""
+    _, _, power, _ = calculate_components(cloud, environment, schedule, el_prices,
+                                       temperature, start, end, power_model)
+
     cost = calculate_cloud_cost(power, el_prices[start:end])
     total_cost = cost.sum() # for the whole cloud
     return total_cost
@@ -677,6 +689,7 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
         freq_list.append(freq_list[-1])
     df_freq = pd.DataFrame(freq_list, times)
     # convert freq_scale to absolute value in Hz
+    # TODO: see how this fits the new power model
     df_freq_hz = conf.f_max * df_freq
     return df_freq_hz
 
