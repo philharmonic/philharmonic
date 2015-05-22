@@ -80,6 +80,7 @@ start = pd.Timestamp('2010-06-03 00:00')
 #times = pd.date_range(start, periods=24, freq='H')
 # - one week
 times = pd.date_range(start, periods=24 * 2, freq='H')
+
 end = times[-1]
 
 # plotting results
@@ -207,7 +208,7 @@ inputgen_settings = {
     'min_cpu': 1, # 8,
     'max_cpu': 1, # 8,
     'min_ram': 8, # 2,
-    'max_ram': 32, # 28,
+    'max_ram': 16, # 28,
     # e.g. seconds
     'min_duration': 60 * 60, # 1 hour
     #'max_duration': 60 * 60 * 3, # 3 hours
@@ -244,7 +245,7 @@ C_dif_ram = 0.025
 # - performance_pricing
 pricing_model = "perceived_perf_pricing"
 cloud_provider = "elastic_hosts"
-          
+
 if cloud_provider == "elastic_hosts":
     C_base = 0.027028
     C_dif_cpu = 0.018
@@ -254,7 +255,7 @@ if cloud_provider == "cloud_sigma":
     C_base = 0.004529
     C_dif_cpu = 0.001653
     C_dif_ram = 0.003979
-            
+
 # CPU frequency parameters
 f_max = 2600 # the maximum CPU frequency in MHz
 
@@ -262,21 +263,17 @@ f_max = 2600 # the maximum CPU frequency in MHz
 # - "basic" - utilisation-based
 # - "freq" - utilisation and frequency-based for a single core
 # - "multicore" - utilisation and frequency-based for multiple CPU cores
-# Note: don't change here permanently, change in e.g. bcffs.py (for unittests)
+#######
+# Note: don't change here permanently, change in multicore.py (for unittests)
+#######
 power_model = "freq"
 
-if power_model == "multicore":
-    # last value of util. weights should be max power consumption of a core
-    utilisation_weights = [-1.362, 2.798, 1.31, 2.8] # p0, p1, p2 for gamma
-    power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137,
-                     0.0004377, 0.007106]
-    #p00, p10, p01, p20, p11, p30, p21 in power model
-else: #optional parameters only for multicore
-    utilisation_weights = None
-    power_weights = None
 # deprecated, use power_model instead
 # consider CPU frequency in the power model
 power_freq_model = (power_model == "freq")
+
+utilisation_weights = None
+power_weights = None
 
 # VM cost components for ElasticHosts
 #C_base = 0.004529 # $/hour #C_base=0.012487, C_dif_ram=0 if memory doesn't vary

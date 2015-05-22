@@ -1,4 +1,4 @@
-from .base import *
+from .multicore import *
 
 # if True, will go for the larger simulation
 production_settings = False

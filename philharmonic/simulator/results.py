@@ -25,7 +25,8 @@ def generate_series_results(cloud, env, schedule, nplots):
     # cloud utilisation
     #------------------
     # evaluator.precreate_synth_power(env.start, env.end, cloud.servers)
-    util = evaluator.calculate_cloud_utilisation(cloud, env, schedule)
+    util = evaluator.calculate_cloud_utilisation(cloud, env, schedule,
+                                                 method=conf.power_model)
     info('Utilisation (%)')
     info(str(util * 100))
     #print('- weighted mean per no')

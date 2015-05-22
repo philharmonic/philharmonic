@@ -248,17 +248,20 @@ def normalised_combined_cost(cloud, environment, schedule,
     return normalised
 
 def combined_energy(cloud, environment, schedule, temperature=None,
-                    start=None, end=None):
+                    start=None, end=None, power_model=None):
     """Calculate energy of IT equipment and cooling if temperature provided.
 
     @returns: energy in kWh
 
     """
 
+    if power_model is None:
+        power_model = conf.power_model
     # we first calculate utilisation with start, end = None / some timestamp
     # this way it knows which state to start from
     # (this is a temp. hack until cloud states get timestamped)
-    util = calculate_cloud_utilisation(cloud, environment, schedule, start, end)
+    util = calculate_cloud_utilisation(cloud, environment, schedule, start, end,
+                                       method=conf.power_model)
     if start is None:
         start = environment.start
     if end is None:
