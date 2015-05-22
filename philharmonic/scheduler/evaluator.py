@@ -689,7 +689,6 @@ def calculate_cloud_frequencies(cloud, environment, schedule,
         freq_list.append(freq_list[-1])
     df_freq = pd.DataFrame(freq_list, times)
     # convert freq_scale to absolute value in Hz
-    # TODO: see how this fits the new power model
     df_freq_hz = conf.f_max * df_freq
     return df_freq_hz
 

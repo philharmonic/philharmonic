@@ -74,7 +74,7 @@ el_price_dataset = os.path.join(DATA_LOC, 'prices.csv')
 # the time period of the simulation
 start = pd.Timestamp('2010-06-03 00:00')
 
-# - five hours
+# - six hours
 #times = pd.date_range(start, periods=6, freq='H')
 # - one day
 #times = pd.date_range(start, periods=24, freq='H')
@@ -256,9 +256,6 @@ if cloud_provider == "cloud_sigma":
     C_dif_cpu = 0.001653
     C_dif_ram = 0.003979
 
-# CPU frequency parameters
-f_max = 2600 # the maximum CPU frequency in MHz
-
 # The type of power model to use. Available options:
 # - "basic" - utilisation-based
 # - "freq" - utilisation and frequency-based for a single core
@@ -281,9 +278,11 @@ power_weights = None
 #C_dif_ram=0.007958 # $/hour
 #rel_ram_size=2 #at least 2: min ram size charged
 
+# CPU frequency parameters
 # applied to model in philharmonic/__init__.py
 freq_abs_min = 1800.
-freq_abs_max = 2600
+# the maximum CPU frequency in MHz
+f_max = freq_abs_max = 2600
 freq_abs_delta = 200
 freq_abs_steps = int((freq_abs_max - freq_abs_min) / freq_abs_delta) + 1
 freq_scale_max = 1.0
