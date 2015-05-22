@@ -1,25 +1,27 @@
 import logging
+from logging import info, debug, error
 import os
 
 LOG_PATH, LOG_FILENAME = '.', 'philharmonic.log'
 LOG_LEVEL = logging.DEBUG
 
+# set up logging to file
 logging.basicConfig(
-    level=LOG_LEVEL,
-    #format='%(asctime)s  %(message)s',
-    format='%(message)s',
-    handlers=[
-        logging.FileHandler(
-            os.path.join(LOG_PATH, LOG_FILENAME),
-            mode='w'
-        ), # file output
-        logging.StreamHandler() # stdout
-    ]
-)
+     filename=LOG_FILENAME,
+     level=LOG_LEVEL,
+     format='%(message)s'
+ )
 
-from logging import info, debug, error
+# set up logging to console
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+# set a format which is simpler for console use
+formatter = logging.Formatter('%(message)s')
+console.setFormatter(formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
 
-logging.getLogger().setLevel(LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 def log(message):
     logging.info(message)

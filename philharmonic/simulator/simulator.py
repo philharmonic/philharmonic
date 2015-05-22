@@ -173,6 +173,7 @@ class Simulator(IManager):
         self.scheduler.initialize()
         passed_steps = 0
         for t in self.environment.itertimes(): # iterate through all the times
+            debug('-' * 25 + '\n| t={} |\n'.format(t) + '-' * 25)
             passed_steps += 1
             if steps is not None and passed_steps > steps:
                 break
