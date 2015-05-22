@@ -75,7 +75,8 @@ class BCFFSScheduler(BCFScheduler):
         # - calculate energy cost
         en_cost = ev.combined_cost(self.cloud, self.environment,
                                    self.freq_schedule, self.el, self.temp,
-                                   self.t, self.end)
+                                   self.t, self.end,
+                                   power_model=conf.power_model)
         return profit, en_cost
 
     def _add_freq_to_schedule(self, server):

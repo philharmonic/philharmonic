@@ -390,19 +390,20 @@ class State(object):
     def utilisation(self, s, weights=None, method="basic"):
         """Utilisation ratio of a server s.
 
-        @param method: weighted average of used resources if "basic"
+        @param method: weighted average of used resources if "basic" or "freq"
         or looking at per-core utiilsation if "multicore".
 
         """
 
         if weights is None:
             weights = Machine.weights
-        if method == "basic":
+        if method == "basic" or method == "freq":
             return self._utilisation_basic(s, weights)
         elif method == "multicore":
             return self._utilisation_multicore(s, weights)
         else:
-            raise ValueError("unknown utilisation calculation method")
+            msg = "unknown utilisation calculation method {}".format(method)
+            raise ValueError(msg)
 
     def calculate_utilisations(self, method="basic", weights=None):
         """Return dict server -> utilisation rate."""

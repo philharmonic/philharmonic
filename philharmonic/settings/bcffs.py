@@ -7,6 +7,8 @@ freq_breaks_after_nonfeasible = False
 factory['scheduler'] = "BCFFSScheduler"
 factory['forecast_periods'] = 1 # we make decisions at runtime
 
+power_model = "multicore"
+
 inputgen_settings['VM_request_generation_method'] = \
     'uniform_vmreqs_beta_variation'
     #'auto_vmreqs_beta_variation'

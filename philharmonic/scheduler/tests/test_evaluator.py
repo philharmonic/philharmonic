@@ -218,6 +218,38 @@ def test_calculate_cost_combined():
                                           temperature, env.t, env.forecast_end)
     assert_true(0 <= normalised <= 1.)
 
+@patch('philharmonic.scheduler.evaluator.conf')
+def test_calculate_cost_combined_multicore(mock_conf):
+    mock_conf = _configure(mock_conf)
+    mock_conf.power_model = "multicore"
+    mock_conf.utilisation_weights = [-1.362, 2.798, 1.31, 2.8]
+    mock_conf.power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137,
+                               0.0004377, 0.007106]
+    mock_conf.freq_abs_min = 1800.
+    mock_conf.freq_abs_delta = 200
+    s1 = Server(4000, 2, location='A')
+    s2 = Server(8000, 4, location='B')
+    s3 = Server(4000, 4, location='B')
+    servers = [s1, s2, s3]
+    vm1 = VM(2000, 1);
+    vm2 = VM(2000, 2);
+    VMs = set([vm1, vm2])
+    cloud = Cloud(servers, VMs)
+
+    times = pd.date_range('2010-02-25 8:00', '2010-02-26 16:00', freq='H')
+    env = FBFSimpleSimulatedEnvironment(times, forecast_periods=24)
+    schedule = Schedule()
+    a1 = Migration(vm1, s1)
+    t1 = pd.Timestamp('2010-02-25 11:00')
+    schedule.add(a1, t1)
+    a2 = Migration(vm2, s2)
+    t2 = pd.Timestamp('2010-02-25 13:00')
+    schedule.add(a2, t2)
+
+    el_prices = inputgen.simple_el(start=env.t)
+    temperature = inputgen.simple_temperature(start=env.t)
+
+    precreate_synth_power(env.start, env.end, servers)
     cost_mc = combined_cost(cloud, env, schedule, el_prices,
                             temperature, env.t, env.forecast_end,
                             power_model="multicore")

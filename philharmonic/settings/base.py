@@ -79,7 +79,7 @@ start = pd.Timestamp('2010-06-03 00:00')
 # - one day
 #times = pd.date_range(start, periods=24, freq='H')
 # - one week
-times = pd.date_range(start, periods=24 * 7, freq='H')
+times = pd.date_range(start, periods=24 * 2, freq='H')
 end = times[-1]
 
 # plotting results
@@ -183,7 +183,7 @@ inputgen_settings = {
     #'server_num': 50,
     #'server_num': 100,
     #'server_num': 200,
-    'server_num': 1200,
+    'server_num': 20,
     #'server_num': 2000,
     #'min_server_cpu': 8,
     'min_server_cpu': 1, # 16,
@@ -200,7 +200,7 @@ inputgen_settings = {
     # VM requests
     # method of generating requests: normal_vmreqs, auto_vmreqs
     'VM_request_generation_method': 'auto_vmreqs',
-    'VM_num': 2000,
+    'VM_num': 20,
     #'VM_num': 5, # only important with normal_vmreqs, not auto_vmreqs
     #'VM_num': 2000,
     # e.g. CPUs
@@ -262,21 +262,24 @@ f_max = 2600 # the maximum CPU frequency in MHz
 # - "basic" - utilisation-based
 # - "freq" - utilisation and frequency-based for a single core
 # - "multicore" - utilisation and frequency-based for multiple CPU cores
+# Note: don't change here permanently, change in e.g. bcffs.py (for unittests)
 power_model = "freq"
 
 if power_model == "multicore":
-    # last value of utilisation weights should be maximum power consumption of 1 core
+    # last value of util. weights should be max power consumption of a core
     utilisation_weights = [-1.362, 2.798, 1.31, 2.8] # p0, p1, p2 for gamma
-    power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137, 0.0004377, 0.007106]
+    power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137,
+                     0.0004377, 0.007106]
     #p00, p10, p01, p20, p11, p30, p21 in power model
 else: #optional parameters only for multicore
     utilisation_weights = None
     power_weights = None
 # deprecated, use power_model instead
-power_freq_model = (power_model == "freq") # consider CPU frequency in the power model
+# consider CPU frequency in the power model
+power_freq_model = (power_model == "freq")
 
 # VM cost components for ElasticHosts
-#C_base = 0.004529 # $/hour #C_base=0.012487, C_dif_ram=0 if we don't vary memory
+#C_base = 0.004529 # $/hour #C_base=0.012487, C_dif_ram=0 if memory doesn't vary
 #C_dif_cpu = 0.001653 # $/hour
 #C_dif_ram=0.007958 # $/hour
 #rel_ram_size=2 #at least 2: min ram size charged
