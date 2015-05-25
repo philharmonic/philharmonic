@@ -18,7 +18,7 @@ if power_model == "multicore":
         utilisation_weights = [-1.362, 2.798, 1.31, 2.8] # p0, p1, p2 for gamma
         power_weights = [1.318, 0.03559, 0.2243, -0.003184, 0.03137,
                          0.0004377, 0.007106]
-        performance_factor = 10.
+        performance_factor = 9.
         C_base = C_base / performance_factor
         C_dif_cpu = C_dif_cpu / performance_factor
         C_dif_ram = C_dif_ram / performance_factor
