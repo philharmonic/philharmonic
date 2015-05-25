@@ -215,7 +215,7 @@ inputgen_settings = {
     #'max_duration': 60 * 60 * 6, # 6 hours
     #'max_duration': 60 * 60 * 24, # 24 hours
     #'max_duration': 60 * 60 * 24 * 3, # 2 days
-    'max_duration': 60 * 60 * 24 * 7, # one week
+    'max_duration': 60 * 60 * 24 * 2, # one week
     #'max_duration': 60 * 60 * 24 * 10, # 10 days
     #'max_duration': 60 * 60 * 24 * 90, # 90 days
 }
@@ -282,7 +282,7 @@ power_weights = None
 # applied to model in philharmonic/__init__.py
 freq_abs_min = 800.
 # the maximum CPU frequency in MHz
-f_max = freq_abs_max = 1800
+f_max = freq_abs_max = 1600
 freq_abs_delta = 100
 freq_abs_steps = int((freq_abs_max - freq_abs_min) / freq_abs_delta) + 1
 freq_scale_max = 1.0

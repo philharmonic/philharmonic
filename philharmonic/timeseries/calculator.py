@@ -65,7 +65,8 @@ def calculate_power_freq(ut, f=2000, P_idle=100, P_base=150,
 
 def _calculate_peakpower_freq_multicore(q, c, power_weights):
     p00, p10, p01, p20, p11, p30, p21 = power_weights
-    P=p00+p10*q+p01*c+p20*(q**2)+p11*q*c+p30*(q**3)+p21*(q**2)*c
+    P = p00 + (p10 * q) + (p01 * c) + (p20 * q**2) + \
+        (p11 * q * c) + (p30 * q**3) + (p21 * q**2 * c)
     return P
 
 # TODO: p00..p30 as some kind of dict or list

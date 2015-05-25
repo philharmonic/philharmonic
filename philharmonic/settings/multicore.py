@@ -9,8 +9,8 @@ from .base import *
 
 power_model = "multicore"
 #Options: arm, intel
-#architecture = "arm"
-architecture = "intel"
+architecture = "arm"
+#architecture = "intel"
 
 if power_model == "multicore":
     # last value of util. weights should be max power consumption of a core
