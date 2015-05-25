@@ -136,6 +136,7 @@ class BCFFSScheduler(BCFScheduler):
             self._reset_to_max_frequency(server)
             profit_previous, en_cost_previous = self._get_profit_and_cost()
             while True:
+                #import ipdb; ipdb.set_trace()
                 self._decrease_frequency(server)
                 # debug beta=1.0, en cost increase
                 profit, en_cost = self._get_profit_and_cost()

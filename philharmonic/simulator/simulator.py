@@ -267,6 +267,7 @@ def log_config_info(simulator):
     info('  * errors: SD_el={}, SD_temp={}'.format(
         conf.factory['SD_el'], conf.factory['SD_temp']
     ))
+    info('- power_model: {}'.format(conf.power_model))
     info('\n- scheduler: {}'.format(conf.factory['scheduler']))
     if conf.factory['scheduler_conf'] is not None:
         info('  * conf: \n{}'.format(
