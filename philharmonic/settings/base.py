@@ -244,7 +244,7 @@ C_dif_ram = 0.025
 # - perceived_perf_pricing
 # - performance_pricing
 pricing_model = "perceived_perf_pricing"
-cloud_provider = "elastic_hosts"
+cloud_provider = "cheap"
 
 if cloud_provider == "elastic_hosts":
     C_base = 0.027028
@@ -256,6 +256,11 @@ if cloud_provider == "cloud_sigma":
     C_dif_cpu = 0.001653
     C_dif_ram = 0.003979
 
+if cloud_provider == "cheap":
+    C_base = 0.004529/9
+    C_dif_cpu = 0.001653/9
+    C_dif_ram = 0.003979/9
+	
 # CPU frequency parameters
 f_max = 2600 # the maximum CPU frequency in MHz
 
@@ -282,9 +287,9 @@ power_weights = None
 #rel_ram_size=2 #at least 2: min ram size charged
 
 # applied to model in philharmonic/__init__.py
-freq_abs_min = 1800.
-freq_abs_max = 2600
-freq_abs_delta = 200
+freq_abs_min = 800.
+freq_abs_max = 1800
+freq_abs_delta = 100
 freq_abs_steps = int((freq_abs_max - freq_abs_min) / freq_abs_delta) + 1
 freq_scale_max = 1.0
 freq_scale_digits = 5
@@ -292,7 +297,7 @@ freq_scale_min = round(freq_abs_min/freq_abs_max, 1) # = 0.7
 freq_scale_delta = round((freq_scale_max - freq_scale_min) / (freq_abs_steps - 1),
                          freq_scale_digits) # = 0.075
 f_min = f_max * freq_scale_min
-f_base = 1000
+f_base = 800
 
 # freq_scales = np.round(frange(freq_scale_max, freq_scale_min,
 #                                  delta=-freq_scale_delta),
