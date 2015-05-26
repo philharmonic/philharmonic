@@ -380,9 +380,11 @@ class State(object):
         util = 0
         for vm in self.alloc[s]:
             vm_cores = vm.spec['#CPUs']
-            #gamma = float(vm.beta) 
+            #gamma = float(vm.beta)
+            gamma_max = weights[0] * 1. + weights[1] * 1. + weights[2]
             gamma = (weights[0] * float(vm.beta)
-                     + weights[1] * float(vm.beta)**2 + weights[2]) / float(weights[3])
+                     + weights[1] * float(vm.beta)**2 + weights[2]) / gamma_max
+            assert 0. <= gamma <= 1.
             util += gamma * vm_cores / active_cores
             #util += float(vm.beta) * vm_cores / active_cores
         return util

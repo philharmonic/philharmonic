@@ -104,7 +104,7 @@ def test_bcf_reevaluate_freq_scaling(mock_conf):
     assert_equals(current.allocation(vm2), s2)
     assert_true(current.all_allocated())
 
-@patch('philharmonic.scheduler.evaluator.conf')
+@patch('philharmonic.settings.base')
 def test_bcf_reevaluate_freq_scaling_beta_0(mock_conf):
     f_max = 3000
     mock_conf.f_max = f_max
@@ -130,37 +130,44 @@ def test_bcf_reevaluate_freq_scaling_beta_0(mock_conf):
     mock_conf.pricing_freq = '1h'
 
     scheduler = BCFFSScheduler()
-    times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
-    scheduler.environment = FBFSimpleSimulatedEnvironment(times)
-    s1, s2 = Server(4000, 2, location='A'), Server(4000, 2, location='A')
-    vm1 = VM(2000, 1); vm1.beta = 0.
-    vm2 = VM(2000, 1); vm2.beta = 0.
-    vm3 = VM(1000, 1); vm3.beta = 0.
-    cloud = Cloud([s1, s2], [vm1, vm2, vm3])
-    scheduler.cloud = cloud
-    r2 = VMRequest(vm2, 'boot')
-    r3 = VMRequest(vm3, 'boot')
-    scheduler.environment.get_requests = MagicMock(return_value = [r2, r3])
-    # the initial state is a VM hosted on an underutilised PM
-    cloud.apply_real(Migration(vm1, s2))
-    #cloud.apply_real(Migration(vm2, s2))
-    t = times[0]
-    el = pd.DataFrame({'A': [0.08] * len(times),
-                       'B': [0.05] * len(times)}, times)
-    temp = pd.DataFrame({'A': [15] * len(times), 'B': [15] * len(times)}, times)
-    scheduler.environment.current_data = MagicMock(return_value = (el, temp))
-    schedule = scheduler.reevaluate()
-    for action in schedule.actions:
-        cloud.apply_real(action)
-    current = cloud.get_current()
-    assert_true(current.all_within_capacity())
-    assert_equals(current.allocation(vm1), s2)
-    assert_equals(current.allocation(vm2), s2)
-    assert_equals(current.allocation(vm3), s1)
-    assert_true(current.all_allocated())
+    with patch('philharmonic.scheduler.bcffs_scheduler.conf', new=mock_conf), \
+         patch('philharmonic.conf', new=mock_conf):
+        import philharmonic
+        philharmonic._override_model_defaults()
+        times = pd.date_range('2013-02-25 00:00', periods=48, freq='H')
+        scheduler.environment = FBFSimpleSimulatedEnvironment(times)
+        s1, s2 = Server(4000, 2, location='A'), Server(4000, 2, location='A')
+        vm1 = VM(2000, 1); vm1.beta = 0.
+        vm2 = VM(2000, 1); vm2.beta = 0.
+        vm3 = VM(1000, 1); vm3.beta = 0.
+        cloud = Cloud([s1, s2], [vm1, vm2, vm3])
+        scheduler.cloud = cloud
+        r2 = VMRequest(vm2, 'boot')
+        r3 = VMRequest(vm3, 'boot')
+        scheduler.environment.get_requests = MagicMock(return_value = [r2, r3])
+        # the initial state is a VM hosted on an underutilised PM
+        cloud.apply_real(Migration(vm1, s2))
+        #cloud.apply_real(Migration(vm2, s2))
+        t = times[0]
+        el = pd.DataFrame({'A': [0.08] * len(times),
+                           'B': [0.05] * len(times)}, times)
+        temp = pd.DataFrame({'A': [15] * len(times),
+                             'B': [15] * len(times)}, times)
+        scheduler.environment.current_data = MagicMock(
+            return_value = (el, temp)
+        )
+        schedule = scheduler.reevaluate()
+        for action in schedule.actions:
+            cloud.apply_real(action)
+        current = cloud.get_current()
+        assert_true(current.all_within_capacity())
+        assert_equals(current.allocation(vm1), s2)
+        assert_equals(current.allocation(vm2), s2)
+        assert_equals(current.allocation(vm3), s1)
+        assert_true(current.all_allocated())
 
-    assert_equals(current.freq_scale[s1], mock_conf.freq_scale_min)
-    assert_equals(current.freq_scale[s2], mock_conf.freq_scale_min)
+        assert_equals(current.freq_scale[s1], mock_conf.freq_scale_min)
+        assert_equals(current.freq_scale[s2], mock_conf.freq_scale_min)
 
 def test_sort_pms_by_beta():
     s1 = Server(4000, 4, location='B')

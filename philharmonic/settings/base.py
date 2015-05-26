@@ -302,9 +302,10 @@ elif architecture == "intel":
 freq_abs_steps = int((freq_abs_max - freq_abs_min) / freq_abs_delta) + 1
 freq_scale_max = 1.0
 freq_scale_digits = 5
-freq_scale_min = round(freq_abs_min/freq_abs_max, 1) # = 0.7
-freq_scale_delta = round((freq_scale_max - freq_scale_min) / (freq_abs_steps - 1),
-                         freq_scale_digits) # = 0.075
+freq_scale_min = round(freq_abs_min/freq_abs_max, 1) # e.g. 0.7
+freq_scale_delta = round((freq_scale_max - freq_scale_min) /
+                         (freq_abs_steps - 1),
+                         freq_scale_digits) # e.g. 0.075
 f_min = f_max * freq_scale_min
 
 # freq_scales = np.round(frange(freq_scale_max, freq_scale_min,

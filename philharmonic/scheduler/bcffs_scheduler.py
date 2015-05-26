@@ -136,7 +136,6 @@ class BCFFSScheduler(BCFScheduler):
             self._reset_to_max_frequency(server)
             profit_previous, en_cost_previous = self._get_profit_and_cost()
             while True:
-                #import ipdb; ipdb.set_trace()
                 self._decrease_frequency(server)
                 # debug beta=1.0, en cost increase
                 profit, en_cost = self._get_profit_and_cost()
@@ -149,7 +148,12 @@ class BCFFSScheduler(BCFScheduler):
                     # undo last decrease, break inner loop
                     self._increase_frequency(server)
                     break
-                if self.state.freq_scale[server] == conf.freq_scale_min:
+                # check to see if the next reduction would take us past the min
+                # (reduced by freq_scale_delta * 0.1 to avoid rounding errors)
+                next_f = self.state.freq_scale[server] - conf.freq_scale_delta
+                fuzzy_min = conf.freq_scale_min - conf.freq_scale_delta * 0.1
+                lowest = (next_f  < fuzzy_min)
+                if lowest:
                     break # we reached the lowest frequency, break inner loop
             self._restore_cloud_actions()
             self._add_freq_to_schedule(server) # add actions to schedule
