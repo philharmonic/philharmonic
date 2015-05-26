@@ -42,7 +42,7 @@ def generate_series_results(cloud, env, schedule, nplots):
     #-----------------
     if freq is not None:
         info('\nPM frequencies (MHz)')
-        info(freq)
+        info(freq.describe())
 
     if conf.save_power:
         power.to_pickle(loc('power.pkl'))
@@ -50,6 +50,10 @@ def generate_series_results(cloud, env, schedule, nplots):
     ax.set_title('Computational power (W)')
     power.plot(ax=ax)
     energy = ph.joul2kwh(ph.calculate_energy(power))
+    info('IT Equipment Power (W)')
+    info(power.describe())
+    info('Cooling Power (W)')
+    info(power_total.describe())
     # info('\nEnergy (kWh)')
     # info(energy)
     # info(' - total:')
@@ -72,6 +76,8 @@ def generate_series_results(cloud, env, schedule, nplots):
     #---------------
     #info('\nPM Avg.Utilization')
     #info(util.mean())
+    info('\nPM Utilization')
+    info(util.describe())
 
     info('\nMax of Avg. PM Utilization')
     info(util.mean().max())

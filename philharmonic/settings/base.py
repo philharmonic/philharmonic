@@ -208,7 +208,7 @@ inputgen_settings = {
     #'VM_num': 2000,
     # e.g. CPUs
     'min_cpu': 1, # 8,
-    'max_cpu': 1, # 8,
+    'max_cpu': 2, # 8,
     'min_ram': 8, # 2,
     'max_ram': 16, # 28,
     # e.g. seconds
@@ -280,12 +280,25 @@ power_weights = None
 #C_dif_ram=0.007958 # $/hour
 #rel_ram_size=2 #at least 2: min ram size charged
 
+#Options: arm, intel
+#architecture = "arm"
+architecture = "intel"
+
 # CPU frequency parameters
 # applied to model in philharmonic/__init__.py
-freq_abs_min = 800.
-# the maximum CPU frequency in MHz
-f_max = freq_abs_max = 1800
-freq_abs_delta = 100
+if architecture == "arm":
+    # the maximum CPU frequency in MHz
+    f_max = freq_abs_max = 1800
+    freq_abs_min = 800.
+    freq_abs_delta = 100
+    f_base = 800
+elif architecture == "intel":
+    # the maximum CPU frequency in MHz
+    f_max = freq_abs_max = 3400
+    freq_abs_min = 1600.
+    freq_abs_delta = 200
+    f_base = 1600
+
 freq_abs_steps = int((freq_abs_max - freq_abs_min) / freq_abs_delta) + 1
 freq_scale_max = 1.0
 freq_scale_digits = 5
@@ -293,7 +306,6 @@ freq_scale_min = round(freq_abs_min/freq_abs_max, 1) # = 0.7
 freq_scale_delta = round((freq_scale_max - freq_scale_min) / (freq_abs_steps - 1),
                          freq_scale_digits) # = 0.075
 f_min = f_max * freq_scale_min
-f_base = 800
 
 # freq_scales = np.round(frange(freq_scale_max, freq_scale_min,
 #                                  delta=-freq_scale_delta),
