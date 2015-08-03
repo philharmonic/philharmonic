@@ -281,8 +281,8 @@ power_weights = None
 #rel_ram_size=2 #at least 2: min ram size charged
 
 #Options: arm, intel
-#architecture = "arm"
-architecture = "intel"
+architecture = "arm"
+#architecture = "intel"
 
 # CPU frequency parameters
 # applied to model in philharmonic/__init__.py
