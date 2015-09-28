@@ -1,6 +1,6 @@
 -r test.txt
-ipython
-ipdb
-ipdbplugin
-nosy
-memory-profiler
+ipython==4.0.0
+ipdb==0.8.1
+ipdbplugin==1.4.2
+nosy==1.1.2
+memory-profiler==0.36

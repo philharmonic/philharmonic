@@ -1,8 +1,8 @@
 -r base.txt
-nose
-nose-exclude
-yanc
-mock
-coverage
-nose-timer
-cython
+nose==1.3.7
+nose-exclude==0.4.1
+yanc==0.3.3
+mock==1.3.0
+coverage==4.0
+nose-timer==0.5.0
+Cython==0.23.2

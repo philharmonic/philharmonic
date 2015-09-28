@@ -1,5 +1,5 @@
-numpy
-pandas
-scipy
-matplotlib
-click
+numpy==1.9.2
+pandas==0.16.2
+scipy==0.16.0
+matplotlib==1.4.3
+click==5.1
