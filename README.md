@@ -13,7 +13,8 @@ part is not the focus of development any more.
 Installation
 ------------
 
-If you have Python, pip and virtualenv set up, install the necessary
+If you have a recent Python 2 (not all of the code would work on Python 3),
+pip and virtualenv set up, install the necessary
 dependencies within a cloned repository.
 
     pip install -e .
