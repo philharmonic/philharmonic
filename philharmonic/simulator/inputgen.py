@@ -306,10 +306,12 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
     events = pd.TimeSeries(data=requests, index=moments)
     return events.sort_index()
 
-def simple_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
+def simple_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00', offset='H'):
     """Generate the VM creation and deletion events in.
     Normally distributed arrays - VM sizes and durations.
     @param start, end - time interval (events within it)
+
+    @param offset - not used here
 
     """
     vm1 = VM(4,2)

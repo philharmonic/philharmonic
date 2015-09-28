@@ -5,27 +5,34 @@ import pandas as pd
 
 import philharmonic
 
-@patch('philharmonic.simulator.simulator.run')
-def test_explore_ga_weights(mock_run):
+def test_explore_ga_weights():
     philharmonic._setup('philharmonic.settings.ga_explore')
     from philharmonic import conf
     conf.parameter_space = 'GAWeights'
     from philharmonic.explorer import explore
-    mock_run.return_value = {'Total cost ($)': 0.5}
+    # TODO: convert to new syntax - with A() as X, B() as Y, C() as Z:
     with patch.object(philharmonic.explorer, '_serialise_results',
                       return_value=None) as mock_serialise:
-        explore()
+        with patch.object(
+            philharmonic.explorer, '_run_simulation',
+            return_value={'Total cost ($)': 0.5}
+        ) as mock_run:
+            explore()
 
-@patch('philharmonic.simulator.simulator.run')
-def test_explore_time_offsets(mock_run):
+def test_explore_time_offsets():
     philharmonic._setup('philharmonic.settings.ga_explore')
     from philharmonic import conf
     conf.parameter_space = 'TimeOffsets'
     from philharmonic.explorer import explore
-    mock_run.return_value = {'Total cost ($)': 0.5}
-    with patch.object(philharmonic.explorer, '_serialise_results',
-                      return_value=None) as mock_serialise:
-        explore()
+    # TODO: convert to new syntax - with A() as X, B() as Y, C() as Z:
+    with patch.object(
+        philharmonic.explorer, '_serialise_results', return_value=None
+    ) as mock_serialise:
+        with patch.object(
+            philharmonic.explorer, '_run_simulation',
+            return_value={'Total cost ($)': 0.5}
+        ) as mock_run:
+            explore()
 
 def test_time_offsets():
     philharmonic._setup('philharmonic.settings.ga_explore')
