@@ -286,6 +286,8 @@ architecture = "arm"
 
 # CPU frequency parameters
 # applied to model in philharmonic/__init__.py
+# TODO: f_base should probably be changed to 1000 to match EH, CS.
+# f_min can be moved freely.
 if architecture == "arm":
     # the maximum CPU frequency in MHz
     f_max = freq_abs_max = 1800
