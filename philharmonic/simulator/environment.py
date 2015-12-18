@@ -14,7 +14,7 @@ def cleaned_requests(requests):
         if req.vm not in useless_vms:
             values.append(req)
             times.append(t)
-    return pd.TimeSeries(values, times)
+    return pd.Series(values, times)
     return requests
 
 class Environment(object):

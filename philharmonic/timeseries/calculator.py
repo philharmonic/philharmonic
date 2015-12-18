@@ -144,8 +144,8 @@ def calculate_price(power, prices, start_date=None):
     energy consumption stored in a time series of power values power (W).
     Should work for DataFrames too.
 
-    @param power: pandas.TimeSeries of power values
-    @param prices: pandas.TimeSeries of price values or a path to a
+    @param power: pandas.Series of power values
+    @param prices: pandas.Series of price values or a path to a
     file to parse it from.
     @param start_date: Timestamp to which to realign the prices
     (e.g. the starting index value for the power series)

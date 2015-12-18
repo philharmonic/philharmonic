@@ -38,7 +38,7 @@ def test_auto_vmreqs():
     end = pd.Timestamp('2010-01-31')
     cloud = small_infrastructure()
     events = auto_vmreqs(start, end, servers=cloud.servers)
-    assert_is_instance(events, pd.TimeSeries)
+    assert_is_instance(events, pd.Series)
     for t in events.index:
         assert_greater_equal(t, start)
         assert_less_equal(t, end)

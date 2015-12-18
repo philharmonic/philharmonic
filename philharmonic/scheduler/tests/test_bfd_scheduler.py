@@ -135,7 +135,7 @@ def test_sort_nonempty_pms_increasing():
 #     t1 = pd.Timestamp('2013-02-25 00:00')
 #     t2 = pd.Timestamp('2013-02-25 01:00')
 #     request_times = [t1, t2]
-#     request_series = pd.TimeSeries(requests, request_times)
+#     request_series = pd.Series(requests, request_times)
 #     env = FBFSimpleSimulatedEnvironment(times, request_series)
 #     simulator.environment = env
 #     simulator.cloud = inputgen.small_infrastructure()

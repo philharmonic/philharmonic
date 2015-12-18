@@ -793,7 +793,7 @@ def test_schedule_clean():
     t3 = pd.Timestamp('2013-01-01 02:00')
     times = [t1, t1, t1, t1, t2, t2, t3, t3]
     actions = [a01, a02, a1, a2, b1, b2, c1, c2]
-    schedule.actions = pd.TimeSeries(actions, times)
+    schedule.actions = pd.Series(actions, times)
     schedule.clean()
     assert_sequence_equal(list(schedule.actions.values),
                           [a01, a02, a1, b2, c1, c2])

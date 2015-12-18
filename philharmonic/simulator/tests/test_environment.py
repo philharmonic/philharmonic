@@ -27,7 +27,7 @@ def test_environment_simultaneous_boot_delete():
     vm2 = VM(4000, 2)
     requests_raw = [VMRequest(vm1, 'boot'), VMRequest(vm1, 'delete'),
                     VMRequest(vm2, 'boot')]
-    requests = pd.TimeSeries(requests_raw, times)
+    requests = pd.Series(requests_raw, times)
     env = FBFSimpleSimulatedEnvironment(times, requests)
     env.set_time(times[0])
     env.set_period(pd.offsets.Hour(1))

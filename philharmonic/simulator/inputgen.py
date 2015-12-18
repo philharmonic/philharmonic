@@ -190,7 +190,7 @@ def auto_vmreqs(start, end, round_to_hour=True,
             if round_to_hour:
                 t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
             moments.append(t)
-    events = pd.TimeSeries(data=requests, index=moments)
+    events = pd.Series(data=requests, index=moments)
     return events.sort_index()
 
 def auto_vmreqs_beta_variation(start, end, round_to_hour=True,
@@ -256,7 +256,7 @@ def normal_vmreqs(start, end, round_to_hour=True, **kwargs):
             if round_to_hour:
                 t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
             moments.append(t)
-    events = pd.TimeSeries(data=requests, index=moments)
+    events = pd.Series(data=requests, index=moments)
     return events.sort_index()
 
 def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
@@ -303,7 +303,7 @@ def uniform_vmreqs_beta_variation(start, end, round_to_hour=True, **kwargs):
             if round_to_hour:
                 t = pd.Timestamp(t.date()) + pd.offsets.Hour(t.hour)
             moments.append(t)
-    events = pd.TimeSeries(data=requests, index=moments)
+    events = pd.Series(data=requests, index=moments)
     return events.sort_index()
 
 def simple_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00', offset='H'):
@@ -329,7 +329,7 @@ def simple_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00', offset='H'):
     requests = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
                 VMRequest(vm2, 'delete'), VMRequest(vm1, 'delete')]
     moments = [t1, t2, t3, t4]
-    events = pd.TimeSeries(data=requests, index=moments)
+    events = pd.Series(data=requests, index=moments)
     return events
 
 def medium_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
@@ -353,11 +353,11 @@ def medium_vmreqs(start='2013-02-25 00:00', end='2013-02-27 00:00'):
     requests = [VMRequest(vm1, 'boot'), VMRequest(vm2, 'boot'),
                 VMRequest(vm2, 'delete'), VMRequest(vm1, 'delete')]
     moments = [t1, t2, t3, t4]
-    events = pd.TimeSeries(data=requests, index=moments)
+    events = pd.Series(data=requests, index=moments)
     return events
 
 def no_requests(start, end):
-    return pd.TimeSeries()
+    return pd.Series()
 
 ## OLD APPROACH
 ## - hardcoded values in different functions

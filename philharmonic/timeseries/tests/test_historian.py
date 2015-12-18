@@ -13,7 +13,7 @@ class Test(unittest.TestCase):
     def testParseHourly(self):
         prices = historian.parse_prices("./io/tests/energy_price_data-test.csv")
         self.assertIsInstance(prices, pd.Series, "must get a series")
-        self.assertIsInstance(prices, pd.TimeSeries, "must get a TimeSeries")
+        self.assertIsInstance(prices, pd.Series, "must get a Series")
 
         places = 5 # decimal places to consider for equality
         t1 = datetime(2012,5,5,0,0)
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
 
     def testParseTemp(self):
         temp = historian.parse_temp('./io/tests/novosibirsk-small.txt')
-        self.assertIsInstance(temp, pd.TimeSeries, 'expecting a time series')
+        self.assertIsInstance(temp, pd.Series, 'expecting a series')
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testParseHourly']

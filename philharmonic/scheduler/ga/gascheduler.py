@@ -187,7 +187,7 @@ def create_random(environment, cloud, no_el_price=False, no_temperature=False):
         server = random.sample(cloud.servers, 1)[0]
         action = Migration(vm, server)
         actions.append(action)
-    unit.actions = pd.TimeSeries(actions, times, name='actions')
+    unit.actions = pd.Series(actions, times, name='actions')
     unit.sort() # TODO: kick out duplicates/overrides like unit.add
     return unit
 

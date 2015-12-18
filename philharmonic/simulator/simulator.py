@@ -84,7 +84,7 @@ def VM_requests(start, end):
 
 def prepare_known_data(dataset, t, future_horizon=None): # TODO: use pd.Panel for dataset
     """ @returns a subset of the @param dataset
-    (a tuple of pd.TimeSeries objects)
+    (a tuple of pd.Series objects)
     that is known at moment @param t
 
     """

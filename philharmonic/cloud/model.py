@@ -606,7 +606,7 @@ import pandas as pd
 class Schedule(object):
     """(initial state? - part of Cloud) and a time series of actions"""
     def __init__(self):
-        self.actions = pd.TimeSeries()
+        self.actions = pd.Series()
         self.actions.name = 'actions'
 
     def copy(self):
@@ -621,7 +621,7 @@ class Schedule(object):
                                        'rank': [a.rank() for a in self.actions],
                                        'index': self.actions.index},
                                       index=self.actions.index)
-        self.actions = ranked_actions.sort(['index', 'rank']).actions
+        self.actions = ranked_actions.sort_values(by=['index', 'rank']).actions
         self.actions.name = 'actions'
 
     def clean(self):

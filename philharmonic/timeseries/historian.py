@@ -58,7 +58,7 @@ def parse_prices(where):
 def parse_temp(where):
     """
     Parse a CSV with historical hourly temperatures available at
-    http://www.ncdc.noaa.gov/cdo-web/ into a pd.TimeSeries
+    http://www.ncdc.noaa.gov/cdo-web/ into a pd.Series
     """
     weather = pd.read_csv(where,skiprows=2, header=None,
                       index_col='Date_HrMn',

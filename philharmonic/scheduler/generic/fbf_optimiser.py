@@ -6,8 +6,8 @@ from philharmonic import Schedule
 
 def better(pm1, pm2, vm):
     """return better of the two physical machines for hosting vm"""
-    #diff = lambda spec,  : 
-    #remains_pm1 = 
+    #diff = lambda spec,  :
+    #remains_pm1 =
 
 class FBFOptimiser(Optimiser):
     """First-best-fit schedule optimiser. Goes through the available servers
@@ -17,7 +17,7 @@ class FBFOptimiser(Optimiser):
     """
     def __init__(self, infrastructure):
         self.infrastructure = infrastructure
-    def find_solution(self, known_data=None, new_requests=pd.TimeSeries([])):
+    def find_solution(self, known_data=None, new_requests=pd.Series([])):
         """return a schedule that's suggested based on the current
         infrastructure availability and the provided @param known_data
 
