@@ -29,7 +29,7 @@ class EnergyPredictor(object):
         print("We're gonna exclude %d hour(s)" % (exclude_num))
         # we have to make a copy to be able to sort in place
         mean_prices = grouped_hours.mean().copy()
-        mean_prices.sort()
+        mean_prices.sort_values(inplace=True)
         expensive_prices = mean_prices[-exclude_num:]
         self.expensive_hours = set(expensive_prices.index)
 

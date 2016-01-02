@@ -48,7 +48,7 @@ def test_auto_vmreqs_beta_variation():
     end = pd.Timestamp('2010-01-31')
     cloud = small_infrastructure()
     events = auto_vmreqs_beta_variation(start, end, servers=cloud.servers)
-    assert_is_instance(events, pd.TimeSeries)
+    assert_is_instance(events, pd.Series)
     for t in events.index:
         assert_greater_equal(t, start)
         assert_less_equal(t, end)
@@ -59,7 +59,7 @@ def test_normal_vmreqs():
     start = pd.Timestamp('2010-01-01')
     end = pd.Timestamp('2010-01-31')
     events = normal_vmreqs(start, end)
-    assert_is_instance(events, pd.TimeSeries)
+    assert_is_instance(events, pd.Series)
     for t in events.index:
         assert_greater_equal(t, start)
         assert_less_equal(t, end)
@@ -68,7 +68,7 @@ def test_uniform_vmreqs_beta_variation():
     start = pd.Timestamp('2010-01-01')
     end = pd.Timestamp('2010-01-31')
     events = uniform_vmreqs_beta_variation(start, end)
-    assert_is_instance(events, pd.TimeSeries)
+    assert_is_instance(events, pd.Series)
     for t in events.index:
         assert_greater_equal(t, start)
         assert_less_equal(t, end)

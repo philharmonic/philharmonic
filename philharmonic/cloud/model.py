@@ -634,12 +634,12 @@ class Schedule(object):
         df = pd.DataFrame({'index': self.actions.index,
                            'actions': self.actions.values})
         df.drop_duplicates(subset=['actions', 'index'],
-                           take_last=True, inplace=True)
+                           keep='last', inplace=True)
         # only take the last action applied to a VM at some index
         df['vm'] = df.actions.apply(lambda a : a.vm)
         df['name'] = df.actions.apply(lambda a : a.name)
         df.drop_duplicates(subset=['index', 'vm', 'name'],
-                           take_last=True, inplace=True)
+                           keep='last', inplace=True)
         # back to the original form
         self.actions = df.set_index('index').actions
 

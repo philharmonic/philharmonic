@@ -24,7 +24,7 @@ def test_server_locations():#TODO: refactor
 
 def test_prepare_known_data():
     n = 10
-    all_data = pd.TimeSeries(
+    all_data = pd.Series(
         np.random.uniform(size=n),
         pd.date_range('2013-01-01', periods=n, freq='D'))
     known_data, known_data2 = prepare_known_data((all_data, all_data),
