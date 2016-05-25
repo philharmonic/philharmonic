@@ -4,23 +4,8 @@ python:
 notifications:
   email: false
 
-# setup anaconda
-before_install:
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
-  - conda create --yes -n condaenv python=$TRAVIS_PYTHON_VERSION
-  - conda install --yes -n condaenv pip
-  - source activate condaenv
-  # The next couple lines fix a crash with multiprocessing on Travis
-  - sudo rm -rf /dev/shm
-  - sudo ln -s /run/shm /dev/shm
-
 # install dependencies
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib pandas
   - pip install -r requirements/test.txt
   - pip install coveralls
   - python setup.py build_ext --inplace
