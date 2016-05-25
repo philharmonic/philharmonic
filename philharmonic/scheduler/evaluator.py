@@ -266,6 +266,7 @@ def combined_energy(cloud, environment, schedule, temperature=None,
     @returns: energy in kWh
 
     """
+    # TODO: check if this method is in sync with combined_cost
 
     if power_model is None:
         power_model = conf.power_model

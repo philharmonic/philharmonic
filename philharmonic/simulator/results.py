@@ -23,6 +23,12 @@ def pickle_results(schedule):
 ev = evaluator
 
 def generate_series_results(cloud, env, schedule, nplots):
+    """generate power of IT equipment (power) and power of IT equipment
+    including the cooling overhead time series for the simulation
+    duration.
+
+    """
+
     info('\nDynamic results\n---------------')
     util, power, power_total, freq = ev.calculate_components(
         cloud, env, schedule, env.el_prices, env.temperature,
@@ -117,6 +123,8 @@ def serialise_results(cloud, env, schedule):
     #----------------
     generate_series_results(cloud, env, schedule, nplots)
 
+
+    # the values used for the aggregated results
     energy = evaluator.combined_energy(cloud, env, schedule)
     energy_total = evaluator.combined_energy(cloud, env, schedule,
                                              env.temperature)
@@ -147,7 +155,8 @@ def serialise_results(cloud, env, schedule):
     # info(en_cost_IT)
     info(' - total electricity cost without cooling:')
     en_cost_IT_total = evaluator.combined_cost(cloud, env, schedule,
-                                               env.el_prices)
+                                               env.el_prices,
+                                               power_model=conf.power_model)
     info(en_cost_IT_total)
 
     # TODO: reenable
@@ -156,9 +165,10 @@ def serialise_results(cloud, env, schedule):
     # info(' - electricity cost with cooling:')
     # info(en_cost_with_cooling)
     info(' - total electricity cost with cooling:')
-    en_cost_with_cooling_total = evaluator.combined_cost(cloud, env, schedule,
-                                                         env.el_prices,
-                                                         env.temperature)
+    en_cost_with_cooling_total = evaluator.combined_cost(
+        cloud, env, schedule, env.el_prices, env.temperature,
+        power_model=conf.power_model
+    )
     info(en_cost_with_cooling_total)
     info(' - total electricity cost with migrations:')
     en_cost_combined = en_cost_with_cooling_total + migration_cost
@@ -186,7 +196,9 @@ def serialise_results(cloud, env, schedule):
     # frequency savings
     info(' - frequency scaling savings (compared to no scaling):')
     en_cost_combined_unscaled = evaluator.combined_cost(
-        cloud, env, schedule_unscaled, env.el_prices, env.temperature
+        cloud, env, schedule_unscaled, env.el_prices, env.temperature,
+        power_model=conf.power_model
+
     ) + migration_cost
     scaling_savings_abs = en_cost_combined_unscaled - en_cost_combined
     info('${}'.format(scaling_savings_abs))
